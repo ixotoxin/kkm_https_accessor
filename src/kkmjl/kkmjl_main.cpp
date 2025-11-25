@@ -32,8 +32,8 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
             L"    \"" << Json::Wcs::c_successKey << L"\": false,\n"
             L"    \"" << Json::Wcs::c_messageKey << L"\": \"Неверное использование\",\n"
             L"    \"!version\": \"" << BUILD_VERSION << L"\",\n"
-            L"    \"!usage\": \"" << argv[0] << L" {сн} {вф}\"\n"
-            L"}\n";
+            L"    \"!usage\": \"" << Json::escapeBasic(argv[0]) << L" {сн} {вф}\"\n"
+            L"}";
     } catch (const Basic::Failure & e) {
         KkmJsonLoader::printError(e.explain(Log::s_appendLocation));
     } catch (const std::exception & e) {

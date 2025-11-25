@@ -22,6 +22,26 @@ namespace Meta {
         static constexpr Char c_minus [[maybe_unused]] { L'-' };
         static constexpr Char c_terminator [[maybe_unused]] { L'\0' };
         static constexpr View c_assignmentSigns [[maybe_unused]] { L"=:" };
+        static constexpr Char c_quotationMark { L'"' };
+        static constexpr Char c_solidus { L'/' };
+        static constexpr Char c_reverseSolidus { L'\\' };
+        static constexpr Char c_backspace { L'\b' };
+        static constexpr Char c_backspaceLiteral { L'b' };
+        static constexpr Char c_formFeed { L'\f' };
+        static constexpr Char c_formFeedLiteral { L'f' };
+        static constexpr Char c_newLine { L'\n' };
+        static constexpr Char c_newLineLiteral { L'n' };
+        static constexpr Char c_carriageReturn { L'\r' };
+        static constexpr Char c_carriageReturnLiteral { L'r' };
+        static constexpr Char c_horizontalTab { L'\t' };
+        static constexpr Char c_horizontalTabLiteral { L't' };
+        static constexpr Char c_verticalTab { L'\v' };
+        static constexpr Char c_verticalTabLiteral  { L'v' };
+        static constexpr Char c_openingCurlyBrace  { L'{' };
+        static constexpr Char c_closingCurlyBrace  { L'}' };
+        static constexpr Char c_letterU { L'u' };
+        static constexpr Char c_zero { L'0' };
+        static constexpr View c_hexDigits { L"0123456789ABCDEF" };
 
         static inline const std::unordered_set<String> c_trueValueStrings [[maybe_unused]] {
             L"true", L"t", L"yes", L"y", L"on", L"enable", L"ena", L"en", L"e", L"allow", L"allowed", L"a", L"+"
@@ -110,6 +130,26 @@ namespace Meta {
         static constexpr Char c_minus [[maybe_unused]] { '-' };
         static constexpr Char c_terminator [[maybe_unused]] { '\0' };
         static constexpr View c_assignmentSigns [[maybe_unused]] { "=:" };
+        static constexpr Char c_quotationMark { '"' };
+        static constexpr Char c_solidus { '/' };
+        static constexpr Char c_reverseSolidus { '\\' };
+        static constexpr Char c_backspace { '\b' };
+        static constexpr Char c_backspaceLiteral { 'b' };
+        static constexpr Char c_formFeed { '\f' };
+        static constexpr Char c_formFeedLiteral { 'f' };
+        static constexpr Char c_newLine { '\n' };
+        static constexpr Char c_newLineLiteral { 'n' };
+        static constexpr Char c_carriageReturn { '\r' };
+        static constexpr Char c_carriageReturnLiteral { 'r' };
+        static constexpr Char c_horizontalTab { '\t' };
+        static constexpr Char c_horizontalTabLiteral { 't' };
+        static constexpr Char c_verticalTab { '\v' };
+        static constexpr Char c_verticalTabLiteral { 'v' };
+        static constexpr Char c_openingCurlyBrace { '{' };
+        static constexpr Char c_closingCurlyBrace { '}' };
+        static constexpr Char c_letterU { 'u' };
+        static constexpr Char c_zero { '0' };
+        static constexpr View c_hexDigits { "0123456789ABCDEF" };
 
         static inline const std::unordered_set<String> c_trueValueStrings {
             "true", "t", "yes", "y", "on", "enable", "ena", "en", "e", "allow", "allowed", "a", "+"
@@ -656,6 +696,40 @@ namespace Text {
         (result.append(text), ...);
         return result;
     }
+
+    template<unsigned S>
+    struct Bin2Hex {
+        struct HexPair {
+            uint8_t m_l:4;
+            uint8_t m_h:4;
+        };
+
+        std::array<HexPair, S> m_bytes;
+
+        template<size_t N = S, size_t O = 0>
+        [[maybe_unused]]
+        inline void writeTo(Meta::String auto & result, size_t & pos) const {
+            static_assert(N > 0);
+            static_assert(N + O <= S);
+            using Txt = Meta::TextTrait<decltype(result)>;
+            for (size_t i { N }, j { O + N - 1 }; i; --i) {
+                result[pos++] = Txt::c_hexDigits[m_bytes[j].m_h];
+                result[pos++] = Txt::c_hexDigits[m_bytes[j--].m_l];
+            }
+        }
+
+        template<size_t N = S, size_t O = 0>
+        [[maybe_unused]]
+        inline void appendTo(Meta::String auto & result) const {
+            static_assert(N > 0);
+            static_assert(N + O <= S);
+            using Txt = Meta::TextTrait<decltype(result)>;
+            for (size_t i { N }, j { O + N - 1 }; i; --i) {
+                result.push_back(Txt::c_hexDigits[m_bytes[j].m_h]);
+                result.push_back(Txt::c_hexDigits[m_bytes[j--].m_l]);
+            }
+        }
+    };
 
     template<Meta::String T, typename ... U>
     requires (std::is_convertible_v<U, typename Meta::TextTrait<T>::View> && ...)

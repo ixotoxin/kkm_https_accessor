@@ -39,6 +39,216 @@ namespace Json {
     using Basic::DataError;
     using Handler = std::function<bool(const Nln::Json &, const std::wstring &)>;
 
+    namespace {
+        void writeHex1(Meta::String auto & result, size_t & pos, uint32_t code) {
+            using Txt = Meta::TextTrait<decltype(result)>;
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(code)>>(code);
+            result[pos++] = Txt::c_letterU;
+            result[pos++] = Txt::c_zero;
+            result[pos++] = Txt::c_zero;
+            hex.writeTo<1>(result, pos);
+        }
+
+        void writeHex2(Meta::String auto & result, size_t & pos, uint32_t code) {
+            using Txt = Meta::TextTrait<decltype(result)>;
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(code)>>(code);
+            result[pos++] = Txt::c_letterU;
+            hex.writeTo<2>(result, pos);
+        }
+
+        void writeHex3(Meta::String auto & result, size_t & pos, uint32_t code) {
+            using Txt = Meta::TextTrait<decltype(result)>;
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(code)>>(code);
+            result[pos++] = Txt::c_letterU;
+            result[pos++] = Txt::c_openingCurlyBrace;
+            hex.writeTo<3>(result, pos);
+            result[pos++] = Txt::c_closingCurlyBrace;
+        }
+
+        size_t basicExtraSpace(const Meta::View auto text) {
+            using Txt = Meta::TextTrait<decltype(text)>;
+
+            size_t result { 0 };
+            auto it = text.begin();
+
+            while (it != text.end()) {
+                uint32_t high { static_cast<uint32_t>(*it) };
+                switch (high) {
+                    case Txt::c_quotationMark:
+                    case Txt::c_solidus:
+                    case Txt::c_reverseSolidus:
+                    case Txt::c_backspace:
+                    case Txt::c_formFeed:
+                    case Txt::c_newLine:
+                    case Txt::c_carriageReturn:
+                    case Txt::c_horizontalTab:
+                        ++result;
+                        break;
+                    default:
+                        if (high <= 0x1F || high == 0x7F) {
+                            result += 5;
+                        }
+                        break;
+                }
+                ++it;
+            }
+
+            return result;
+        }
+
+        inline size_t fullExtraSpace(const std::wstring_view text) {
+            size_t result { 0 };
+            auto it = text.begin();
+
+            while (it != text.end()) {
+                uint32_t high { static_cast<uint32_t>(*it) };
+                switch (high) {
+                    case L'"':
+                    case L'/':
+                    case L'\\':
+                    case L'\b':
+                    case L'\f':
+                    case L'\n':
+                    case L'\r':
+                    case L'\t':
+                        ++result;
+                        break;
+                    default:
+                        if (high <= 0x1F) { // NOLINT(*-branch-clone)
+                            result += 5;
+                        } else if (high <= 0x7E) {
+                            // NOP
+                        } else if (high <= 0xFF) {
+                            result += 5;
+                        } else if (high >= 0xD800 && high <= 0xDBFF) {
+                            ++it;
+                            if (it == text.end()) {
+                                result += 5;
+                                break;
+                            }
+                            uint32_t low { static_cast<uint32_t>(*it) };
+                            if (low >= 0xDC00 && low <= 0xDFFF) {
+                                result += 8;
+                                break;
+                            } else {
+                                result += 10;
+                            }
+                        } else {
+                            result += 5;
+                        }
+                        break;
+                }
+                ++it;
+            }
+
+            return result;
+        }
+    }
+
+    template<Meta::View T>
+    auto escapeBasic(const T text) -> typename Meta::TextTrait<T>::String {
+        using Txt = Meta::TextTrait<T>;
+
+        const auto extraSpace = basicExtraSpace(text);
+        if (extraSpace == 0) {
+            return { text.begin(), text.end() };
+        }
+
+        size_t size { text.size() };
+        typename Txt::String result(size + extraSpace, Txt::c_reverseSolidus);
+        size_t pos { 0 };
+        auto it = text.begin();
+
+        while (it != text.end()) {
+            uint32_t codePoint { static_cast<uint32_t>(*it) };
+            switch (codePoint) {
+                case Txt::c_quotationMark: result[++pos] = Txt::c_quotationMark; ++pos; break;
+                case Txt::c_solidus: result[++pos] = Txt::c_solidus; ++pos; break;
+                case Txt::c_reverseSolidus: pos += 2; break;
+                case Txt::c_backspace: result[++pos] = Txt::c_backspaceLiteral; ++pos; break;
+                case Txt::c_formFeed: result[++pos] = Txt::c_formFeedLiteral; ++pos; break;
+                case Txt::c_newLine: result[++pos] = Txt::c_newLineLiteral; ++pos; break;
+                case Txt::c_carriageReturn: result[++pos] = Txt::c_carriageReturnLiteral; ++pos; break;
+                case Txt::c_horizontalTab: result[++pos] = Txt::c_horizontalTabLiteral; ++pos; break;
+                default:
+                    if (codePoint <= 0x1F || codePoint == 0x7F) {
+                        writeHex1(result, ++pos, codePoint);
+                    } else {
+                        result[pos++] = static_cast<wchar_t>(codePoint);
+                    }
+                    break;
+            }
+            ++it;
+        }
+
+        return result;
+    }
+
+    template<Meta::String T>
+    auto escapeBasic(const T & text) -> typename Meta::TextTrait<T>::String {
+        return escapeBasic<typename Meta::TextTrait<T>::View>(text);
+    }
+
+    template<Meta::Char T>
+    auto escapeBasic(const T * text) -> typename Meta::TextTrait<T>::String {
+        return escapeBasic<typename Meta::TextTrait<T>::View>(text);
+    }
+
+    inline std::wstring escapeFull(const std::wstring_view text) {
+        const auto extraSpace = fullExtraSpace(text);
+        if (extraSpace == 0) {
+            return { text.begin(), text.end() };
+        }
+
+        size_t size { text.size() };
+        std::wstring result(size + extraSpace, Meta::Wcs::c_reverseSolidus);
+        size_t pos { 0 };
+        auto it = text.begin();
+
+        while (it != text.end()) {
+            uint32_t high { static_cast<uint32_t>(*it) };
+            switch (high) {
+                case L'"': result[++pos] = '"'; ++pos; break;
+                case L'/': result[++pos] = '/'; ++pos; break;
+                case L'\\': pos += 2; break;
+                case L'\b': result[++pos] = L'b'; ++pos; break;
+                case L'\f': result[++pos] = L'f'; ++pos; break;
+                case L'\n': result[++pos] = L'n'; ++pos; break;
+                case L'\r': result[++pos] = L'r'; ++pos; break;
+                case L'\t': result[++pos] = L't'; ++pos; break;
+                default:
+                    if (high <= 0x001F) { // NOLINT(*-branch-clone)
+                        writeHex1(result, ++pos, high);
+                    } else if (high <= 0x007E) {
+                        result[pos++] = static_cast<wchar_t>(high);
+                    } else if (high <= 0x00FF) {
+                        writeHex1(result, ++pos, high);
+                    } else if (high >= 0xD800 && high <= 0xDBFF) {
+                        ++it;
+                        if (it == text.end()) {
+                            writeHex2(result, ++pos, high);
+                            break;
+                        }
+                        uint32_t low { static_cast<uint32_t>(*it) };
+                        if (low >= 0xDC00 && low <= 0xDFFF) {
+                            uint32_t codePoint = 0x10000 + ((high & 0x3FF) << 10) | (low & 0x3FF);
+                            writeHex3(result, ++pos, codePoint);
+                            break;
+                        } else {
+                            writeHex2(result, ++pos, high);
+                            writeHex2(result, ++pos, low);
+                        }
+                    } else {
+                        writeHex2(result, ++pos, high);
+                    }
+                    break;
+            }
+            ++it;
+        }
+
+        return result;
+    }
+
     template<Meta::Bool T>
     [[nodiscard, maybe_unused]]
     T cast(const Nln::Json & json) try {

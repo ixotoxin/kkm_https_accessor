@@ -694,4 +694,138 @@ namespace UnitTests {
         REQUIRE(Text::trueFalse<Meta::Wcs>(false) == L"false"sv);
         REQUIRE(Text::trueFalse<Meta::Mbs>(false) == "false"sv);
     }
+
+    TEST_CASE("text", "[bin_to_hex]" ) {
+        {
+            uint8_t bin { 0xfe };
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(bin)>>(bin);
+
+            {
+                size_t pos { 1 };
+                std::wstring str(4, L' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == L" FE "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == L" FE FE"sv);
+            }
+
+            {
+                size_t pos { 1 };
+                std::string str(4, ' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == " FE "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == " FE FE"sv);
+            }
+        }
+
+        {
+            uint16_t bin { 0xdcba };
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(bin)>>(bin);
+
+            {
+                size_t pos { 1 };
+                std::wstring str(6, L' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == L" DCBA "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == L" DCBA DCBA"sv);
+            }
+
+            {
+                size_t pos { 1 };
+                std::string str(6, ' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == " DCBA "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == " DCBA DCBA"sv);
+            }
+        }
+
+        {
+            uint32_t bin { 0x9876'5432 };
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(bin)>>(bin);
+
+            {
+                size_t pos { 1 };
+                std::wstring str(10, L' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == L" 98765432 "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == L" 98765432 98765432"sv);
+            }
+
+            {
+                size_t pos { 1 };
+                std::string str(10, ' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == " 98765432 "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == " 98765432 98765432"sv);
+            }
+        }
+
+        {
+            uint64_t bin { 0xfedc'ba98'7654'3210 };
+            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(bin)>>(bin);
+
+            {
+                size_t pos { 1 };
+                std::wstring str(18, L' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == L" FEDCBA9876543210 "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == L" FEDCBA9876543210 FEDCBA9876543210"sv);
+                pos = 1;
+                hex.writeTo<2>(str, pos);
+                REQUIRE(str == L" 3210BA9876543210 FEDCBA9876543210"sv);
+                hex.appendTo<2>(str);
+                REQUIRE(str == L" 3210BA9876543210 FEDCBA98765432103210"sv);
+                pos = 1;
+                hex.writeTo<3, 3>(str, pos);
+                REQUIRE(str == L" BA98769876543210 FEDCBA98765432103210"sv);
+                hex.appendTo<3, 3>(str);
+                REQUIRE(str == L" BA98769876543210 FEDCBA98765432103210BA9876"sv);
+                pos = 1;
+                hex.writeTo<4>(str, pos);
+                REQUIRE(str == L" 7654321076543210 FEDCBA98765432103210BA9876"sv);
+                hex.appendTo<4>(str);
+                REQUIRE(str == L" 7654321076543210 FEDCBA98765432103210BA987676543210"sv);
+                pos = 1;
+                hex.writeTo<4, 4>(str, pos);
+                REQUIRE(str == L" FEDCBA9876543210 FEDCBA98765432103210BA987676543210"sv);
+                hex.appendTo<4, 4>(str);
+                REQUIRE(str == L" FEDCBA9876543210 FEDCBA98765432103210BA987676543210FEDCBA98"sv);
+            }
+
+            {
+                size_t pos { 1 };
+                std::string str(18, ' ');
+                hex.writeTo<>(str, pos);
+                REQUIRE(str == " FEDCBA9876543210 "sv);
+                hex.appendTo<>(str);
+                REQUIRE(str == " FEDCBA9876543210 FEDCBA9876543210"sv);
+                pos = 1;
+                hex.writeTo<2>(str, pos);
+                REQUIRE(str == " 3210BA9876543210 FEDCBA9876543210"sv);
+                hex.appendTo<2>(str);
+                REQUIRE(str == " 3210BA9876543210 FEDCBA98765432103210"sv);
+                pos = 1;
+                hex.writeTo<3, 3>(str, pos);
+                REQUIRE(str == " BA98769876543210 FEDCBA98765432103210"sv);
+                hex.appendTo<3, 3>(str);
+                REQUIRE(str == " BA98769876543210 FEDCBA98765432103210BA9876"sv);
+                pos = 1;
+                hex.writeTo<4>(str, pos);
+                REQUIRE(str == " 7654321076543210 FEDCBA98765432103210BA9876"sv);
+                hex.appendTo<4>(str);
+                REQUIRE(str == " 7654321076543210 FEDCBA98765432103210BA987676543210"sv);
+                pos = 1;
+                hex.writeTo<4, 4>(str, pos);
+                REQUIRE(str == " FEDCBA9876543210 FEDCBA98765432103210BA987676543210"sv);
+                hex.appendTo<4, 4>(str);
+                REQUIRE(str == " FEDCBA9876543210 FEDCBA98765432103210BA987676543210FEDCBA98"sv);
+            }
+        }
+    }
 }

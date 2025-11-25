@@ -149,8 +149,8 @@ namespace KkmJsonLoader {
             L"    \"" MEMORY_PROFILING_FLAG_KEY "\": \"" MEMORY_PROFILING_FLAG_VALUE "\",\n"
 #endif
             L"    \"" << Json::Wcs::c_successKey << L"\": false,\n"
-            L"    \"" << Json::Wcs::c_messageKey << L"\": \"" << error << L"\"\n"
-            L"}\n";
+            L"    \"" << Json::Wcs::c_messageKey << L"\": \"" << Json::escapeBasic(error) << L"\"\n"
+            L"}";
     }
 
     [[nodiscard, maybe_unused]]
