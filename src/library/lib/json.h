@@ -9,6 +9,7 @@
 #include "datetime.h"
 #include "text.h"
 #include "path.h"
+#include "hexer.h"
 #include <nlohmann/json.hpp>
 #include <cassert>
 
@@ -42,7 +43,7 @@ namespace Json {
     namespace {
         void writeHex1(Meta::String auto & result, size_t & pos, uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
-            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(code)>>(code);
+            Bin::Int2Hex hex { code };
             result[pos++] = Txt::c_letterU;
             result[pos++] = Txt::c_zero;
             result[pos++] = Txt::c_zero;
@@ -51,14 +52,14 @@ namespace Json {
 
         void writeHex2(Meta::String auto & result, size_t & pos, uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
-            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(code)>>(code);
+            Bin::Int2Hex hex { code };
             result[pos++] = Txt::c_letterU;
             hex.writeTo<2>(result, pos);
         }
 
         void writeHex3(Meta::String auto & result, size_t & pos, uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
-            auto hex = std::bit_cast<Text::Bin2Hex<sizeof(code)>>(code);
+            Bin::Int2Hex hex { code };
             result[pos++] = Txt::c_letterU;
             result[pos++] = Txt::c_openingCurlyBrace;
             hex.writeTo<3>(result, pos);
@@ -85,7 +86,7 @@ namespace Json {
                         ++result;
                         break;
                     default:
-                        if (high <= 0x1F || high == 0x7F) {
+                        if (high <= 0x1f || high == 0x7f) {
                             result += 5;
                         }
                         break;
@@ -114,20 +115,20 @@ namespace Json {
                         ++result;
                         break;
                     default:
-                        if (high <= 0x1F) { // NOLINT(*-branch-clone)
+                        if (high <= 0x001f) { // NOLINT(*-branch-clone)
                             result += 5;
-                        } else if (high <= 0x7E) {
+                        } else if (high <= 0x007e) {
                             // NOP
-                        } else if (high <= 0xFF) {
+                        } else if (high <= 0x00ff) {
                             result += 5;
-                        } else if (high >= 0xD800 && high <= 0xDBFF) {
+                        } else if (high >= 0xd800 && high <= 0xdbff) {
                             ++it;
                             if (it == text.end()) {
                                 result += 5;
                                 break;
                             }
                             uint32_t low { static_cast<uint32_t>(*it) };
-                            if (low >= 0xDC00 && low <= 0xDFFF) {
+                            if (low >= 0xdc00 && low <= 0xdfff) {
                                 result += 8;
                                 break;
                             } else {
@@ -171,7 +172,7 @@ namespace Json {
                 case Txt::c_carriageReturn: result[++pos] = Txt::c_carriageReturnLiteral; ++pos; break;
                 case Txt::c_horizontalTab: result[++pos] = Txt::c_horizontalTabLiteral; ++pos; break;
                 default:
-                    if (codePoint <= 0x1F || codePoint == 0x7F) {
+                    if (codePoint <= 0x1f || codePoint == 0x7f) {
                         writeHex1(result, ++pos, codePoint);
                     } else {
                         result[pos++] = static_cast<wchar_t>(codePoint);
@@ -217,21 +218,21 @@ namespace Json {
                 case L'\r': result[++pos] = L'r'; ++pos; break;
                 case L'\t': result[++pos] = L't'; ++pos; break;
                 default:
-                    if (high <= 0x001F) { // NOLINT(*-branch-clone)
+                    if (high <= 0x001f) { // NOLINT(*-branch-clone)
                         writeHex1(result, ++pos, high);
-                    } else if (high <= 0x007E) {
+                    } else if (high <= 0x007e) {
                         result[pos++] = static_cast<wchar_t>(high);
-                    } else if (high <= 0x00FF) {
+                    } else if (high <= 0x00ff) {
                         writeHex1(result, ++pos, high);
-                    } else if (high >= 0xD800 && high <= 0xDBFF) {
+                    } else if (high >= 0xd800 && high <= 0xdbff) {
                         ++it;
                         if (it == text.end()) {
                             writeHex2(result, ++pos, high);
                             break;
                         }
                         uint32_t low { static_cast<uint32_t>(*it) };
-                        if (low >= 0xDC00 && low <= 0xDFFF) {
-                            uint32_t codePoint = 0x10000 + ((high & 0x3FF) << 10) | (low & 0x3FF);
+                        if (low >= 0xdc00 && low <= 0xdfff) {
+                            uint32_t codePoint = 0x01'0000 + ((high & 0x03ff) << 10) | (low & 0x03ff);
                             writeHex3(result, ++pos, codePoint);
                             break;
                         } else {

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(kkm_https_accessor VERSION 1.7.14 LANGUAGES CXX)
+project(kkm_https_accessor VERSION 1.7.15 LANGUAGES CXX)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_FIND_DEBUG_MODE ON)
@@ -16,6 +16,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "$<1:${PROJECT_BINARY_DIR}/_Library_${CMAKE_B
 option(BUILD_SEPARATED "Build separated" OFF)
 option(BUILD_STATIC "Build static" OFF)
 option(BUILD_TESTS "Build tests" OFF)
+option(WITH_SHORTCUTS "Build with command shortcuts enabled" OFF)
 #option(WITH_ASAN "Build with AddressSanitizer" OFF)
 #option(WITH_UBSAN "Build with UndefinedBehaviorSanitizer" OFF)
 option(WITH_CRTDBG "Build with memory profiling" OFF)
@@ -100,10 +101,6 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/library" BEFORE)
 #set(ENV{KKMHA_CONF_DIR} "${PROJECT_SOURCE_DIR}/_build/conf")
 #set(ENV{KKMHA_LOGS_DIR} "${PROJECT_SOURCE_DIR}/_build/logs")
 
-if (BUILD_TESTS)
-    enable_testing()
-endif ()
-
 set(
     KKMHA_PUBLIC_DEFS
         ASIO_STANDALONE
@@ -131,15 +128,17 @@ else ()
 endif ()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/library")
+
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
+endif ()
+
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmha")
 
 if (BUILD_SEPARATED)
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmop")
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmjl")
-endif ()
-
-if (BUILD_TESTS)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
 endif ()
 
 #add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/heap")

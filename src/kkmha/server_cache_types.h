@@ -12,9 +12,9 @@ namespace Server::Cache {
     using Key = std::string;
 
     struct Entry {
-        std::shared_ptr<Http::ProtoResponse> m_data;
-        DateTime::Point m_cachedAt;
-        DateTime::Point m_expiredAt;
-        Http::Status m_status;
+        std::shared_ptr<Http::ProtoResponse> m_data { nullptr };
+        DateTime::Point m_cachedAt {};
+        DateTime::Point m_expiredAt {};
+        Http::Status m_status { Http::Status::Ok };
     };
 }

@@ -7,6 +7,7 @@
 #include <lib/setcli.h>
 #include <main/variables.h>
 #include <main/varop.h>
+#include <main/shortcut.h>
 #include <log/write.h>
 #include <log/varop.h>
 #include <debug/memprof.h>
@@ -75,7 +76,7 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
 
             if (isService) {
                 Log::asBackgroundProcess();
-            } else if (argc == 2 && command == L"help") {
+            } else if (argc == 2 && KKM_CMD_EQ(command, L"help", L"h")) {
                 usage(std::wcout, argv[0]);
                 return EXIT_SUCCESS;
             }
@@ -93,43 +94,43 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
             }
 
             if (argc == 2) {
-                if (command == L"show-config") {
+                if (KKM_CMD_EQ(command, L"show-config", L"c")) {
                     std::wcout
                         << L'\n' << Main::vars << Config::vars << Log::vars << Kkm::vars
                         << Server::vars << Server::Static::vars << Service::vars << std::endl;
                     return EXIT_SUCCESS;
                 }
 
-                if (command == L"foreground") {
+                if (KKM_CMD_EQ(command, L"foreground", L"f")) {
                     Server::run();
                     return EXIT_SUCCESS;
                 }
 
-                if (command == L"install") {
+                if (KKM_CMD_EQ(command, L"install", L"i")) {
                     Service::Control::install(std::format(L"\"{}\" service", Main::s_file.native()));
                     ::Sleep(DateTime::c_basicSleep);
                     return EXIT_SUCCESS;
                 }
 
-                if (command == L"uninstall") {
+                if (KKM_CMD_EQ(command, L"uninstall", L"u")) {
                     Service::Control::uninstall();
                     ::Sleep(DateTime::c_basicSleep);
                     return EXIT_SUCCESS;
                 }
 
-                if (command == L"start") {
+                if (KKM_CMD_EQ(command, L"start", L"a")) {
                     Service::Control::start();
                     ::Sleep(DateTime::c_basicSleep);
                     return EXIT_SUCCESS;
                 }
 
-                if (command == L"stop") {
+                if (KKM_CMD_EQ(command, L"stop", L"o")) {
                     Service::Control::stop();
                     ::Sleep(DateTime::c_basicSleep);
                     return EXIT_SUCCESS;
                 }
 
-                if (command == L"restart") {
+                if (KKM_CMD_EQ(command, L"restart", L"r")) {
                     Service::Control::stop();
                     ::Sleep(DateTime::c_basicSleep);
                     Service::Control::start();
@@ -139,7 +140,7 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
             }
 
 #if !BUILD_SEPARATED
-            if (argc > 2 && command == L"learn") {
+            if (argc > 2 && KKM_CMD_EQ(command, L"learn", L"l")) {
                 FORCE_MEMORY_LEAK;
                 return KkmOperator::learn(argc - 2, &argv[2]);
             }
@@ -147,7 +148,7 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
                 if (const auto result = KkmOperator::exec(command, argv[2]); result) {
                     return *result;
                 }
-            } else if (argc == 4 && command == L"exec") {
+            } else if (argc == 4 && KKM_CMD_EQ(command, L"exec", L"x")) {
                 return KkmJsonLoader::safeExec(argv[2], argv[3]);
             }
 #endif

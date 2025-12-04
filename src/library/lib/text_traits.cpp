@@ -1,8 +1,8 @@
 // Copyright (c) 2025 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-#include "text.h"
-// #include <cctype>
+#include "text_traits.h"
+// #include <cctype> // CLEANUP
 #include <cwctype>
 
 [[nodiscard, maybe_unused]]

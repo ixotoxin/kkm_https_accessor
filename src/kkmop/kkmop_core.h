@@ -4,6 +4,7 @@
 #pragma once
 
 #include "kkmop_strings.h"
+#include <main/shortcut.h>
 #include <log/write.h>
 #include <kkm/variables.h>
 #include <kkm/strings.h>
@@ -67,10 +68,10 @@ namespace KkmOperator {
     }
 
     [[nodiscard]]
-    inline std::optional<int> exec(const std::wstring & operation, wchar_t * serialNumber) {
+    inline std::optional<int> exec(const std::wstring & command, wchar_t * serialNumber) {
         std::wstring serial { serialNumber };
 
-        if (operation == L"status") {
+        if (KKM_CMD_EQ(command, L"status", L"v")) {
             Device kkm { KnownConnParams { serial } };
 
             StatusResult statusResult {};
@@ -287,27 +288,27 @@ namespace KkmOperator {
                 LOG_INFO_CLI(std::format(Wcs::c_fmtControlUnitVersion, fwVersionResult.m_controlUnitVersion));
                 LOG_INFO_CLI(std::format(Wcs::c_fmtBootVersion, fwVersionResult.m_bootVersion));
             }
-        } else if (operation == L"demo-print") {
+        } else if (KKM_CMD_EQ(command, L"demo-print", L"d")) {
             callMethod(Device { KnownConnParams { serial } }, &Device::printDemo);
-        } else if (operation == L"ofd-test") {
+        } else if (KKM_CMD_EQ(command, L"ofd-test", L"t")) {
             callMethod(Device { KnownConnParams { serial } }, &Device::printOfdTest);
-        } else if (operation == L"shift-reports") {
+        } else if (KKM_CMD_EQ(command, L"shift-reports", L"j")) {
             callMethod(Device { KnownConnParams { serial } }, &Device::printCloseShiftReports);
-        } else if (operation == L"last-document") {
+        } else if (KKM_CMD_EQ(command, L"last-document", L"m")) {
             callMethod(Device { KnownConnParams { serial } }, &Device::printLastDocument);
-        } else if (operation == L"report-x") {
+        } else if (KKM_CMD_EQ(command, L"report-x", L"p")) {
             callMethod(
                 Device { KnownConnParams { serial } },
                 &Device::reportX,
                 { s_cliOperatorName, s_cliOperatorInn, false, false }
             );
-        } else if (operation == L"close-shift") {
+        } else if (KKM_CMD_EQ(command, L"close-shift", L"s")) {
             callMethod(
                 Device { KnownConnParams { serial } },
                 &Device::closeShift,
                 { s_cliOperatorName, s_cliOperatorInn, true, false }
             );
-        } else if (operation == L"reset-state") {
+        } else if (KKM_CMD_EQ(command, L"reset-state", L"e")) {
             callMethod(
                 Device { KnownConnParams { serial } },
                 &Device::resetState,

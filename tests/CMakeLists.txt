@@ -32,6 +32,10 @@ add_executable(test_lib_path lib_path.cpp)
 target_link_libraries(test_lib_path PRIVATE Catch2::Catch2WithMain)
 add_test(NAME test_lib_path COMMAND test_lib_path)
 
+add_executable(test_lib_hexer lib_hexer.cpp)
+target_link_libraries(test_lib_hexer PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_lib_hexer COMMAND test_lib_hexer)
+
 add_executable(test_lib_json lib_json.cpp)
 target_compile_definitions(test_lib_json PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
 target_link_libraries(test_lib_json PRIVATE Catch2::Catch2WithMain)

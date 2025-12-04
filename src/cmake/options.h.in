@@ -4,7 +4,7 @@
 #pragma once
 
 #cmakedefine01 BUILD_SEPARATED
-#cmakedefine01 ENABLE_HACKS
+#cmakedefine01 WITH_SHORTCUTS
 #cmakedefine01 WITH_ASAN
 #cmakedefine01 WITH_UBSAN
 #cmakedefine01 WITH_CRTDBG

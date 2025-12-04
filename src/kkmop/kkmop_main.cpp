@@ -3,8 +3,9 @@
 
 #include <cmake/variables.h>
 #include <lib/setcli.h>
-#include <main/variables.h>
+// #include <main/variables.h> // CLEANUP
 #include <main/varop.h>
+#include <main/shortcut.h>
 #include <log/write.h>
 #include <log/varop.h>
 #include <debug/memprof.h>
@@ -42,7 +43,7 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
         if (argc > 1) {
             const std::wstring command { Text::lowered(argv[1]) };
 
-            if (argc == 2 && command == L"help") {
+            if (argc == 2 && KKM_CMD_EQ(command, L"help", L"h")) {
                 usage(std::wcout, argv[0]);
                 return EXIT_SUCCESS;
             }
@@ -50,12 +51,12 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
             Config::setBaseVars(envp);
             Config::readJson(Config::s_file, Log::setVars, Kkm::setVars);
 
-            if (argc == 2 && command == L"show-config") {
+            if (argc == 2 && KKM_CMD_EQ(command, L"show-config", L"c")) {
                 std::wcout << L'\n' << Main::vars << Config::vars << Log::vars << Kkm::vars << std::endl;
                 return EXIT_SUCCESS;
             }
 
-            if (argc > 2 && command == L"learn") {
+            if (argc > 2 && KKM_CMD_EQ(command, L"learn", L"l")) {
                 FORCE_MEMORY_LEAK;
                 return KkmOperator::learn(argc - 2, &argv[2]);
             }

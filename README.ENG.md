@@ -46,28 +46,30 @@ It is assumed that the required software is installed in the following directori
 |------------------------------------------------|---------------------------------------------------------|
 | ATOL Driver                                    | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
-| Clang                                          | `C:\Devel\Platform\Clang\21.1.5-x86_64`                 |
-| CMake                                          | `C:\Devel\Platform\CMake\4.1.2-x86_64`                  |
-| Ninja                                          | `C:\Devel\Platform\Ninja\1.13.1`                        |
+| Clang                                          | `C:\Devel\Platform\Clang\21.1.7-x86_64`                 |
+| CMake                                          | `C:\Devel\Platform\CMake\4.1.3-x86_64`                  |
+| Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 
 The paths can be modified in the files `config_env.cmd` and `install_*_deps.cmd`. CMake and Ninja can be used from MSVS.
 
 CMake options:
 
-| OPTION            | DESCRIPTION                                               |
-|-------------------|-----------------------------------------------------------|
-| `BUILD_SEPARATED` | Build separated .exe files.                               |
-| `BUILD_STATIC`    | Static build.                                             |
-| `WITH_CRTDBG`     | Enable CRT Debug for memory profiling.                    |
-| `WITH_LEAKS`      | Artificial memory leak generation.                        |
-| `WITH_RELSL`      | Use relative paths for source files in the application.   |
+| OPTION            | DESCRIPTION                                             |
+|-------------------|---------------------------------------------------------|
+| `BUILD_SEPARATED` | Build separated .exe files.                             |
+| `BUILD_STATIC`    | Static build.                                           |
+| `WITH_SHORTCUTS`  | Build with command shortcuts enabled.                   |
+| `WITH_CRTDBG`     | Enable CRT Debug for memory profiling.                  |
+| `WITH_LEAKS`      | Artificial memory leak generation.                      |
+| `WITH_RELSL`      | Use relative paths for source files in the application. |
 
 <!-- | `WITH_SBIAC`      | Allow invasive access to the std::string buffer (heresy). | -->
 
-After building with one of the `build_*.cmd` scripts, the file `kkmha.exe` will be placed into the `.\_build` directory,
-and in the case of a dynamic build, the files `libcrypto-?-x64.dll` and `libssl-?-x64.dll` will also be placed there.
-When building with the `-D BUILD_SEPARATED=ON` option, three executable files will be created: `kkmha.exe`, `kkmop.exe`,
-and `kkmjl.exe`.
+When building the project with the option `-D BUILD_STATIC=ON`, the dependencies must be installed using the
+`install_static_deps.cmd` script. Otherwise, you need to run `install_dynamic_deps.cmd`. After building with one of the
+`build_*.cmd` scripts, the file `kkmha.exe` will be placed into the `.\_build` directory, and in the case of a dynamic
+build, the files `libcrypto-?-x64.dll` and `libssl-?-x64.dll` will also be placed there. When building with the
+`-D BUILD_SEPARATED=ON` option, three executable files will be created: `kkmha.exe`, `kkmop.exe`, and `kkmjl.exe`.
 
 The `.\_build` directory also already contains configuration files, etc.,
 which form a ready-to-use environment for launch.

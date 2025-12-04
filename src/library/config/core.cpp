@@ -32,10 +32,10 @@ namespace Config {
                     logsDirectory.assign(std::move(value));
                 }
             }
-            Config::s_directory.assign(std::filesystem::absolute(confDirectory));
+            Config::s_directory.assign(std::filesystem::absolute(confDirectory.make_preferred()));
             Config::s_file.assign(s_directory);
             Config::s_file /= c_file;
-            Log::File::s_directory.assign(std::filesystem::absolute(logsDirectory));
+            Log::File::s_directory.assign(std::filesystem::absolute(logsDirectory.make_preferred()));
         }
     }
 }

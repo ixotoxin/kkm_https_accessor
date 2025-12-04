@@ -32,9 +32,9 @@
 |------------------------------------------------|---------------------------------------------------------|
 | АТОЛ Драйвер                                   | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
-| Clang                                          | `C:\Devel\Platform\Clang\21.1.5-x86_64`                 |
-| CMake                                          | `C:\Devel\Platform\CMake\4.1.2-x86_64`                  |
-| Ninja                                          | `C:\Devel\Platform\Ninja\1.13.1`                        |
+| Clang                                          | `C:\Devel\Platform\Clang\21.1.7-x86_64`                 |
+| CMake                                          | `C:\Devel\Platform\CMake\4.1.3-x86_64`                  |
+| Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 
 Пути можно изменить в файлах `config_env.cmd` и `install_*_deps.cmd`. CMake и Ninja можно использовать из состава MSVS.
 
@@ -44,15 +44,18 @@
 |-------------------|-----------------------------------------------------------------------|
 | `BUILD_SEPARATED` | Сборка приложения как отдельных исполняемых файлов.                   |
 | `BUILD_STATIC`    | Статическая сборка.                                                   |
+| `WITH_SHORTCUTS`  | Сборка приложения с поддержкой сокращенных команд.                    |
 | `WITH_CRTDBG`     | Профилирование памяти в отладочной сборке с использованием CRT Debug. |
 | `WITH_LEAKS`      | Создание утечек памяти в отладочной сборке.                           |
 | `WITH_RELSL`      | Использовать относительные пути исходных файлов в приложении.         |
 
 <!-- | `WITH_SBIAC`      | Разрешить инвазивный доступ к буферу std::string (ересь).             | -->
 
-После сборки одним из скриптов `build_*.cmd` в директорию `.\_build` будет установлен файл `kkmha.exe` и, в случае
-динамической сборки, файлы `libcrypto-?-x64.dll`, `libssl-?-x64.dll`. После сборки с опцией `-D BUILD_SEPARATED=ON`,
-будет создано 3 исполняемых файла: `kkmha.exe`, `kkmop.exe`, `kkmjl.exe`.
+Перед сборкой проекта с опцией `-D BUILD_STATIC=ON` требуется установить зависимости скриптом `install_static_deps.cmd`.
+В противном случае необходимо выполнить `install_dynamic_deps.cmd`. После сборки одним из скриптов `build_*.cmd` в
+директорию `.\_build` будет установлен файл `kkmha.exe` и, в случае динамической сборки, файлы `libcrypto-?-x64.dll`,
+`libssl-?-x64.dll`. После сборки с опцией `-D BUILD_SEPARATED=ON`, будет создано 3 исполняемых файла: `kkmha.exe`,
+`kkmop.exe`, `kkmjl.exe`.
 
 Так же в директории `.\_build` уже находятся файлы конфигурации и т.п., формирующие готовое окружение для запуска.
 
