@@ -8,14 +8,20 @@
 #include <lib/defer.h>
 #include <string>
 
-#define LOG_DEBUG_CLI(x) \
-    do { if (Log::Console::ready(Log::Level::Debug)) Log::Console::write(Log::Level::Debug, x); } while (false)
+#define LOG_DEBUG_CLI(M) \
+    do { if (Log::Console::ready(Log::Level::Debug)) Log::Console::write(Log::Level::Debug, M); } while (false)
 
-#define LOG_INFO_CLI(x) \
-    do { if (Log::Console::ready(Log::Level::Info)) Log::Console::write(Log::Level::Info, x); } while (false)
+#define LOG_DEBUG_FMT(F, A, ...) LOG_DEBUG_CLI(std::format(F, A __VA_OPT__(,) __VA_ARGS__))
 
-#define LOG_WARNING_CLI(x) Log::Console::write(Log::Level::Warning, x)
-#define LOG_ERROR_CLI(x) Log::Console::write(Log::Level::Error, x)
+#define LOG_INFO_CLI(M) \
+    do { if (Log::Console::ready(Log::Level::Info)) Log::Console::write(Log::Level::Info, M); } while (false)
+
+#define LOG_INFO_FMT(F, A, ...) LOG_INFO_CLI(std::format(F, A __VA_OPT__(,) __VA_ARGS__))
+
+#define LOG_WARNING_CLI(M) Log::Console::write(Log::Level::Warning, M)
+#define LOG_WARNING_FMT(F, A, ...) LOG_WARNING_CLI(std::format(F, A __VA_OPT__(,) __VA_ARGS__))
+#define LOG_ERROR_CLI(M) Log::Console::write(Log::Level::Error, M)
+#define LOG_ERROR_FMT(F, A, ...) LOG_ERROR_CLI(std::format(F, A __VA_OPT__(,) __VA_ARGS__))
 
 namespace Log {
     namespace Console {
