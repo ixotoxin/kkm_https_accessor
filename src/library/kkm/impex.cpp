@@ -30,7 +30,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const StatusResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["status"] = {
                 { "blocked", result.m_blocked },
                 { "cashDrawerOpened", result.m_cashDrawerOpened },
@@ -74,7 +76,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const ShiftStateResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["shiftState"] = {
                 { "documentsCount", result.m_documentsCount },
                 { "receiptNumber", result.m_receiptNumber },
@@ -89,7 +93,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const ReceiptStateResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["receiptState"] = {
                 { "receiptType", result.m_receiptType },
                 { "receiptTypeText", safeGet(Mbs::c_receiptTypeLabels, result.m_receiptType) },
@@ -105,7 +111,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const CashStatResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["cashStat"] = {
                 { "sellCashSum", result.m_sellCashSum },
                 { "sellReturnCashSum", result.m_sellReturnCashSum },
@@ -121,7 +129,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtOfdExchangeStatusResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["ofdExchangeStatus"] = {
                 { "exchangeStatus", result.m_exchangeStatus },
                 { "unsentCount", result.m_unsentCount },
@@ -137,7 +147,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtFnInfoResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["fnInfo"] = {
                 { "serial", Text::convert(result.m_serial) },
                 { "version", Text::convert(result.m_version) },
@@ -158,7 +170,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtRegistrationInfoResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["registrationInfo"] = {
                 { "fnsUrl", Text::convert(result.m_fnsUrl) },
                 { "organizationAddress", Text::convert(result.m_organizationAddress) },
@@ -216,7 +230,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtLastRegistrationResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["lastRegistration"] = {
                 { "documentNumber", result.m_documentNumber },
                 { "registrationsCount", result.m_registrationsCount },
@@ -228,7 +244,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtLastReceiptResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["lastReceipt"] = {
                 { "documentNumber", result.m_documentNumber },
                 { "receiptSum", result.m_receiptSum },
@@ -241,7 +259,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtLastDocumentResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["lastDocument"] = {
                 { "documentNumber", result.m_documentNumber },
                 { "fiscalSign", Text::convert(result.m_fiscalSign) },
@@ -253,7 +273,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FndtErrorsResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["fndtErrors"] = {
                 { "networkError", result.m_networkError },
                 { "networkErrorText", Text::convert(result.m_networkErrorText) },
@@ -272,7 +294,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FfdVersionResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["ffdVersions"] = {
                 { "deviceFfd", safeGet(Mbs::c_ffdVersions, result.m_deviceFfdVersion) },
                 { "deviceMinFfd", safeGet(Mbs::c_ffdVersions, result.m_devMinFfdVersion) },
@@ -287,7 +311,9 @@ namespace Kkm {
     }
 
     bool assign(Nln::Json & json, const FwVersionResult & result) {
-        if (const Result & base { result }; assign(json, base) && result.m_success) {
+        const Result & base { result };
+        assign(json, base);
+        if (result.m_success) {
             json["fwVersions"] = {
                 { "boot", Text::convert(result.m_bootVersion) },
                 { "configuration", Text::convert(result.m_configurationVersion) },

@@ -14,6 +14,9 @@
 #include <cstdlib>
 #include <optional>
 
+#define KKM_LOG(S, F, V) \
+    do { if ((S).m_success) { LOG_INFO_FMT(F, V); } else { LOG_ERROR_FMT(F, Wcs::c_error); } } while (false)
+
 namespace KkmOperator {
     using namespace Kkm;
 
@@ -74,219 +77,106 @@ namespace KkmOperator {
         if (KKM_CMD_EQ(command, L"status", L"v")) {
             Device kkm { KnownConnParams { serial } };
 
-            StatusResult statusResult {};
-            kkm.getStatus(statusResult);
-            if (!statusResult.m_success) {
-                throw Basic::Failure(statusResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            StatusResult status {};
+            kkm.getStatus(status);
 
-            ShiftStateResult shiftStateResult {};
-            kkm.getShiftState(shiftStateResult);
-            if (!shiftStateResult.m_success) {
-                throw Basic::Failure(shiftStateResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            ShiftStateResult shift {};
+            kkm.getShiftState(shift);
 
-            CashStatResult cashStatResult {};
-            kkm.getCashStat(cashStatResult);
-            if (!cashStatResult.m_success) {
-                throw Basic::Failure(cashStatResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            CashStatResult cash {};
+            kkm.getCashStat(cash);
 
-            FndtOfdExchangeStatusResult fndtOfdExchangeStatusResult {};
-            kkm.getFndtOfdExchangeStatus(fndtOfdExchangeStatusResult);
-            if (!fndtOfdExchangeStatusResult.m_success) {
-                throw Basic::Failure(fndtOfdExchangeStatusResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            FndtOfdExchangeStatusResult exchange {};
+            kkm.getFndtOfdExchangeStatus(exchange);
 
-            FndtErrorsResult fndtErrorsResult {};
-            kkm.getFndtErrors(fndtErrorsResult);
-            if (!fndtErrorsResult.m_success) {
-                throw Basic::Failure(fndtErrorsResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            FndtErrorsResult errors {};
+            kkm.getFndtErrors(errors);
 
-            FfdVersionResult ffdVersionResult {};
-            kkm.getFfdVersion(ffdVersionResult);
-            if (!ffdVersionResult.m_success) {
-                throw Basic::Failure(ffdVersionResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            FfdVersionResult ffdVers {};
+            kkm.getFfdVersion(ffdVers);
 
-            FwVersionResult fwVersionResult {};
-            kkm.getFwVersion(fwVersionResult);
-            if (!fwVersionResult.m_success) {
-                throw Basic::Failure(fwVersionResult.m_message); // NOLINT(*-exception-baseclass)
-            }
+            FwVersionResult fwVers {};
+            kkm.getFwVersion(fwVers);
 
             {
                 Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
-                // LOG_INFO_CLI(std::format(Wcs::c_fmtModel, wcsSafeGet(Mbs::c_models, statusResult.m_model)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtModel, statusResult.m_modelName));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtSerialNumber, statusResult.m_serialNumber));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtBlocked, Text::Wcs::daNet(statusResult.m_blocked)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtLogicalNumber, statusResult.m_logicalNumber));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtDateTime, DateTime::cast<std::wstring>(statusResult.m_dateTime)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFnPresent, Text::Wcs::daNet(statusResult.m_fnPresent)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFnFiscal, Text::Wcs::daNet(statusResult.m_fnFiscal)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtInvalidFn, Text::Wcs::daNet(statusResult.m_invalidFn)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFiscal, Text::Wcs::daNet(statusResult.m_fiscal)));
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtCashDrawerOpened,
-                        Text::Wcs::daNet(statusResult.m_cashDrawerOpened)
-                        )
-                    );
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCoverOpened, Text::Wcs::daNet(statusResult.m_coverOpened)));
-                LOG_INFO_CLI(
-                    std::format(Wcs::c_fmtReceiptPaperPresent, Text::Wcs::daNet(statusResult.m_receiptPaperPresent))
+                // KKM_LOG(status, Wcs::c_fmtModel, wcsSafeGet(Mbs::c_models, status.m_model));
+                KKM_LOG(status, Wcs::c_fmtModel, status.m_modelName);
+                KKM_LOG(status, Wcs::c_fmtSerialNumber, status.m_serialNumber);
+                KKM_LOG(status, Wcs::c_fmtBlocked, Text::Wcs::daNet(status.m_blocked));
+                KKM_LOG(status, Wcs::c_fmtLogicalNumber, status.m_logicalNumber);
+                KKM_LOG(status, Wcs::c_fmtDateTime, DateTime::cast<std::wstring>(status.m_dateTime));
+                KKM_LOG(status, Wcs::c_fmtFnPresent, Text::Wcs::daNet(status.m_fnPresent));
+                KKM_LOG(status, Wcs::c_fmtFnFiscal, Text::Wcs::daNet(status.m_fnFiscal));
+                KKM_LOG(status, Wcs::c_fmtInvalidFn, Text::Wcs::daNet(status.m_invalidFn));
+                KKM_LOG(status, Wcs::c_fmtFiscal, Text::Wcs::daNet(status.m_fiscal));
+                KKM_LOG(status, Wcs::c_fmtCashDrawerOpened, Text::Wcs::daNet(status.m_cashDrawerOpened));
+                KKM_LOG(status, Wcs::c_fmtCoverOpened, Text::Wcs::daNet(status.m_coverOpened));
+                KKM_LOG(status, Wcs::c_fmtReceiptPaperPresent, Text::Wcs::daNet(status.m_receiptPaperPresent));
+                KKM_LOG(status, Wcs::c_fmtPaperNearEnd, Text::Wcs::daNet(status.m_paperNearEnd));
+                KKM_LOG(status, Wcs::c_fmtCutError, Text::Wcs::daNet(status.m_cutError));
+                KKM_LOG(status, Wcs::c_fmtPrinterOverheat, Text::Wcs::daNet(status.m_printerOverheat));
+                KKM_LOG(status, Wcs::c_fmtReceiptLineLength, status.m_receiptLineLength);
+                KKM_LOG(status, Wcs::c_fmtReceiptLineLengthPix, status.m_receiptLineLengthPix);
+                KKM_LOG(shift, Wcs::c_fmtShiftState, wcsSafeGet(Mbs::c_shiftStateLabels, shift.m_shiftState));
+                KKM_LOG(shift, Wcs::c_fmtShiftExpiration, DateTime::cast<std::wstring>(shift.m_expirationDateTime));
+                KKM_LOG(status, Wcs::c_fmtReceiptType, wcsSafeGet(Mbs::c_receiptTypeLabels, status.m_receiptType));
+                KKM_LOG(status, Wcs::c_fmtDocumentType, wcsSafeGet(Mbs::c_documentTypeLabels, status.m_documentType));
+
+                KKM_LOG(cash, Wcs::c_fmtCashInCount, cash.m_cashInCount);
+                KKM_LOG(cash, Wcs::c_fmtCashInSum, cash.m_cashInSum);
+                KKM_LOG(cash, Wcs::c_fmtCashOutCount, cash.m_cashOutCount);
+                KKM_LOG(cash, Wcs::c_fmtCashOutSum, cash.m_cashOutSum);
+                KKM_LOG(cash, Wcs::c_fmtSellCashSum, cash.m_sellCashSum);
+                KKM_LOG(cash, Wcs::c_fmtSellReturnCashSum, cash.m_sellReturnCashSum);
+                KKM_LOG(cash, Wcs::c_fmtCashSum, cash.m_cashSum);
+
+                if (exchange.m_success) {
+                    LOG_INFO_CLI(Wcs::c_ofdExchangeStatus);
+                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit0, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0001));
+                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit1, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0010));
+                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit2, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0100));
+                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit3, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'1000));
+                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit4, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0001'0000));
+                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit5, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0010'0000));
+                } else {
+                    LOG_ERROR_CLI(Wcs::c_ofdExchangeError);
+                }
+                KKM_LOG(exchange, Wcs::c_fmtUnsentCount, exchange.m_unsentCount);
+                KKM_LOG(exchange, Wcs::c_fmtFirstUnsentNumber, exchange.m_firstUnsentNumber);
+                KKM_LOG(
+                    exchange,
+                    Wcs::c_fmtFirstUnsentDateTime,
+                    DateTime::cast<std::wstring>(exchange.m_firstUnsentDateTime)
                 );
-                LOG_INFO_CLI(std::format(Wcs::c_fmtPaperNearEnd, Text::Wcs::daNet(statusResult.m_paperNearEnd)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCutError, Text::Wcs::daNet(statusResult.m_cutError)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtPrinterOverheat, Text::Wcs::daNet(statusResult.m_printerOverheat)));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtReceiptLineLength, statusResult.m_receiptLineLength));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtReceiptLineLengthPix, statusResult.m_receiptLineLengthPix));
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtShiftState,
-                        wcsSafeGet(Mbs::c_shiftStateLabels, shiftStateResult.m_shiftState)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtShiftExpiration,
-                        DateTime::cast<std::wstring>(shiftStateResult.m_expirationDateTime)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(Wcs::c_fmtReceiptType, wcsSafeGet(Mbs::c_receiptTypeLabels, statusResult.m_receiptType))
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtDocumentType,
-                        wcsSafeGet(Mbs::c_documentTypeLabels, statusResult.m_documentType)
-                    )
-                );
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCashInCount, cashStatResult.m_cashInCount));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCashInSum, cashStatResult.m_cashInSum));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCashOutCount, cashStatResult.m_cashOutCount));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCashOutSum, cashStatResult.m_cashOutSum));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtSellCashSum, cashStatResult.m_sellCashSum));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtSellReturnCashSum, cashStatResult.m_sellReturnCashSum));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCashSum, cashStatResult.m_cashSum));
-                LOG_INFO_CLI(Wcs::c_ofdExchangeStatus);
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdExSBit0,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_exchangeStatus & 0b0000'0001)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdExSBit1,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_exchangeStatus & 0b0000'0010)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdExSBit2,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_exchangeStatus & 0b0000'0100)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdExSBit3,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_exchangeStatus & 0b0000'1000)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdExSBit4,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_exchangeStatus & 0b0001'0000)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdExSBit5,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_exchangeStatus & 0b0010'0000)
-                    )
-                );
-                LOG_INFO_CLI(std::format(Wcs::c_fmtUnsentCount, fndtOfdExchangeStatusResult.m_unsentCount));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFirstUnsentNumber, fndtOfdExchangeStatusResult.m_firstUnsentNumber));
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtFirstUnsentDateTime,
-                        DateTime::cast<std::wstring>(fndtOfdExchangeStatusResult.m_firstUnsentDateTime)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOkpDateTime,
-                        DateTime::cast<std::wstring>(fndtOfdExchangeStatusResult.m_okpDateTime)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtOfdMessageRead,
-                        Text::Wcs::daNet(fndtOfdExchangeStatusResult.m_ofdMessageRead)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtLastSentDateTime,
-                        DateTime::cast<std::wstring>(fndtOfdExchangeStatusResult.m_lastSentDateTime)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtSuccessDateTime,
-                        DateTime::cast<std::wstring>(fndtErrorsResult.m_successDateTime)
-                    )
-                );
-                LOG_INFO_CLI(std::format(Wcs::c_fmtNetworkError, fndtErrorsResult.m_networkError));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtNetworkErrorText, fndtErrorsResult.m_networkErrorText));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtOfdError, fndtErrorsResult.m_ofdError));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtOfdErrorText, fndtErrorsResult.m_ofdErrorText));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFnError, fndtErrorsResult.m_fnError));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFnErrorText, fndtErrorsResult.m_fnErrorText));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtDocumentNumber, fndtErrorsResult.m_documentNumber));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtCommandCode, fndtErrorsResult.m_commandCode));
-                LOG_INFO_CLI(
-                    std::format(Wcs::c_fmtDataForSendIsEmpty, Text::Wcs::daNet(fndtErrorsResult.m_dataForSendIsEmpty))
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtDeviceFfdVersion,
-                        wcsSafeGet(Mbs::c_ffdVersions, ffdVersionResult.m_deviceFfdVersion)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtDevMinFfdVersion,
-                        wcsSafeGet(Mbs::c_ffdVersions, ffdVersionResult.m_devMinFfdVersion)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtDevMaxFfdVersion,
-                        wcsSafeGet(Mbs::c_ffdVersions, ffdVersionResult.m_devMaxFfdVersion)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(Wcs::c_fmtFnFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVersionResult.m_fnFfdVersion))
-                );
-                LOG_INFO_CLI(
-                    std::format(
-                        Wcs::c_fmtFnMaxFfdVersion,
-                        wcsSafeGet(Mbs::c_ffdVersions, ffdVersionResult.m_fnMaxFfdVersion)
-                    )
-                );
-                LOG_INFO_CLI(
-                    std::format(Wcs::c_fmtFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVersionResult.m_ffdVersion))
-                );
-                LOG_INFO_CLI(std::format(Wcs::c_fmtFirmwareVersion, fwVersionResult.m_firmwareVersion));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtConfigurationVersion, fwVersionResult.m_configurationVersion));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtReleaseVersion, fwVersionResult.m_releaseVersion));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtTemplatesVersion, fwVersionResult.m_templatesVersion));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtControlUnitVersion, fwVersionResult.m_controlUnitVersion));
-                LOG_INFO_CLI(std::format(Wcs::c_fmtBootVersion, fwVersionResult.m_bootVersion));
+                KKM_LOG(exchange, Wcs::c_fmtOkpDateTime, DateTime::cast<std::wstring>(exchange.m_okpDateTime));
+                KKM_LOG(exchange, Wcs::c_fmtOfdMessageRead, Text::Wcs::daNet(exchange.m_ofdMessageRead));
+                KKM_LOG(exchange, Wcs::c_fmtLastSentDateTime, DateTime::cast<std::wstring>(exchange.m_lastSentDateTime));
+
+                KKM_LOG(errors, Wcs::c_fmtSuccessDateTime, DateTime::cast<std::wstring>(errors.m_successDateTime));
+                KKM_LOG(errors, Wcs::c_fmtNetworkError, errors.m_networkError);
+                KKM_LOG(errors, Wcs::c_fmtNetworkErrorText, errors.m_networkErrorText);
+                KKM_LOG(errors, Wcs::c_fmtOfdError, errors.m_ofdError);
+                KKM_LOG(errors, Wcs::c_fmtOfdErrorText, errors.m_ofdErrorText);
+                KKM_LOG(errors, Wcs::c_fmtFnError, errors.m_fnError);
+                KKM_LOG(errors, Wcs::c_fmtFnErrorText, errors.m_fnErrorText);
+                KKM_LOG(errors, Wcs::c_fmtDocumentNumber, errors.m_documentNumber);
+                KKM_LOG(errors, Wcs::c_fmtCommandCode, errors.m_commandCode);
+                KKM_LOG(errors, Wcs::c_fmtDataForSendIsEmpty, Text::Wcs::daNet(errors.m_dataForSendIsEmpty));
+
+                KKM_LOG(ffdVers, Wcs::c_fmtDeviceFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_deviceFfdVersion));
+                KKM_LOG(ffdVers, Wcs::c_fmtDevMinFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_devMinFfdVersion));
+                KKM_LOG(ffdVers, Wcs::c_fmtDevMaxFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_devMaxFfdVersion));
+                KKM_LOG(ffdVers, Wcs::c_fmtFnFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_fnFfdVersion));
+                KKM_LOG(ffdVers, Wcs::c_fmtFnMaxFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_fnMaxFfdVersion));
+                KKM_LOG(ffdVers, Wcs::c_fmtFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_ffdVersion));
+
+                KKM_LOG(fwVers, Wcs::c_fmtFirmwareVersion, fwVers.m_firmwareVersion);
+                KKM_LOG(fwVers, Wcs::c_fmtConfigurationVersion, fwVers.m_configurationVersion);
+                KKM_LOG(fwVers, Wcs::c_fmtReleaseVersion, fwVers.m_releaseVersion);
+                KKM_LOG(fwVers, Wcs::c_fmtTemplatesVersion, fwVers.m_templatesVersion);
+                KKM_LOG(fwVers, Wcs::c_fmtControlUnitVersion, fwVers.m_controlUnitVersion);
+                KKM_LOG(fwVers, Wcs::c_fmtBootVersion, fwVers.m_bootVersion);
             }
         } else if (KKM_CMD_EQ(command, L"demo-print", L"d")) {
             callMethod(Device { KnownConnParams { serial } }, &Device::printDemo);
