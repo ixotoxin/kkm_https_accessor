@@ -139,6 +139,8 @@ namespace Kkm {
         // Vat118 = Atol::LIBFPTR_TAX_VAT118,
         Vat20 = Atol::LIBFPTR_TAX_VAT20,
         Vat120 = Atol::LIBFPTR_TAX_VAT120,
+        Vat22 = Atol::LIBFPTR_TAX_VAT22,
+        Vat122 = Atol::LIBFPTR_TAX_VAT122,
         // Department = Atol::LIBFPTR_TAX_DEPARTMENT
     };
 
