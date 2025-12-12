@@ -5,24 +5,22 @@
 #include <cmake/variables.h>
 #include <lib/strings.h>
 #include <lib/setcli.h>
-#include <main/variables.h>
 #include <main/varop.h>
 #include <main/shortcut.h>
-#include <log/write.h>
 #include <log/varop.h>
+#include <log/write.h>
 #include <debug/memprof.h>
 #include <kkm/varop.h>
-#include <config/variables.h>
-#include <config/core.h>
 #include <config/varop.h>
+#include <config/core.h>
 #include <cstdlib>
 #include <iostream>
-#include "server_core.h"
 #include "server_varop.h"
+#include "server_core.h"
 #include "server_static_variables.h"
 #include "server_static_varop.h"
-#include "service_core.h"
 #include "service_varop.h"
+#include "service_core.h"
 
 #if !BUILD_SEPARATED
 #   include <kkmop_strings.h>

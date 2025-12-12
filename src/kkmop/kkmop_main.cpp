@@ -3,16 +3,14 @@
 
 #include <cmake/variables.h>
 #include <lib/setcli.h>
-// #include <main/variables.h> // CLEANUP
 #include <main/varop.h>
 #include <main/shortcut.h>
-#include <log/write.h>
 #include <log/varop.h>
+#include <log/write.h>
 #include <debug/memprof.h>
 #include <kkm/varop.h>
-#include <config/variables.h>
-#include <config/core.h>
 #include <config/varop.h>
+#include <config/core.h>
 #include <cstdlib>
 #include <iostream>
 #include "kkmop_strings.h"

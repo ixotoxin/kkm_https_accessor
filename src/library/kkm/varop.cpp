@@ -5,7 +5,7 @@
 #include "defaults.h"
 #include "variables.h"
 #include "strings.h"
-#include "device.h"
+#include "connparams.h"
 #include <lib/numeric.h>
 #include <lib/text.h>
 #include <lib/path.h>
