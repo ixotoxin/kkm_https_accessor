@@ -334,7 +334,13 @@ namespace Kkm {
             { std::to_string(Meta::toUnderlying(Tax::Vat20)), Tax::Vat20 },
             { "120%", Tax::Vat120 },
             { "vat120", Tax::Vat120 },
-            { std::to_string(Meta::toUnderlying(Tax::Vat120)), Tax::Vat120 }
+            { std::to_string(Meta::toUnderlying(Tax::Vat120)), Tax::Vat120 },
+            { "22%", Tax::Vat22 },
+            { "vat22", Tax::Vat22 },
+            { std::to_string(Meta::toUnderlying(Tax::Vat22)), Tax::Vat22 },
+            { "122%", Tax::Vat122 },
+            { "vat122", Tax::Vat122 },
+            { std::to_string(Meta::toUnderlying(Tax::Vat122)), Tax::Vat122 }
         };
 
         inline const std::unordered_map<std::string, PaymentType> c_paymentTypeCastMap {
