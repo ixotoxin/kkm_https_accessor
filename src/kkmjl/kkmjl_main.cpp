@@ -3,11 +3,10 @@
 
 #include <cmake/variables.h>
 #include <lib/setcli.h>
-#include <log/core.h>
 #include <log/varop.h>
+#include <log/core.h>
 #include <debug/memprof.h>
 #include <kkm/varop.h>
-#include <config/variables.h>
 #include <config/core.h>
 #include <cstdlib>
 #include <iostream>
