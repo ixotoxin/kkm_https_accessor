@@ -30,6 +30,7 @@ namespace KkmOperator::Wcs {
     constexpr Csv c_getKkmInfo { L"ПП [{}]: ККМ [{}]: Получение информации об устройстве" };
     constexpr Csv c_connParamsSaved { L"ПП [{}]: Параметры подключения ККМ [{}] успешно сохранены" };
 
+    constexpr Csv c_error { L"** ошибка **" };
     constexpr Csv c_fmtModel { L"Модель: {}" };
     constexpr Csv c_fmtSerialNumber { L"Серийный (заводской) номер: {}" };
     constexpr Csv c_fmtBlocked { L"Заблокирована из-за ошибок: {}" };
@@ -59,6 +60,7 @@ namespace KkmOperator::Wcs {
     constexpr Csv c_fmtSellReturnCashSum { L"Сумма наличных платежей в чеках возврата прихода (продажи): {}" };
     constexpr Csv c_fmtCashSum { L"Сумма наличных в денежном ящике: {}" };
     constexpr Csv c_ofdExchangeStatus { L"Статус информационного обмена с ОФД:" };
+    constexpr Csv c_ofdExchangeError { L"Статус информационного обмена с ОФД: ** ошибка **" };
     constexpr Csv c_fmtOfdExSBit0 { L"    транспортное соединение установлено: {}" };
     constexpr Csv c_fmtOfdExSBit1 { L"    есть сообщение для передачи в ОФД: {}" };
     constexpr Csv c_fmtOfdExSBit2 { L"    ожидание ответного сообщения (квитанции) от ОФД: {}" };

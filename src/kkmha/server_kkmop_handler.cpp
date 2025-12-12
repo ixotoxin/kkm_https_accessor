@@ -183,11 +183,11 @@ namespace Server::KkmOp {
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
-                &Device::getCashStat,
+                &Device::getCashStat/*,
                 &Device::getFndtOfdExchangeStatus,
                 &Device::getFndtLastReceipt,
                 &Device::getFndtLastDocument,
-                &Device::getFndtErrors
+                &Device::getFndtErrors*/ // CLEANUP
             );
         }
         payload.m_expiresAfter = c_reportCacheLifeTime;
