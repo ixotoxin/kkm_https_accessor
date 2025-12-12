@@ -15,7 +15,7 @@ etc.) are performed atomically.
 ## Building
 
 For assembly, first of all, you will need:
-- ATOL KKT Driver version not lower than 10.10.7 ([Official website](http://fs.atol.ru/))
+- ATOL KKT Driver version not lower than 10.10.8 ([Official website](http://fs.atol.ru/))
 - Asio C++ Library ([Git](https://github.com/chriskohlhoff/asio), [Official website](https://think-async.com/Asio/))
 - OpenSSL ([Git](https://github.com/openssl/openssl), [Official website](https://www.openssl.org/))
 - JSON for Modern C++ ([Git](https://github.com/nlohmann/json), [Official website](https://json.nlohmann.me/))
@@ -47,7 +47,7 @@ It is assumed that the required software is installed in the following directori
 | ATOL Driver                                    | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
 | Clang                                          | `C:\Devel\Platform\Clang\21.1.7-x86_64`                 |
-| CMake                                          | `C:\Devel\Platform\CMake\4.1.3-x86_64`                  |
+| CMake                                          | `C:\Devel\Platform\CMake\4.1.4-x86_64`                  |
 | Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 
 The paths can be modified in the files `config_env.cmd` and `install_*_deps.cmd`. CMake and Ninja can be used from MSVS.

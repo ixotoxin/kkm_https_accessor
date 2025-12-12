@@ -1,7 +1,7 @@
 ## Сборка
 
 Для сборки проекта используются следующие библиотеки и инструменты:
-- Библиотека из состава "АТОЛ Драйвер ККТ" версии не ниже 10.10.7 ([Оф.сайт](https://fs.atol.ru/))
+- Библиотека из состава "АТОЛ Драйвер ККТ" версии не ниже 10.10.8 ([Оф.сайт](https://fs.atol.ru/))
 - Asio C++ Library ([Git](https://github.com/chriskohlhoff/asio), [Оф.сайт](https://think-async.com/Asio/))
 - OpenSSL ([Git](https://github.com/openssl/openssl), [Оф.сайт](https://www.openssl.org/))
 - JSON for Modern C++ ([Git](https://github.com/nlohmann/json), [Оф.сайт](https://json.nlohmann.me/))
@@ -33,7 +33,7 @@
 | АТОЛ Драйвер                                   | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
 | Clang                                          | `C:\Devel\Platform\Clang\21.1.7-x86_64`                 |
-| CMake                                          | `C:\Devel\Platform\CMake\4.1.3-x86_64`                  |
+| CMake                                          | `C:\Devel\Platform\CMake\4.1.4-x86_64`                  |
 | Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 
 Пути можно изменить в файлах `config_env.cmd` и `install_*_deps.cmd`. CMake и Ninja можно использовать из состава MSVS.
