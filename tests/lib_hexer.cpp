@@ -9,6 +9,10 @@ namespace UnitTests {
     using namespace std::string_literals;
     using namespace std::string_view_literals;
 
+    TEST_CASE("hexer", "[hex_pair]" ) {
+        REQUIRE(0xfe == std::bit_cast<uint8_t>(Bin::Hexer<42>::HexPair { 0xe, 0xf }));
+    }
+
     TEST_CASE("hexer", "[bin_to_hex]" ) {
         {
             uint8_t bin { 0xfe };
