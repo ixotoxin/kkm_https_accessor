@@ -9,7 +9,8 @@
 #include <array>
 
 namespace Bin {
-    template<unsigned S>
+    template<size_t S>
+    requires (S > 0)
     struct Hexer {
         struct HexPair {
             uint8_t m_l:4;
@@ -20,10 +21,11 @@ namespace Bin {
         std::array<HexPair, c_size> m_bytes;
 
         template<size_t N = S, size_t O = 0>
+        requires (N > 0) && (N + O <= S)
         [[maybe_unused]]
         void writeTo(Meta::String auto & result) const {
-            static_assert(N > 0);
-            static_assert(N + O <= S);
+            // static_assert(N > 0);
+            // static_assert(N + O <= S);
             using Txt = Meta::TextTrait<decltype(result)>;
             for (size_t count { N }, offset { O + N - 1 }; count; --count) {
                 result.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
@@ -32,10 +34,11 @@ namespace Bin {
         }
 
         template<size_t N = S, size_t O = 0>
+        requires (N > 0) && (N + O <= S)
         [[maybe_unused]]
         void writeTo(Meta::String auto & result, size_t & pos) const {
-            static_assert(N > 0);
-            static_assert(N + O <= S);
+            // static_assert(N > 0);
+            // static_assert(N + O <= S);
             using Txt = Meta::TextTrait<decltype(result)>;
             if (result.size() < (pos + (N * 2))) {
                 result.resize(pos + (N * 2), Txt::c_defaultPadding);
@@ -73,6 +76,10 @@ namespace Bin {
             }
         }
     };
+
+#if defined(_MSC_VER) && !defined(__clang__)
+    static_assert(0xfe == std::bit_cast<uint8_t>(Bin::Hexer<42>::HexPair { 0xe, 0xf }));
+#endif
 
     template<std::integral T>
     class Int2Hex final : private Hexer<sizeof(T)> {
