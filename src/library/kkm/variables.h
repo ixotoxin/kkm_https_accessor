@@ -15,6 +15,8 @@ namespace Kkm {
     KKM_VAR(size_t, s_defaultLineLength, c_defLineLength);
     KKM_VAR(TimeZone, s_timeZone, TimeZone::Device);
     KKM_VAR(bool, s_timeZoneConfigured, false);
+    KKM_VAR(FfdVersion, s_fallbackFfdVersion, c_defFallbackFfdVersion);
+    KKM_VAR(FfdVersionDetect, s_ffdVersionDetect, c_ffdVersionDetect);
     KKM_VAR(DateTime::SleepUnit, s_documentClosingTimeout, c_defDocumentClosingTimeout);
     KKM_VAR(std::wstring, s_cliOperatorName, c_defCliOperatorName);
     KKM_VAR(std::wstring, s_cliOperatorInn, c_defCliOperatorInn);

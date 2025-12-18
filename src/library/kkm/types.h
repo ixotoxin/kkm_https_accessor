@@ -62,6 +62,8 @@ namespace Kkm {
         V_1_2 = Atol::LIBFPTR_FFD_1_2
     };
 
+    enum class FfdVersionDetect { Never, Once, Always };
+
     enum class ShiftState : std::remove_cv_t<decltype(Atol::LIBFPTR_SS_CLOSED)> {
         Closed = Atol::LIBFPTR_SS_CLOSED,
         Opened = Atol::LIBFPTR_SS_OPENED,

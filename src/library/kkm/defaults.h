@@ -4,6 +4,7 @@
 #pragma once
 
 #include "macro.h"
+#include "types.h"
 #include <lib/datetime.h>
 #include <string_view>
 
@@ -13,6 +14,8 @@ namespace Kkm {
     KKM_CONST(wchar_t, c_separatorChar, L'-');
     KKM_DEF(std::wstring_view, c_defDbDirectory, L"kkm");
     KKM_DEF(std::wstring_view, c_defBaudRate, L"115200");
+    KKM_DEF(FfdVersion, c_defFallbackFfdVersion, FfdVersion::V_1_0_5);
+    KKM_DEF(FfdVersionDetect, c_ffdVersionDetect, FfdVersionDetect::Never);
     KKM_CONST(size_t, c_minLineLength, 24);
     KKM_CONST(size_t, c_maxLineLength, 192);
     KKM_DEF(size_t, c_defLineLength, 42);

@@ -95,8 +95,8 @@ namespace KkmJsonLoader {
                 &Device::getFndtLastReceipt,
                 &Device::getFndtLastDocument,
                 &Device::getFndtErrors,
-                &Device::getFfdVersion,
-                &Device::getFwVersion
+                &Device::getFfdVersions,
+                &Device::getFwVersions
             );
         } else if (query == L"print-demo") {
             callMethod(Device { KnownConnParams { serial } }, &Device::printDemo, result);

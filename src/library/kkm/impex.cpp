@@ -293,7 +293,7 @@ namespace Kkm {
         return false;
     }
 
-    bool assign(Nln::Json & json, const FfdVersionResult & result) {
+    bool assign(Nln::Json & json, const FfdVersionsResult & result) {
         const Result & base { result };
         assign(json, base);
         if (result.m_success) {
@@ -310,7 +310,7 @@ namespace Kkm {
         return false;
     }
 
-    bool assign(Nln::Json & json, const FwVersionResult & result) {
+    bool assign(Nln::Json & json, const FwVersionsResult & result) {
         const Result & base { result };
         assign(json, base);
         if (result.m_success) {

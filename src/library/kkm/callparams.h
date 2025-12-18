@@ -206,7 +206,7 @@ namespace Kkm {
         bool m_dataForSendIsEmpty {};
     };
 
-    struct FfdVersionResult : Result {
+    struct FfdVersionsResult : Result {
         FfdVersion m_deviceFfdVersion { FfdVersion::Unknown };
         FfdVersion m_devMaxFfdVersion { FfdVersion::Unknown };
         FfdVersion m_devMinFfdVersion { FfdVersion::Unknown };
@@ -215,7 +215,7 @@ namespace Kkm {
         FfdVersion m_ffdVersion { FfdVersion::Unknown };
     };
 
-    struct FwVersionResult : Result {
+    struct FwVersionsResult : Result {
         std::wstring m_bootVersion {};
         std::wstring m_configurationVersion {};
         std::wstring m_controlUnitVersion {};

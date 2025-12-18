@@ -92,11 +92,11 @@ namespace KkmOperator {
             FndtErrorsResult errors {};
             kkm.getFndtErrors(errors);
 
-            FfdVersionResult ffdVers {};
-            kkm.getFfdVersion(ffdVers);
+            FfdVersionsResult ffdVers {};
+            kkm.getFfdVersions(ffdVers);
 
-            FwVersionResult fwVers {};
-            kkm.getFwVersion(fwVers);
+            FwVersionsResult fwVers {};
+            kkm.getFwVersions(fwVers);
 
             {
                 Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };

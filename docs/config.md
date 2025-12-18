@@ -52,6 +52,8 @@
         "defaultBaudRate": 115200,
         "defaultLineLength": 42,
         "timeZone": "device",
+        "fallbackFfdVersion": "1.0.5",
+        "ffdVersionDetect": "never",
         "documentClosingTimeout": 5000,
         "cliOperator": {
             "name": "Оператор"
@@ -95,6 +97,8 @@
 | `kkm.defaultBaudRate`           | Скорость COM-порта по-умолчанию.                                                                                      |
 | `kkm.defaultLineLength`         | Ширина чековой ленты по-умолчанию. Используется, если данное свойство не удается получить опросом ККМ.                |
 | `kkm.timeZone`                  | Временная зона передаваемая ОФД при регистрации чека.                                                                 |
+| `kkm.fallbackFfdVersion`        | Предполагаемая версия ФФД, если не удалось получить информацию о версии от ККМ.                                       |
+| `kkm.ffdVersionDetect`          | Момент определения версии ФФД.                                                                                        |
 | `kkm.documentClosingTimeout`    | Таймаут проверки корректности закрытия документа (в миллисекундах).                                                   |
 | `kkm.cliOperator.name`          | Имя оператора для консольных команд требующих логина оператора ККМ.                                                   |
 | `kkm.customerAccountField`      | Заголовок поля с номером лицевого счета клиента.                                                                      |

@@ -22,8 +22,8 @@ namespace Kkm {
     bool assign(Nln::Json &, const FndtLastReceiptResult &);
     bool assign(Nln::Json &, const FndtLastDocumentResult &);
     bool assign(Nln::Json &, const FndtErrorsResult &);
-    bool assign(Nln::Json &, const FfdVersionResult &);
-    bool assign(Nln::Json &, const FwVersionResult &);
+    bool assign(Nln::Json &, const FfdVersionsResult &);
+    bool assign(Nln::Json &, const FwVersionsResult &);
     void assign(Details &, const Nln::Json &);
     void assign(PrintDetails &, const Nln::Json &);
     void assign(OperatorDetails &, const Nln::Json &);

@@ -15,7 +15,7 @@ namespace Basic {
     namespace Wcs {
         LIB_WSTR(c_invalidValue, L"Недопустимое значение");
         LIB_WSTR(c_rangeError, L"Значение вне диапазона");
-        LIB_WSTR(c_dataError, L"{0} (содержится в '{1}')");
+        LIB_WSTR(c_dataError, L"{0} (свойство '{1}')");
     }
 
     class Failure {

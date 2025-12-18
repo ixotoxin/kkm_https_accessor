@@ -32,8 +32,8 @@ namespace Kkm {
         void getFndtLastReceipt(FndtLastReceiptResult &);
         void getFndtLastDocument(FndtLastDocumentResult &);
         void getFndtErrors(FndtErrorsResult &);
-        void getFfdVersion(FfdVersionResult &);
-        void getFwVersion(FwVersionResult &);
+        void getFfdVersions(FfdVersionsResult &);
+        void getFwVersions(FwVersionsResult &);
         void printHello();
         void printDemo(Result &);
         void printNonFiscalDocument(const PrintDetails &, Result &);
@@ -53,6 +53,7 @@ namespace Kkm {
 
     private:
         Atol::Fptr m_kkm {};
+        FfdVersionsResult m_ffdVersions {};
         std::wstring m_serialNumber {};
         std::wstring m_logPrefix;
         unsigned int m_lineLength { 0 };
@@ -66,6 +67,9 @@ namespace Kkm {
         void fail(Result &, const std::wstring &, const SrcLoc::Point & = SrcLoc::Point::current());
         void fail(Result &, std::wstring &&, const SrcLoc::Point & = SrcLoc::Point::current());
         void fail(Result &, const SrcLoc::Point & = SrcLoc::Point::current());
+
+        void detectFfdVersions();
+        FfdVersion getFfdVersion();
 
         [[nodiscard, maybe_unused]] static std::wstring addMargins(std::wstring_view, int = 1, int = -1);
         [[maybe_unused]] void addSeparator(std::wstring &, int = 0, int = -1) const;
