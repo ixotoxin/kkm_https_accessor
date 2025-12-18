@@ -345,7 +345,7 @@ namespace Kkm {
         LOG_DEBUG_TS(Wcs::c_subSetSeller, m_logPrefix, m_serialNumber);
 
         /** Регистрация информации о продавце / поставщике **/
-        if (!details.m_customerInn.empty()) {
+        if (!details.m_sellerEmail.empty()) {
             m_kkm.setParam(1117, details.m_sellerEmail);
         }
     }
