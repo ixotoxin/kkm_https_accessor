@@ -28,6 +28,18 @@ namespace Kkm {
                     json, "timeZone", s_timeZone,
                     Mbs::c_timeZoneMap, [] (auto value) { s_timeZoneConfigured = true; return value; }, path
                 );
+                Json::handleKey(json, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path);
+                Json::handleKey(json, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path);
+                if (s_ffdVersionDetect == FfdVersionDetect::Once) {
+                    throw Failure( // NOLINT(*-exception-baseclass)
+                        KKM_WFMT(
+                            Wcs::c_unsupportedValue2,
+                            wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect),
+                            path,
+                            L"ffdVersionDetect"
+                        )
+                    );
+                }
                 Json::handleKey(
                     json, "documentClosingTimeout", s_documentClosingTimeout,
                     DateTime::between(c_minDocumentClosingTimeout, c_maxDocumentClosingTimeout), path
@@ -65,6 +77,8 @@ namespace Kkm {
             L"CFG: kkm.defaultBaudRate = " << s_defaultBaudRate << L"\n"
             L"CFG: kkm.defaultLineLength = " << s_defaultLineLength << L"\n"
             L"CFG: kkm.timeZone = tz" << Meta::toUnderlying(s_timeZone) << L"\n"
+            L"CFG: kkm.fallbackFfdVersion = \"" << wcsSafeGet(Mbs::c_ffdVersions, s_fallbackFfdVersion) << L"\"\n"
+            L"CFG: kkm.ffdVersionDetect = \"" << wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect) << L"\"\n"
             L"CFG: kkm.documentClosingTimeout = " << s_documentClosingTimeout << L"\n"
             L"CFG: kkm.cliOperator.name = \"" << s_cliOperatorName << L"\"\n"
             L"CFG: kkm.cliOperator.inn = \"" << s_cliOperatorInn << L"\"\n"

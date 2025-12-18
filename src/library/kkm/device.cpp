@@ -112,6 +112,49 @@ namespace Kkm {
         return m_serialNumber;
     }
 
+    void Device::detectFfdVersions() {
+        if (m_ffdVersions.m_ffdVersion != FfdVersion::Unknown || !m_ffdVersions.m_success) {
+            return;
+        }
+
+        LOG_DEBUG_TS(Wcs::c_ffdVersionMethod, m_logPrefix, m_serialNumber);
+
+        /** Запрос версий ФФД **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_FFD_VERSIONS);
+        if (m_kkm.fnQueryData() < 0) {
+            fail(m_ffdVersions);
+            m_ffdVersions.m_deviceFfdVersion = FfdVersion::Unknown;
+            m_ffdVersions.m_devMinFfdVersion = FfdVersion::Unknown;
+            m_ffdVersions.m_devMaxFfdVersion = FfdVersion::Unknown;
+            m_ffdVersions.m_fnFfdVersion = FfdVersion::Unknown;
+            m_ffdVersions.m_fnMaxFfdVersion = FfdVersion::Unknown;
+            m_ffdVersions.m_ffdVersion = FfdVersion::Unknown;
+        } else {
+            m_ffdVersions.m_deviceFfdVersion
+                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_FFD_VERSION));
+            m_ffdVersions.m_devMinFfdVersion
+                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MIN_FFD_VERSION));
+            m_ffdVersions.m_devMaxFfdVersion
+                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MAX_FFD_VERSION));
+            m_ffdVersions.m_fnFfdVersion
+                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_FFD_VERSION));
+            m_ffdVersions.m_fnMaxFfdVersion
+                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_MAX_FFD_VERSION));
+            m_ffdVersions.m_ffdVersion
+                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FFD_VERSION));
+        }
+    }
+
+    FfdVersion Device::getFfdVersion() {
+        if (s_ffdVersionDetect == FfdVersionDetect::Never) {
+            return s_fallbackFfdVersion;
+        }
+        if (s_ffdVersionDetect == FfdVersionDetect::Always) {
+            detectFfdVersions();
+        }
+        return m_ffdVersions.m_success ? m_ffdVersions.m_ffdVersion : s_fallbackFfdVersion;
+    }
+
     [[nodiscard, maybe_unused]]
     std::wstring Device::addMargins(const std::wstring_view text, int marginTop, int marginBottom) {
         Numeric::doubleClamp(marginTop, marginBottom, 0, 10);
@@ -274,44 +317,56 @@ namespace Kkm {
     }
 
     void Device::subSetCustomer(const ReceiptDetails & details) {
+        const bool legacyFfd { getFfdVersion() != FfdVersion::V_1_2 };
+
         LOG_DEBUG_TS(Wcs::c_subSetCustomer, m_logPrefix, m_serialNumber);
 
-        /** Регистрация информации о покупателе / клиенте для ФФД >= 1.2 **/
-        bool hasRequisite1256 { false };
-        if (!details.m_customerName.empty()) {
-            m_kkm.setParam(1227, details.m_customerName);
-            hasRequisite1256 = true;
-        }
-        if (!details.m_customerInn.empty()) {
-            m_kkm.setParam(1228, details.m_customerInn);
-            hasRequisite1256 = true;
-        }
-        if (!details.m_customerBirthdate.empty()) {
-            m_kkm.setParam(1243, details.m_customerBirthdate);
-            hasRequisite1256 = true;
-        }
-        if (!details.m_customerCitizenship.empty()) {
-            m_kkm.setParam(1244, details.m_customerCitizenship);
-            hasRequisite1256 = true;
-        }
-        if (!details.m_customerDocumentCode.empty()) {
-            m_kkm.setParam(1245, details.m_customerDocumentCode);
-            hasRequisite1256 = true;
-        }
-        if (!details.m_customerDocumentData.empty()) {
-            m_kkm.setParam(1246, details.m_customerDocumentData);
-            hasRequisite1256 = true;
-        }
-        if (!details.m_customerAddress.empty()) {
-            m_kkm.setParam(1254, details.m_customerAddress);
-            hasRequisite1256 = true;
-        }
-        if (hasRequisite1256) {
-            if (m_kkm.utilFormTlv() < 0) {
-                throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+        if (legacyFfd) {
+            /** Регистрация информации о покупателе / клиенте для ФФД < 1.2 **/
+            if (!details.m_customerName.empty()) {
+                m_kkm.setParam(1227, details.m_customerName);
             }
-            const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
-            m_kkm.setParam(1256, clientInfo);
+            if (!details.m_customerInn.empty()) {
+                m_kkm.setParam(1228, details.m_customerInn);
+            }
+        } else {
+            /** Регистрация информации о покупателе / клиенте для ФФД >= 1.2 **/
+            bool hasRequisite1256 { false };
+            if (!details.m_customerName.empty()) {
+                m_kkm.setParam(1227, details.m_customerName);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerInn.empty()) {
+                m_kkm.setParam(1228, details.m_customerInn);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerBirthdate.empty()) {
+                m_kkm.setParam(1243, details.m_customerBirthdate);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerCitizenship.empty()) {
+                m_kkm.setParam(1244, details.m_customerCitizenship);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerDocumentCode.empty()) {
+                m_kkm.setParam(1245, details.m_customerDocumentCode);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerDocumentData.empty()) {
+                m_kkm.setParam(1246, details.m_customerDocumentData);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerAddress.empty()) {
+                m_kkm.setParam(1254, details.m_customerAddress);
+                hasRequisite1256 = true;
+            }
+            if (hasRequisite1256) {
+                if (m_kkm.utilFormTlv() < 0) {
+                    throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+                }
+                const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
+                m_kkm.setParam(1256, clientInfo);
+            }
         }
 
         /** Регистрация номера лицевого счёта покупателя **/
@@ -325,14 +380,6 @@ namespace Kkm {
             }
             const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
             m_kkm.setParam(1084, clientInfo);
-        }
-
-        /** Регистрация информации о покупателе / клиенте для ФФД < 1.2 **/
-        if (!details.m_customerName.empty()) {
-            m_kkm.setParam(1227, details.m_customerName);
-        }
-        if (!details.m_customerInn.empty()) {
-            m_kkm.setParam(1228, details.m_customerInn);
         }
 
         /** Регистрация информации о покупателе / клиенте **/
@@ -644,25 +691,12 @@ namespace Kkm {
         result.m_dataForSendIsEmpty = m_kkm.getParamBool(Atol::LIBFPTR_PARAM_DATA_FOR_SEND_IS_EMPTY);
     }
 
-    void Device::getFfdVersion(FfdVersionResult & result) {
-        LOG_DEBUG_TS(Wcs::c_ffdVersionMethod, m_logPrefix, m_serialNumber);
-
-        /** Запрос версий ФФД **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_FFD_VERSIONS);
-        if (m_kkm.fnQueryData() < 0) {
-            return fail(result);
-        }
-
-        result.m_deviceFfdVersion = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_FFD_VERSION));
-        result.m_devMinFfdVersion = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MIN_FFD_VERSION));
-        result.m_devMaxFfdVersion = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MAX_FFD_VERSION));
-        result.m_fnFfdVersion = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_FFD_VERSION));
-        result.m_fnMaxFfdVersion = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_MAX_FFD_VERSION));
-        result.m_ffdVersion = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FFD_VERSION));
-        // result.m_kktVersion = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_VERSION);
+    void Device::getFfdVersions(FfdVersionsResult & result) {
+        detectFfdVersions();
+        result = m_ffdVersions;
     }
 
-    void Device::getFwVersion(FwVersionResult & result) {
+    void Device::getFwVersions(FwVersionsResult & result) {
         LOG_DEBUG_TS(Wcs::c_fwVersionMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос версии прошивки **/

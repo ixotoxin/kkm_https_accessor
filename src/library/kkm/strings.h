@@ -12,7 +12,9 @@
 namespace Kkm {
     namespace Wcs {
         KKM_WSTR(c_requiresProperty, L"Требуется корректное свойство '{}'");
+        KKM_WSTR(c_unsupportedValue, L"В данный момент значение '{}' свойства '{}' не поддерживается");
         KKM_WSTR(c_requiresProperty2, L"Требуется корректное свойство '{}.{}'");
+        KKM_WSTR(c_unsupportedValue2, L"В данный момент значение '{}' свойства '{}.{}' не поддерживается");
 
         KKM_WSTR(c_invalidSerialNumber, L"Недопустимый серийный номер");
         KKM_WSTR(c_invalidFilePath, L"Не удалось загрузить параметры подключения");
@@ -212,10 +214,28 @@ namespace Kkm {
             { FfdVersion::V_1_2, "1.2" }
         };
 
+        inline const std::unordered_map<std::string, FfdVersion> c_ffdVersionsMap {
+            { "1.0.5", FfdVersion::V_1_0_5 },
+            { "1.1", FfdVersion::V_1_1 },
+            { "1.2", FfdVersion::V_1_2 }
+        };
+
+        inline const std::unordered_map<FfdVersionDetect, std::string_view> c_ffdVersionDetect {
+            { FfdVersionDetect::Never, "never" },
+            { FfdVersionDetect::Once, "once" },
+            { FfdVersionDetect::Always, "always" }
+        };
+
+        inline const std::unordered_map<std::string, FfdVersionDetect> c_ffdVersionDetectMap {
+            { "never", FfdVersionDetect::Never },
+            { "once", FfdVersionDetect::Once },
+            { "always", FfdVersionDetect::Always }
+        };
+
         inline const std::unordered_map<ShiftState, std::string_view> c_shiftStateLabels {
             { ShiftState::Closed, c_closedShift },
             { ShiftState::Opened, c_openedShift },
-            { ShiftState::Expired, c_expiredShift },
+            { ShiftState::Expired, c_expiredShift }
         };
 
         inline const std::unordered_map<ReceiptType, std::string_view> c_receiptTypeLabels {
@@ -227,7 +247,7 @@ namespace Kkm {
             { ReceiptType::Buy, c_buyReceipt },
             { ReceiptType::BuyReturn, c_buyReturnReceipt },
             { ReceiptType::BuyCorrection, c_buyCorrectionReceipt },
-            { ReceiptType::BuyReturnCorrection, c_buyReturnCorrectionReceipt },
+            { ReceiptType::BuyReturnCorrection, c_buyReturnCorrectionReceipt }
         };
 
         inline const std::unordered_map<DocumentType, std::string_view> c_documentTypeLabels {
@@ -246,7 +266,7 @@ namespace Kkm {
             { DocumentType::CloseArchive, c_closeArchiveDocument },
             { DocumentType::OfdExchangeStatus, c_ofdExchangeStatusDocument },
             { DocumentType::DocumentService, c_serviceDocument },
-            { DocumentType::DocumentCopy, c_documentCopy },
+            { DocumentType::DocumentCopy, c_documentCopy }
         };
 
         inline const std::unordered_map<std::string, MeasurementUnit> c_measurementUnitMap {
@@ -302,7 +322,7 @@ namespace Kkm {
             { "terabyte", MeasurementUnit::Terabyte },
             { std::to_string(Meta::toUnderlying(MeasurementUnit::Terabyte)), MeasurementUnit::Terabyte },
             { "other", MeasurementUnit::Other },
-            { std::to_string(Meta::toUnderlying(MeasurementUnit::Other)), MeasurementUnit::Other },
+            { std::to_string(Meta::toUnderlying(MeasurementUnit::Other)), MeasurementUnit::Other }
         };
 
         inline const std::unordered_map<std::string, Tax> c_taxCastMap {

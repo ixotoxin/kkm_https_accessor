@@ -213,8 +213,8 @@ namespace Server::KkmOp {
                 &Device::getFndtLastReceipt,
                 &Device::getFndtLastDocument,
                 &Device::getFndtErrors,
-                &Device::getFfdVersion,
-                &Device::getFwVersion
+                &Device::getFfdVersions,
+                &Device::getFwVersions
             );
         }
         payload.m_expiresAfter = c_reportCacheLifeTime;
