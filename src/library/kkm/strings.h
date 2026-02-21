@@ -223,12 +223,14 @@ namespace Kkm {
         inline const std::unordered_map<FfdVersionDetect, std::string_view> c_ffdVersionDetect {
             { FfdVersionDetect::Never, "never" },
             { FfdVersionDetect::Once, "once" },
+            { FfdVersionDetect::Sometimes, "sometimes" },
             { FfdVersionDetect::Always, "always" }
         };
 
         inline const std::unordered_map<std::string, FfdVersionDetect> c_ffdVersionDetectMap {
             { "never", FfdVersionDetect::Never },
             { "once", FfdVersionDetect::Once },
+            { "sometimes", FfdVersionDetect::Sometimes },
             { "always", FfdVersionDetect::Always }
         };
 

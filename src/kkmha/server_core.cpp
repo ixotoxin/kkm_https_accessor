@@ -199,7 +199,7 @@ namespace Server {
                         auto it = request.m_header.find("x-secret");
                         if (it == request.m_header.end() || it->second.empty() || it->second != s_secret) {
                             request.m_response.m_status = Http::Status::Forbidden;
-                            request.m_response.m_data.emplace<1>(Mbs::c_forbidden);
+                            request.m_response.m_data.emplace<std::string>(Mbs::c_forbidden);
                             LOG_ERROR_TS(Wcs::c_forbidden, request.m_id);
                         }
                     }

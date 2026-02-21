@@ -47,16 +47,14 @@ namespace Http {
 
         [[nodiscard]]
         bool emptyResponse() const {
-            return m_response.m_data.index() == 0
-                || (
-                    m_response.m_data.index() == 1
-                    && std::get<1>(m_response.m_data).empty()
-                   )
-                || (
-                    m_response.m_data.index() == 2
-                    && !std::get<2>(m_response.m_data)
-                    /*&& !*std::get<2>(m_response.m_data)*/
-                   );
+            return std::visit(
+                Response::RenderOverloads {
+                    [] (const std::nullptr_t) -> bool { return true; },
+                    [] (const std::string_view data) -> bool { return data.empty(); },
+                    [] (const std::shared_ptr<ProtoResponse> data) -> bool { return !data /*|| !*data*/; }
+                },
+                m_response.m_data
+            );
         }
     };
 }

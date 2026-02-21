@@ -75,7 +75,7 @@ namespace Http {
                 LOG_ERROR_TS(Wcs::c_bodySizeLimitExceeded, m_request.m_id);
                 m_expectedBodySize = 0;
                 m_request.m_response.m_status = Status::BadRequest;
-                m_request.m_response.m_data.emplace<1>(Mbs::c_bodySizeLimitExceeded);
+                m_request.m_response.m_data.emplace<std::string>(Mbs::c_bodySizeLimitExceeded);
                 m_reader = &Parser::dummyReader;
             } else {
                 m_request.m_body.reserve(m_expectedBodySize + 1);

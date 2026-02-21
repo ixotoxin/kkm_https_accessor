@@ -115,7 +115,7 @@ namespace Kkm {
     }
 
     void NewConnParams::save(const std::wstring & serialNumber) const {
-        if (serialNumber.empty()) {
+        if (serialNumber.empty() || std::string::npos != serialNumber.find_first_not_of(allowed)) {
             throw Failure(KKM_WFMT(Wcs::c_savingError, L"-")); // NOLINT(*-exception-baseclass)
         }
         std::filesystem::path filePath { s_dbDirectory };
@@ -125,7 +125,8 @@ namespace Kkm {
                 throw Failure(KKM_WFMT(Wcs::c_savingError, serialNumber)); // NOLINT(*-exception-baseclass)
             }
         }
-        filePath /= serialNumber + L".json";
+        filePath /= serialNumber + L".json"s;
+        // filePath /= serialNumber + L"#conn.json"s;
         const Nln::Json json = Text::convert(m_params);
         std::ofstream file { filePath };
         file << json.dump();
@@ -177,6 +178,7 @@ namespace Kkm {
     std::filesystem::path KnownConnParams::filePath(const std::wstring & serialNumber) {
         std::filesystem::path path { s_dbDirectory };
         path /= serialNumber + L".json"s;
+        // path /= serialNumber + L"#conn.json"s;
         return path;
     }
 
@@ -191,6 +193,7 @@ namespace Kkm {
     [[nodiscard]]
     std::filesystem::path KnownConnParams::filterFilePath(std::filesystem::path filePath) {
         if (Text::lowered(filePath.extension().native()) != L".json") {
+        // if (!Text::lowered(filePath.native()).ends_with(L"#conn.json"sv)) {
             throw Failure(Wcs::c_invalidFilePath); // NOLINT(*-exception-baseclass)
         }
         auto stem { filePath.stem().native() };

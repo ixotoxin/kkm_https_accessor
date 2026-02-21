@@ -30,7 +30,7 @@ namespace Kkm {
                 );
                 Json::handleKey(json, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path);
                 Json::handleKey(json, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path);
-                if (s_ffdVersionDetect == FfdVersionDetect::Once) {
+                if (s_ffdVersionDetect == FfdVersionDetect::Once || s_ffdVersionDetect == FfdVersionDetect::Sometimes) {
                     throw Failure( // NOLINT(*-exception-baseclass)
                         KKM_WFMT(
                             Wcs::c_unsupportedValue2,
