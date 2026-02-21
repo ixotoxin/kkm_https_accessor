@@ -149,6 +149,10 @@ namespace Kkm {
         if (s_ffdVersionDetect == FfdVersionDetect::Never) {
             return s_fallbackFfdVersion;
         }
+        if (s_ffdVersionDetect == FfdVersionDetect::Once) {
+        }
+        if (s_ffdVersionDetect == FfdVersionDetect::Sometimes) {
+        }
         if (s_ffdVersionDetect == FfdVersionDetect::Always) {
             detectFfdVersions();
         }
