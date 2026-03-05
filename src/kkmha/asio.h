@@ -24,6 +24,11 @@ namespace Asio {
     using Stream = asio::ssl::stream<Socket>;
     using Endpoint = asio::ip::tcp::endpoint;
 
+    struct SslStreamConfig {
+        Endpoint m_endpoint;
+        SslContext m_sslContext;
+    };
+
     [[nodiscard, maybe_unused]]
     inline bool isLoopback(const IpAddress & address) {
         if (address.is_v4()) {

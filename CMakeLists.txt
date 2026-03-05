@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(kkm_https_accessor VERSION 1.8.3 LANGUAGES CXX)
+project(kkm_https_accessor VERSION 1.8.4 LANGUAGES CXX)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_FIND_DEBUG_MODE ON)

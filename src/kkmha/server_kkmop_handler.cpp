@@ -367,7 +367,7 @@ namespace Server::KkmOp {
             return fail(request, Http::Status::MethodNotAllowed, Server::Mbs::c_methodNotAllowed);
         }
 
-        Cache::maintain();
+        // Cache::maintain(); // CLEANUP
         Cache::Key cacheKey;
 
         if (!idempotencyKey.empty()) {

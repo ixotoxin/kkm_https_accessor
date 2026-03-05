@@ -9,7 +9,7 @@
 #include <lib/errexp.h>
 #include <lib/except.h>
 #include <log/write.h>
-#include <optional>
+// #include <optional> // CLEANUP
 #include <winsvc.h>
 
 namespace Service {
@@ -61,9 +61,10 @@ namespace Service {
 
             try {
                 setStatus(SERVICE_STOP_PENDING);
-                Server::stop();
-                setStatus(SERVICE_STOPPED);
-                return; /** Не удаляй, смотри дальше. **/
+                if (Server::stop()) {
+                    setStatus(SERVICE_STOPPED);
+                    return; /** Не удаляй, смотри дальше. **/
+                }
             } catch (const Failure & e) {
                 LOG_ERROR_TS(e);
             } catch (const std::exception & e) {
