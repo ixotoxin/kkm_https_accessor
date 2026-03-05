@@ -38,7 +38,7 @@ namespace Server::Cache {
         const Http::Status status,
         std::shared_ptr<Http::ProtoResponse> data
     ) {
-        std::scoped_lock cacheLock(s_cacheMutex);
+        std::scoped_lock cacheLock { s_cacheMutex };
         s_cache[key] = {
             .m_data = std::move(data),
             .m_cachedAt = DateTime::Clock::now(),
@@ -49,7 +49,7 @@ namespace Server::Cache {
 
     [[nodiscard, maybe_unused]]
     std::optional<Entry> load(const Key & key) {
-        std::scoped_lock cacheLock(s_cacheMutex);
+        std::scoped_lock cacheLock { s_cacheMutex };
         const auto it = s_cache.find(key);
         if (it == s_cache.end()) {
             return std::nullopt;
@@ -60,13 +60,14 @@ namespace Server::Cache {
     [[maybe_unused]]
     void maintain() {
         if (++s_counter >= c_cacheCleanUpThreshold) {
-            std::scoped_lock cacheLock(s_cacheMutex);
-            const auto oldSize = s_cache.size();
-            std::erase_if(
-                s_cache,
-                [] (const auto & item) { return item.second.m_expiredAt < DateTime::Clock::now(); }
-            );
-            LOG_DEBUG_TS(Wcs::c_cacheMaintain, oldSize, s_cache.size());
+            std::scoped_lock cacheLock { s_cacheMutex };
+            if (const auto oldSize = s_cache.size(); oldSize) {
+                std::erase_if(
+                    s_cache,
+                    [] (const auto & item) { return item.second.m_expiredAt < DateTime::Clock::now(); }
+                );
+                LOG_DEBUG_TS(Wcs::c_cacheMaintain, oldSize, s_cache.size());
+            }
             s_counter = 0;
         }
     }

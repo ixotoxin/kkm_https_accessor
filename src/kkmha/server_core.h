@@ -6,5 +6,5 @@
 namespace Server {
     void run();
     bool start();
-    void stop();
+    bool stop();
 }

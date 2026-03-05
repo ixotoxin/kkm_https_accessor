@@ -79,7 +79,7 @@ namespace Server::Static {
             }
         }
 
-        Cache::maintain();
+        // Cache::maintain(); // CLEANUP
         Cache::Key cacheKey { "static::::" };
         cacheKey.append(Text::convert(path.native()));
 
