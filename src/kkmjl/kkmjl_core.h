@@ -74,11 +74,7 @@ namespace KkmJsonLoader {
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
-                &Device::getCashStat/*,
-                &Device::getFndtOfdExchangeStatus,
-                &Device::getFndtLastReceipt,
-                &Device::getFndtLastDocument,
-                &Device::getFndtErrors*/ // CLEANUP
+                &Device::getCashStat
             );
         } else if (query == L"full-status") {
             collectDataFromMethods(

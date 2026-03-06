@@ -14,57 +14,57 @@ namespace Kkm {
     void setVars(const Nln::Json & json) {
         Json::handleKey(
             json, "kkm",
-            [] (const Nln::Json & json, const std::wstring & path) -> bool {
+            [] (const Nln::Json & json2, const std::wstring & path2) -> bool {
                 Json::handleKey(
-                    json, "dbDirectory", s_dbDirectory,
-                    Path::touchDir(Path::absolute(Path::noEmpty())), path
+                    json2, "dbDirectory", s_dbDirectory,
+                    Path::touchDir(Path::absolute(Path::noEmpty())), path2
                 );
-                Json::handleKey(json, "defaultBaudRate", s_defaultBaudRate, Wcs::c_allowedBaudRate, path);
+                Json::handleKey(json2, "defaultBaudRate", s_defaultBaudRate, Wcs::c_allowedBaudRate, path2);
                 Json::handleKey(
-                    json, "defaultLineLength", s_defaultLineLength,
-                    Numeric::between(c_minLineLength, c_maxLineLength), path
+                    json2, "defaultLineLength", s_defaultLineLength,
+                    Numeric::between(c_minLineLength, c_maxLineLength), path2
                 );
                 Json::handleKey(
-                    json, "timeZone", s_timeZone,
-                    Mbs::c_timeZoneMap, [] (auto value) { s_timeZoneConfigured = true; return value; }, path
+                    json2, "timeZone", s_timeZone,
+                    Mbs::c_timeZoneMap, [] (auto value) { s_timeZoneConfigured = true; return value; }, path2
                 );
-                Json::handleKey(json, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path);
-                Json::handleKey(json, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path);
+                Json::handleKey(json2, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path2);
+                Json::handleKey(json2, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path2);
                 if (s_ffdVersionDetect == FfdVersionDetect::Once || s_ffdVersionDetect == FfdVersionDetect::Sometimes) {
                     throw Failure( // NOLINT(*-exception-baseclass)
                         KKM_WFMT(
                             Wcs::c_unsupportedValue2,
                             wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect),
-                            path,
+                            path2,
                             L"ffdVersionDetect"
                         )
                     );
                 }
                 Json::handleKey(
-                    json, "documentClosingTimeout", s_documentClosingTimeout,
-                    DateTime::between(c_minDocumentClosingTimeout, c_maxDocumentClosingTimeout), path
+                    json2, "documentClosingTimeout", s_documentClosingTimeout,
+                    DateTime::between(c_minDocumentClosingTimeout, c_maxDocumentClosingTimeout), path2
                 );
                 Json::handleKey(
-                    json, "cliOperator",
-                    [] (const Nln::Json & json, const std::wstring & path) -> bool {
-                        Json::handleKey(json, "name", s_cliOperatorName, Text::Wcs::noEmpty(Text::Wcs::trim()), path);
-                        Json::handleKey(json, "inn", s_cliOperatorInn, Text::Wcs::trim(), path);
+                    json2, "cliOperator",
+                    [] (const Nln::Json & json3, const std::wstring & path3) -> bool {
+                        Json::handleKey(json3, "name", s_cliOperatorName, Text::Wcs::noEmpty(Text::Wcs::trim()), path3);
+                        Json::handleKey(json3, "inn", s_cliOperatorInn, Text::Wcs::trim(), path3);
                         return true;
                     },
-                    path
+                    path2
                 );
-                Json::handleKey(json, "customerAccountField", s_customerAccountField, path);
+                Json::handleKey(json2, "customerAccountField", s_customerAccountField, path2);
                 Json::handleKey(
-                    json, "maxCashInOut", s_maxCashInOut,
-                    Numeric::between(c_minMaxCashInOut, c_maxMaxCashInOut), path
-                );
-                Json::handleKey(
-                    json, "maxPrice", s_maxPrice,
-                    Numeric::between(c_minMaxPrice, c_maxMaxPrice), path
+                    json2, "maxCashInOut", s_maxCashInOut,
+                    Numeric::between(c_minMaxCashInOut, c_maxMaxCashInOut), path2
                 );
                 Json::handleKey(
-                    json, "maxQuantity", s_maxQuantity,
-                    Numeric::between(c_minMaxQuantity, c_maxMaxQuantity), path
+                    json2, "maxPrice", s_maxPrice,
+                    Numeric::between(c_minMaxPrice, c_maxMaxPrice), path2
+                );
+                Json::handleKey(
+                    json2, "maxQuantity", s_maxQuantity,
+                    Numeric::between(c_minMaxQuantity, c_maxMaxQuantity), path2
                 );
                 return true;
             }

@@ -15,18 +15,18 @@ namespace Server::Static {
     void setVars(const Nln::Json & json) {
         Json::handleKey(
             json, "server",
-            [] (const Nln::Json & json, const std::wstring & path) -> bool {
-                Json::handleKey(json, "enableStatic", s_enable, path);
+            [] (const Nln::Json & json2, const std::wstring & path2) -> bool {
+                Json::handleKey(json2, "enableStatic", s_enable, path2);
                 Json::handleKey(
-                    json, "staticDirectory", s_directory,
-                    Path::testDir(s_enable, Path::absolute(Path::noEmpty())), path
+                    json2, "staticDirectory", s_directory,
+                    Path::testDir(s_enable, Path::absolute(Path::noEmpty())), path2
                 );
-                Json::handleKey(json, "indexFile", s_indexFile, Path::Mbs::goodFileName(), path);
+                Json::handleKey(json2, "indexFile", s_indexFile, Path::Mbs::goodFileName(), path2);
                 Json::handleKey(
-                    json, "mimeMap", s_mimeMapFile,
-                    Path::testFile(s_enable, Path::absolute(Path::noEmpty())), path
+                    json2, "mimeMap", s_mimeMapFile,
+                    Path::testFile(s_enable, Path::absolute(Path::noEmpty())), path2
                 );
-                Json::handleKey(json, "enableUnknownType", s_enableUnknownType, path);
+                Json::handleKey(json2, "enableUnknownType", s_enableUnknownType, path2);
                 return true;
             }
         );

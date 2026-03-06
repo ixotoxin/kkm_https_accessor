@@ -23,7 +23,8 @@ namespace KkmOperator {
     [[nodiscard]]
     inline int learn(const int connParamCount, wchar_t ** connParamItems) {
         assert(connParamCount > 0);
-        Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+        // TODO: Убедиться, что строка ниже не будет оптимизирована
+        [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
 
         for (int i = 0, n = 1; i < connParamCount; ++i, ++n) {
             try {
@@ -46,7 +47,8 @@ namespace KkmOperator {
     requires std::derived_from<std::remove_cvref_t<K>, Device>
     [[maybe_unused]]
     void callMethod(K && kkm, UndetailedMethod<R> method) {
-        Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+        // TODO: Убедиться, что строка ниже не будет оптимизирована
+        [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
         R result {};
         (kkm.*method)(result);
         if (result.m_success) {
@@ -60,7 +62,8 @@ namespace KkmOperator {
     requires std::derived_from<std::remove_cvref_t<K>, Device>
     [[maybe_unused]]
     void callMethod(K && kkm, DetailedMethod<R, D> method, D && details) {
-        Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+        // TODO: Убедиться, что строка ниже не будет оптимизирована
+        [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
         R result {};
         (kkm.*method)(details, result);
         if (result.m_success) {
@@ -99,7 +102,8 @@ namespace KkmOperator {
             kkm.getFwVersions(fwVers);
 
             {
-                Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+                // TODO: Убедиться, что строка ниже не будет оптимизирована
+                [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
                 // KKM_LOG(status, Wcs::c_fmtModel, wcsSafeGet(Mbs::c_models, status.m_model));
                 KKM_LOG(status, Wcs::c_fmtModel, status.m_modelName);
                 KKM_LOG(status, Wcs::c_fmtSerialNumber, status.m_serialNumber);

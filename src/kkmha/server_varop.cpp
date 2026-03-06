@@ -11,30 +11,30 @@ namespace Server {
     void setVars(const Nln::Json & json) {
         Json::handleKey(
             json, "server",
-            [] (const Nln::Json & json, const std::wstring & path) -> bool {
-                Json::handleKey(json, "ipv4Only", s_ipv4Only, path);
-                Json::handleKey(json, "port", s_port, Numeric::between(c_minPort, c_maxPort), path);
+            [] (const Nln::Json & json2, const std::wstring & path2) -> bool {
+                Json::handleKey(json2, "ipv4Only", s_ipv4Only, path2);
+                Json::handleKey(json2, "port", s_port, Numeric::between(c_minPort, c_maxPort), path2);
                 Json::handleKey(
-                    json, "requestTimeout", s_requestTimeout,
-                    Numeric::between(c_minRequestTimeout, c_maxRequestTimeout), path
+                    json2, "requestTimeout", s_requestTimeout,
+                    Numeric::between(c_minRequestTimeout, c_maxRequestTimeout), path2
                 );
                 Json::handleKey(
-                    json, "concurrencyLimit", s_concurrencyLimit,
-                    Numeric::between(c_minConcurrencyLimit, c_maxConcurrencyLimit), path
+                    json2, "concurrencyLimit", s_concurrencyLimit,
+                    Numeric::between(c_minConcurrencyLimit, c_maxConcurrencyLimit), path2
                 );
-                Json::handleKey(json, "enableLegacyTls", s_enableLegacyTls, path);
-                Json::handleKey(json, "securityLevel", s_securityLevel, Numeric::between(0, 5), path);
+                Json::handleKey(json2, "enableLegacyTls", s_enableLegacyTls, path2);
+                Json::handleKey(json2, "securityLevel", s_securityLevel, Numeric::between(0, 5), path2);
                 Json::handleKey(
-                    json, "certificateChainFile", s_certificateChainFile,
-                    Path::existsFile(Path::absolute(Path::noEmpty())), path
+                    json2, "certificateChainFile", s_certificateChainFile,
+                    Path::existsFile(Path::absolute(Path::noEmpty())), path2
                 );
                 Json::handleKey(
-                    json, "privateKeyFile", s_privateKeyFile,
-                    Path::existsFile(Path::absolute(Path::noEmpty())), path
+                    json2, "privateKeyFile", s_privateKeyFile,
+                    Path::existsFile(Path::absolute(Path::noEmpty())), path2
                 );
-                Json::handleKey(json, "privateKeyPassword", s_privateKeyPassword, path);
-                Json::handleKey(json, "secret", s_secret, path);
-                Json::handleKey(json, "loopbackWithoutSecret", s_loopbackWithoutSecret, path);
+                Json::handleKey(json2, "privateKeyPassword", s_privateKeyPassword, path2);
+                Json::handleKey(json2, "secret", s_secret, path2);
+                Json::handleKey(json2, "loopbackWithoutSecret", s_loopbackWithoutSecret, path2);
                 return true;
             }
         );

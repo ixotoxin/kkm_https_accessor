@@ -12,8 +12,6 @@ namespace Server::Cache {
         return DateTime::Clock::now() + seconds;
     }
 
-    // [[maybe_unused]] void store(const Key &, const Entry &); // CLEANUP
-    // [[maybe_unused]] void store(const Key &, Entry &&); // CLEANUP
     [[maybe_unused]] void store(const Key &, DateTime::Point, Http::Status, std::shared_ptr<Http::ProtoResponse>);
     [[nodiscard, maybe_unused]] std::optional<Entry> load(const Key &);
     [[maybe_unused]] void maintain();

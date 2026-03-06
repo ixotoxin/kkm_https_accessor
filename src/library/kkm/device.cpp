@@ -943,7 +943,7 @@ namespace Kkm {
         }
         if (type == ReceiptType::Sell) {
             subPrintText(Wcs::c_typeSell, false, false, false, 0, 0);
-        } else if (type == ReceiptType::SellReturn) {
+        } else /*if (type == ReceiptType::SellReturn)*/ { /** Проверено выше **/
             subPrintText(Wcs::c_typeSellReturn, false, false, false, 0, 0);
         }
         subPrintSeparator(0);

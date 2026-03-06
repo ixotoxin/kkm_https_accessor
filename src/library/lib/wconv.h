@@ -10,9 +10,7 @@
 #include <string>
 
 namespace Text {
-    namespace {
-        constexpr int c_convertBufferReserve { 2 };
-    }
+    constexpr int c_convertBufferReserve { 2 };
 
     [[maybe_unused]]
     inline bool convert(std::wstring & result, const std::string_view text) noexcept try {

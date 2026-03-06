@@ -15,22 +15,6 @@ namespace Server::Cache {
     static std::mutex s_cacheMutex {};
     static std::atomic<size_t> s_counter { 0 };
 
-    // CLEANUP
-    // [[maybe_unused]]
-    // void store(const Key & key, Entry & entry) {
-    //     std::scoped_lock cacheLock(s_cacheMutex);
-    //     entry.m_cachedAt = DateTime::Clock::now();
-    //     s_cache[key] = entry;
-    // }
-
-    // CLEANUP
-    // [[maybe_unused]]
-    // void store(const Key & key, Entry && entry) {
-    //     std::scoped_lock cacheLock(s_cacheMutex);
-    //     entry.m_cachedAt = DateTime::Clock::now();
-    //     s_cache[key] = std::forward<Entry>(entry);
-    // }
-
     [[maybe_unused]]
     void store(
         const Key & key,
