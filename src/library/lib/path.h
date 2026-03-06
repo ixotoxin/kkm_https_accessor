@@ -392,48 +392,48 @@ namespace Path {
     namespace Wcs {
         [[nodiscard, maybe_unused]]
         inline auto good() {
-            return ::Path::good<std::wstring>();
+            return Path::good<std::wstring>();
         }
 
         template<Meta::Filter<std::wstring> F>
         [[nodiscard, maybe_unused]]
         auto good(F && subFilter) {
-            return ::Path::good<std::wstring>(std::forward<F>(subFilter));
+            return Path::good<std::wstring>(std::forward<F>(subFilter));
         }
 
         [[nodiscard, maybe_unused]]
         inline auto goodFileName() {
-            return ::Path::goodFileName<std::wstring>();
+            return Path::goodFileName<std::wstring>();
         }
 
         template<Meta::Filter<std::wstring> F>
         [[nodiscard, maybe_unused]]
         auto goodFileName(F && subFilter) {
-            return ::Path::goodFileName<std::wstring>(std::forward<F>(subFilter));
+            return Path::goodFileName<std::wstring>(std::forward<F>(subFilter));
         }
     }
 
     namespace Mbs {
         [[nodiscard, maybe_unused]]
         inline auto good() {
-            return ::Path::good<std::string>();
+            return Path::good<std::string>();
         }
 
         template<Meta::Filter<std::string> F>
         [[nodiscard, maybe_unused]]
         auto good(F && subFilter) {
-            return ::Path::good<std::string>(std::forward<F>(subFilter));
+            return Path::good<std::string>(std::forward<F>(subFilter));
         }
 
         [[nodiscard, maybe_unused]]
         inline auto goodFileName() {
-            return ::Path::goodFileName<std::string>();
+            return Path::goodFileName<std::string>();
         }
 
         template<Meta::Filter<std::string> F>
         [[nodiscard, maybe_unused]]
         auto goodFileName(F && subFilter) {
-            return ::Path::goodFileName<std::string>(std::forward<F>(subFilter));
+            return Path::goodFileName<std::string>(std::forward<F>(subFilter));
         }
     }
 }

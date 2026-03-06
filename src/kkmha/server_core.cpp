@@ -44,7 +44,7 @@ namespace Server {
     static Config::Handler s_configHandler {};
     static Ping::Handler s_pingHandler {};
 
-    void logError(auto & e, const State state) noexcept {
+    void emergencyBrake(auto & e, const State state) noexcept {
         assert(state >= State::Shutdown);
 
         LOG_ERROR_TS(e);
@@ -67,12 +67,13 @@ namespace Server {
     }
 
     void completeHitmanJob(auto & e) noexcept {
-        logError(e, State::Stopping);
+        emergencyBrake(e, State::Stopping);
 
         {
             /** Do the job **/
             std::scoped_lock lock { s_hitmanJobMutex };
             std::invoke(s_hitmanJob);
+            s_hitmanJob = c_dummyJob;
         }
 
         s_shutdownSync.count_down();
@@ -85,7 +86,7 @@ namespace Server {
             s_hitmanJob = c_dummyJob;
         }
 
-        logError(e, State::Stopping);
+        emergencyBrake(e, State::Stopping);
         s_shutdownSync.count_down();
     }
 
@@ -425,20 +426,18 @@ namespace Server {
     }
 
     void watchdog() noexcept {
-        for (;;) {
-            if (const auto state = s_state.load(); state >= State::Shutdown) {
-                break;
-            }
+        while (s_state.load() < State::Shutdown) {
             try {
-                /** Сюда добавляем полезную фоновую нагрузку **/
+                /** Сюда добавляем полезную фоновую нагрузку {{{ **/
                 Cache::maintain();
-                std::this_thread::sleep_for(c_sleep);
+                /** }}} **/
+                std::this_thread::sleep_for(c_watchdogSleep);
             } catch (const Basic::Failure & e) {
-                logError(e, State::Shutdown);
+                emergencyBrake(e, State::Shutdown);
             } catch (const std::exception & e) {
-                logError(e, State::Shutdown);
+                emergencyBrake(e, State::Shutdown);
             } catch (...) {
-                logError(Basic::Wcs::c_somethingWrong, State::Shutdown);
+                emergencyBrake(Basic::Wcs::c_somethingWrong, State::Shutdown);
             }
         }
 
@@ -450,7 +449,7 @@ namespace Server {
             --counter;
         }
         s_state.store(State::Stopping);
-        std::this_thread::sleep_for(c_sleep);
+        std::this_thread::sleep_for(c_controlOvertime1);
 
         if (counter > 0) {
             /** Do the job **/
@@ -572,7 +571,7 @@ namespace Server {
     bool stop() {
         s_state.store(State::Shutdown);
 
-        auto counter { (c_controlTimeout + 2 * c_sleep) / c_sleepQuantum };
+        auto counter { (c_controlTimeout + c_controlOvertime2) / c_sleepQuantum };
         while (counter > 0 && s_state.load() != State::Stopped) {
             std::this_thread::sleep_for(c_sleepQuantum);
             --counter;

@@ -8,7 +8,6 @@
 #include "numeric.h"
 #include "datetime.h"
 #include "text.h"
-#include "path.h"
 #include "hexer.h"
 #include <nlohmann/json.hpp>
 #include <cassert>
@@ -40,7 +39,7 @@ namespace Json {
     using Basic::DataError;
     using Handler = std::function<bool(const Nln::Json &, const std::wstring &)>;
 
-    namespace {
+    namespace Detail {
         void writeHex1(Meta::String auto & result, size_t & pos, uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
             Bin::Int2Hex hex { code };
@@ -102,8 +101,7 @@ namespace Json {
             auto it = text.begin();
 
             while (it != text.end()) {
-                uint32_t high { static_cast<uint32_t>(*it) };
-                switch (high) {
+                switch (const uint32_t high { *it /*static_cast<uint32_t>(*it)*/ }) {
                     case L'"':
                     case L'/':
                     case L'\\':
@@ -127,13 +125,12 @@ namespace Json {
                                 result += 5;
                                 break;
                             }
-                            uint32_t low { static_cast<uint32_t>(*it) };
+                            const uint32_t low { *it /*static_cast<uint32_t>(*it)*/ };
                             if (low >= 0xdc00 && low <= 0xdfff) {
                                 result += 8;
                                 break;
-                            } else {
-                                result += 10;
                             }
+                            result += 10;
                         } else {
                             result += 5;
                         }
@@ -147,10 +144,10 @@ namespace Json {
     }
 
     template<Meta::View T>
-    auto escapeBasic(const T text) -> typename Meta::TextTrait<T>::String {
+    auto escapeBasic(const T text) -> Meta::TextTrait<T>::String {
         using Txt = Meta::TextTrait<T>;
 
-        const auto extraSpace = basicExtraSpace(text);
+        const auto extraSpace = Detail::basicExtraSpace(text);
         if (extraSpace == 0) {
             return { text.begin(), text.end() };
         }
@@ -161,8 +158,7 @@ namespace Json {
         auto it = text.begin();
 
         while (it != text.end()) {
-            uint32_t codePoint { static_cast<uint32_t>(*it) };
-            switch (codePoint) {
+            switch (const uint32_t codePoint { static_cast<uint32_t>(*it) }) {
                 case Txt::c_quotationMark: result[++pos] = Txt::c_quotationMark; ++pos; break;
                 case Txt::c_solidus: result[++pos] = Txt::c_solidus; ++pos; break;
                 case Txt::c_reverseSolidus: pos += 2; break;
@@ -173,7 +169,7 @@ namespace Json {
                 case Txt::c_horizontalTab: result[++pos] = Txt::c_horizontalTabLiteral; ++pos; break;
                 default:
                     if (codePoint <= 0x1f || codePoint == 0x7f) {
-                        writeHex1(result, ++pos, codePoint);
+                        Detail::writeHex1(result, ++pos, codePoint);
                     } else {
                         result[pos++] = static_cast<wchar_t>(codePoint);
                     }
@@ -186,17 +182,17 @@ namespace Json {
     }
 
     template<Meta::String T>
-    auto escapeBasic(const T & text) -> typename Meta::TextTrait<T>::String {
+    auto escapeBasic(const T & text) -> Meta::TextTrait<T>::String {
         return escapeBasic<typename Meta::TextTrait<T>::View>(text);
     }
 
     template<Meta::Char T>
-    auto escapeBasic(const T * text) -> typename Meta::TextTrait<T>::String {
+    auto escapeBasic(const T * text) -> Meta::TextTrait<T>::String {
         return escapeBasic<typename Meta::TextTrait<T>::View>(text);
     }
 
     inline std::wstring escapeFull(const std::wstring_view text) {
-        const auto extraSpace = fullExtraSpace(text);
+        const auto extraSpace = Detail::fullExtraSpace(text);
         if (extraSpace == 0) {
             return { text.begin(), text.end() };
         }
@@ -207,8 +203,7 @@ namespace Json {
         auto it = text.begin();
 
         while (it != text.end()) {
-            uint32_t high { static_cast<uint32_t>(*it) };
-            switch (high) {
+            switch (const uint32_t high { *it /*static_cast<uint32_t>(*it)*/ }) {
                 case L'"': result[++pos] = '"'; ++pos; break;
                 case L'/': result[++pos] = '/'; ++pos; break;
                 case L'\\': pos += 2; break;
@@ -219,28 +214,27 @@ namespace Json {
                 case L'\t': result[++pos] = L't'; ++pos; break;
                 default:
                     if (high <= 0x001f) { // NOLINT(*-branch-clone)
-                        writeHex1(result, ++pos, high);
+                        Detail::writeHex1(result, ++pos, high);
                     } else if (high <= 0x007e) {
                         result[pos++] = static_cast<wchar_t>(high);
                     } else if (high <= 0x00ff) {
-                        writeHex1(result, ++pos, high);
+                        Detail::writeHex1(result, ++pos, high);
                     } else if (high >= 0xd800 && high <= 0xdbff) {
                         ++it;
                         if (it == text.end()) {
-                            writeHex2(result, ++pos, high);
+                            Detail::writeHex2(result, ++pos, high);
                             break;
                         }
-                        uint32_t low { static_cast<uint32_t>(*it) };
+                        const uint32_t low { *it /*static_cast<uint32_t>(*it)*/ };
                         if (low >= 0xdc00 && low <= 0xdfff) {
-                            uint32_t codePoint = 0x01'0000 + ((high & 0x03ff) << 10) | (low & 0x03ff);
-                            writeHex3(result, ++pos, codePoint);
+                            const uint32_t codePoint = 0x01'0000 + ((high & 0x03ff) << 10) | (low & 0x03ff);
+                            Detail::writeHex3(result, ++pos, codePoint);
                             break;
-                        } else {
-                            writeHex2(result, ++pos, high);
-                            writeHex2(result, ++pos, low);
                         }
+                        Detail::writeHex2(result, ++pos, high);
+                        Detail::writeHex2(result, ++pos, low);
                     } else {
-                        writeHex2(result, ++pos, high);
+                        Detail::writeHex2(result, ++pos, high);
                     }
                     break;
             }

@@ -9,7 +9,10 @@
 namespace Server {
     constexpr DateTime::SleepUnit c_sleep { DateTime::c_basicSleep }; // Миллисекунды
     constexpr DateTime::SleepUnit c_sleepQuantum { DateTime::c_basicSleepQuantum }; // Миллисекунды
+    constexpr DateTime::SleepUnit c_watchdogSleep { DateTime::c_basicSleep }; // Миллисекунды
     constexpr DateTime::SleepUnit c_controlTimeout { 30 * DateTime::c_basicSleep }; // Миллисекунды
+    constexpr DateTime::SleepUnit c_controlOvertime1 { DateTime::c_basicSleep }; // Миллисекунды
+    constexpr DateTime::SleepUnit c_controlOvertime2 { 2 * DateTime::c_basicSleep }; // Миллисекунды
     constexpr DateTime::SleepUnit c_closingDelay { 3 * DateTime::c_basicSleep }; // Миллисекунды
     constexpr int64_t c_delayedSockets { 10'000 };
     constexpr int64_t c_minRequestTimeout { 6 }; // Секунды

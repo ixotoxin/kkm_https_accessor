@@ -16,40 +16,40 @@ namespace Log {
         const bool found {
             Json::handleKey(
                 json, "log",
-                [] (const Nln::Json & json, const std::wstring & path) -> bool {
+                [] (const Nln::Json & json2, const std::wstring & path2) -> bool {
                     Json::handleKey(
-                        json, "console",
-                        [] (const Nln::Json & json, const std::wstring & path) -> bool {
+                        json2, "console",
+                        [] (const Nln::Json & json3, const std::wstring & path3) -> bool {
                             Json::handleKey(
-                                json, "level",
-                                [] (const Nln::Json & json, const std::wstring & path) -> bool {
-                                    if (json.is_object()) {
-                                        Json::handleKey(json, "foreground", Console::s_level, Wcs::c_levelCastMap, path);
+                                json3, "level",
+                                [] (const Nln::Json & json4, const std::wstring & path4) -> bool {
+                                    if (json4.is_object()) {
+                                        Json::handleKey(json4, "foreground", Console::s_level, Wcs::c_levelCastMap, path4);
                                     } else {
-                                        Json::handle(json, Console::s_level, Wcs::c_levelCastMap, path);
+                                        Json::handle(json4, Console::s_level, Wcs::c_levelCastMap, path4);
                                     }
                                     return true;
                                 },
-                                path
+                                path3
                             );
-                            Json::handleKey(json, "outputTimestamp", Console::s_outputTimestamp, path);
-                            Json::handleKey(json, "outputLevel", Console::s_outputLevel, path);
+                            Json::handleKey(json3, "outputTimestamp", Console::s_outputTimestamp, path3);
+                            Json::handleKey(json3, "outputLevel", Console::s_outputLevel, path3);
                             return true;
                         },
-                        path
+                        path2
                     );
                     Json::handleKey(
-                        json, "file",
-                        [] (const Nln::Json & json, const std::wstring & path) -> bool {
+                        json2, "file",
+                        [] (const Nln::Json & json3, const std::wstring & path3) -> bool {
                             Json::handleKey(
-                                json, "level",
-                                [] (const Nln::Json & json, const std::wstring & path) -> bool {
-                                    if (json.is_object()) {
-                                        Json::handleKey(json, "foreground", File::s_fgLevel, Wcs::c_levelCastMap, path);
-                                        Json::handleKey(json, "background", File::s_bgLevel, Wcs::c_levelCastMap, path);
+                                json3, "level",
+                                [] (const Nln::Json & json4, const std::wstring & path4) -> bool {
+                                    if (json4.is_object()) {
+                                        Json::handleKey(json4, "foreground", File::s_fgLevel, Wcs::c_levelCastMap, path4);
+                                        Json::handleKey(json4, "background", File::s_bgLevel, Wcs::c_levelCastMap, path4);
                                     } else {
                                         LevelUnderlying level { c_levelNone };
-                                        const bool found { Json::handle(json, level, Wcs::c_levelCastMap, path) };
+                                        const bool found { Json::handle(json4, level, Wcs::c_levelCastMap, path4) };
                                         if (found) {
                                             File::s_fgLevel = level;
                                             File::s_bgLevel = level;
@@ -57,36 +57,36 @@ namespace Log {
                                     }
                                     return true;
                                 },
-                                path
+                                path3
                             );
                             Json::handleKey(
-                                json, "directory", File::s_directory,
-                                Path::touchDir(Path::absolute(Main::s_directory, Path::noEmpty())), path
+                                json3, "directory", File::s_directory,
+                                Path::touchDir(Path::absolute(Main::s_directory, Path::noEmpty())), path3
                             );
                             return true;
                         },
-                        path
+                        path2
                     );
                     Json::handleKey(
-                        json, "eventLog",
-                        [] (const Nln::Json & json, const std::wstring & path) -> bool {
+                        json2, "eventLog",
+                        [] (const Nln::Json & json3, const std::wstring & path3) -> bool {
                             Json::handleKey(
-                                json, "level",
-                                [] (const Nln::Json & json, const std::wstring & path) -> bool {
-                                    if (json.is_object()) {
+                                json3, "level",
+                                [] (const Nln::Json & json4, const std::wstring & path4) -> bool {
+                                    if (json4.is_object()) {
                                         Json::handleKey(
-                                            json, "foreground", EventLog::s_fgLevel,
-                                            Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path
+                                            json4, "foreground", EventLog::s_fgLevel,
+                                            Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path4
                                         );
                                         Json::handleKey(
-                                            json, "background", EventLog::s_bgLevel,
-                                            Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path
+                                            json4, "background", EventLog::s_bgLevel,
+                                            Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path4
                                         );
                                     } else {
                                         LevelUnderlying level { c_levelNone };
                                         const bool found {
                                             Json::handle(
-                                                json, level, Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path
+                                                json4, level, Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path4
                                             )
                                         };
                                         if (found) {
@@ -96,13 +96,13 @@ namespace Log {
                                     }
                                     return true;
                                 },
-                                path
+                                path3
                             );
                             return true;
                         },
-                        path
+                        path2
                     );
-                    Json::handleKey(json, "appendLocation", s_appendLocation, path);
+                    Json::handleKey(json2, "appendLocation", s_appendLocation, path2);
                     return true;
                 }
             )

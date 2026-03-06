@@ -9,7 +9,6 @@
 #include <lib/errexp.h>
 #include <lib/except.h>
 #include <log/write.h>
-// #include <optional> // CLEANUP
 #include <winsvc.h>
 
 namespace Service {
@@ -112,7 +111,7 @@ namespace Service {
     }
 
     namespace Control {
-        /*inline*/ void queryStatus(::SC_HANDLE & service, ::SERVICE_STATUS_PROCESS & status) {
+        void queryStatus(::SC_HANDLE & service, ::SERVICE_STATUS_PROCESS & status) {
             ::DWORD bytesNeeded;
 
             const auto result
@@ -129,7 +128,7 @@ namespace Service {
             }
         }
 
-        /*inline*/ ::DWORD waitNewState(
+        ::DWORD waitNewState(
             ::SC_HANDLE & service,
             ::SERVICE_STATUS_PROCESS & status,
             const ::DWORD value,
@@ -155,7 +154,7 @@ namespace Service {
             return status.dwCurrentState;
         }
 
-        /*inline*/ ::DWORD waitNewState(
+        ::DWORD waitNewState(
             ::SC_HANDLE & service,
             const ::DWORD value,
             const std::wstring_view message
@@ -219,7 +218,7 @@ namespace Service {
             LOG_INFO_CLI(Wcs::c_started);
         }
 
-        /*inline*/ void stop(::SC_HANDLE & service, const bool logAlreadyStopped = true) {
+        void stop(::SC_HANDLE & service, const bool logAlreadyStopped = true) {
             ::SERVICE_STATUS_PROCESS status {};
 
             queryStatus(service, status);

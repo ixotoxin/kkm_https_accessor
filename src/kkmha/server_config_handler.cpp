@@ -6,7 +6,6 @@
 #include <lib/wconv.h>
 #include <lib/text.h>
 #include <kkm/variables.h>
-// #include <kkm/device.h> // CLEANUP
 #include <cassert>
 
 namespace Server::Config {

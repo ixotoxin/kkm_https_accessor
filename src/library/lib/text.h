@@ -139,10 +139,10 @@ namespace Text {
         if (end == text || *end) {
             throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
         }
-        if constexpr (sizeof(T) != sizeof(typename Num::CastType)) {
+        if constexpr (sizeof(T) != sizeof(Num::CastType)) {
             if (
-                value < static_cast<typename Num::CastType>(std::numeric_limits<T>::min())
-                || value > static_cast<typename Num::CastType>(std::numeric_limits<T>::max())
+                value < static_cast<Num::CastType>(std::numeric_limits<T>::min())
+                || value > static_cast<Num::CastType>(std::numeric_limits<T>::max())
             ) {
                 throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
             }
@@ -182,7 +182,7 @@ namespace Text {
     [[maybe_unused]]
     Meta::Rebind<T>::template With<typename Meta::TextTrait<typename T::value_type>::Opposite::String>
     convert(const T & container) {
-        using Type = typename Meta::TextTrait<typename T::value_type>::Opposite::String;
+        using Type = Meta::TextTrait<typename T::value_type>::Opposite::String;
         typename Meta::Rebind<T>::template With<Type> result;
         for (auto & item : container) {
             result.emplace_back(convert(item));

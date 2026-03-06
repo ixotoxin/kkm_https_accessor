@@ -76,7 +76,7 @@ namespace Server::KkmOp {
     };
 
     [[maybe_unused]]
-    /*inline*/ std::shared_ptr<KnownConnParams> resolveConnParams(Payload & payload) {
+    std::shared_ptr<KnownConnParams> resolveConnParams(Payload & payload) {
         if (payload.m_serialNumber.empty()) {
             payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
             return nullptr;
@@ -183,11 +183,7 @@ namespace Server::KkmOp {
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
-                &Device::getCashStat/*,
-                &Device::getFndtOfdExchangeStatus,
-                &Device::getFndtLastReceipt,
-                &Device::getFndtLastDocument,
-                &Device::getFndtErrors*/ // CLEANUP
+                &Device::getCashStat
             );
         }
         payload.m_expiresAfter = c_reportCacheLifeTime;

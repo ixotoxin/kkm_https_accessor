@@ -379,16 +379,16 @@ namespace Kkm {
         const bool result {
             Json::handleKey(
                 json, "operator",
-                [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
+                [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
                     const bool found {
                         Json::handleKey(
-                            json, "name", details.m_operatorName, Text::Wcs::length(1, 64, Text::Wcs::trim()), path
+                            json2, "name", details.m_operatorName, Text::Wcs::length(1, 64, Text::Wcs::trim()), path2
                         )
                     };
                     if (!found) {
-                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path, L"name")); // NOLINT(*-exception-baseclass)
+                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path2, L"name")); // NOLINT(*-exception-baseclass)
                     }
-                    Json::handleKey(json, "inn", details.m_operatorInn, Text::Wcs::maxLength(12), path);
+                    Json::handleKey(json2, "inn", details.m_operatorInn, Text::Wcs::maxLength(12), path2);
                     return true;
                 }
             )
@@ -414,16 +414,16 @@ namespace Kkm {
         assign(base, json);
         Json::handleKey(
             json, "customer",
-            [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
-                Json::handleKey(json, "account", details.m_customerAccount, Text::Wcs::maxLength(32), path);
-                Json::handleKey(json, "contact", details.m_customerContact, Text::Wcs::maxLength(64), path);
-                Json::handleKey(json, "name", details.m_customerName, Text::Wcs::maxLength(256), path);
-                Json::handleKey(json, "inn", details.m_customerInn, Text::Wcs::maxLength(12), path);
-                Json::handleKey(json, "birthdate", details.m_customerBirthdate, Text::Wcs::maxLength(10), path);
-                Json::handleKey(json, "citizenship", details.m_customerCitizenship, Text::Wcs::maxLength(3), path);
-                Json::handleKey(json, "documentCode", details.m_customerDocumentCode, Text::Wcs::maxLength(32), path);
-                Json::handleKey(json, "documentData", details.m_customerDocumentData, Text::Wcs::maxLength(64), path);
-                Json::handleKey(json, "address", details.m_customerAddress, Text::Wcs::maxLength(256), path);
+            [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
+                Json::handleKey(json2, "account", details.m_customerAccount, Text::Wcs::maxLength(32), path2);
+                Json::handleKey(json2, "contact", details.m_customerContact, Text::Wcs::maxLength(64), path2);
+                Json::handleKey(json2, "name", details.m_customerName, Text::Wcs::maxLength(256), path2);
+                Json::handleKey(json2, "inn", details.m_customerInn, Text::Wcs::maxLength(12), path2);
+                Json::handleKey(json2, "birthdate", details.m_customerBirthdate, Text::Wcs::maxLength(10), path2);
+                Json::handleKey(json2, "citizenship", details.m_customerCitizenship, Text::Wcs::maxLength(3), path2);
+                Json::handleKey(json2, "documentCode", details.m_customerDocumentCode, Text::Wcs::maxLength(32), path2);
+                Json::handleKey(json2, "documentData", details.m_customerDocumentData, Text::Wcs::maxLength(64), path2);
+                Json::handleKey(json2, "address", details.m_customerAddress, Text::Wcs::maxLength(256), path2);
                 details.m_customerDataIsPresent
                     = !details.m_customerAccount.empty() || !details.m_customerContact.empty()
                       || !details.m_customerName.empty() || !details.m_customerInn.empty()
@@ -435,48 +435,48 @@ namespace Kkm {
         );
         Json::handleKey(
             json, "seller",
-            [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
-                Json::handleKey(json, "email", details.m_sellerEmail, Text::Wcs::maxLength(64), path);
+            [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
+                Json::handleKey(json2, "email", details.m_sellerEmail, Text::Wcs::maxLength(64), path2);
                 details.m_sellerDataIsPresent = !details.m_sellerEmail.empty();
                 return true;
             }
         );
         Json::handleKey(
             json, "text",
-            [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
+            [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
                 Json::handleKey(
-                    json, "content", details.m_text.m_content,
-                    Text::length<std::wstring>(1, c_maxTextLength), path
+                    json2, "content", details.m_text.m_content,
+                    Text::length<std::wstring>(1, c_maxTextLength), path2
                 );
-                Json::handleKey(json, "center", details.m_text.m_center, path);
-                Json::handleKey(json, "magnified", details.m_text.m_magnified, path);
-                Json::handleKey(json, "separated", details.m_text.m_separated, path);
+                Json::handleKey(json2, "center", details.m_text.m_center, path2);
+                Json::handleKey(json2, "magnified", details.m_text.m_magnified, path2);
+                Json::handleKey(json2, "separated", details.m_text.m_separated, path2);
                 return true;
             }
         );
         Json::handleKey(
             json, "headerText",
-            [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
+            [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
                 Json::handleKey(
-                    json, "content", details.m_headerText.m_content,
-                    Text::length<std::wstring>(1, c_maxTextLength), path
+                    json2, "content", details.m_headerText.m_content,
+                    Text::length<std::wstring>(1, c_maxTextLength), path2
                 );
-                Json::handleKey(json, "center", details.m_headerText.m_center, path);
-                Json::handleKey(json, "magnified", details.m_headerText.m_magnified, path);
-                Json::handleKey(json, "separated", details.m_headerText.m_separated, path);
+                Json::handleKey(json2, "center", details.m_headerText.m_center, path2);
+                Json::handleKey(json2, "magnified", details.m_headerText.m_magnified, path2);
+                Json::handleKey(json2, "separated", details.m_headerText.m_separated, path2);
                 return true;
             }
         );
         Json::handleKey(
             json, "footerText",
-            [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
+            [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
                 Json::handleKey(
-                    json, "content", details.m_footerText.m_content,
-                    Text::length<std::wstring>(1, c_maxTextLength), path
+                    json2, "content", details.m_footerText.m_content,
+                    Text::length<std::wstring>(1, c_maxTextLength), path2
                 );
-                Json::handleKey(json, "center", details.m_footerText.m_center, path);
-                Json::handleKey(json, "magnified", details.m_footerText.m_magnified, path);
-                Json::handleKey(json, "separated", details.m_footerText.m_separated, path);
+                Json::handleKey(json2, "center", details.m_footerText.m_center, path2);
+                Json::handleKey(json2, "magnified", details.m_footerText.m_magnified, path2);
+                Json::handleKey(json2, "separated", details.m_footerText.m_separated, path2);
                 return true;
             }
         );
@@ -532,8 +532,8 @@ namespace Kkm {
         const bool paymentFound {
             Json::handleKey(
                 json, "payment",
-                [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
-                    if (std::wstring sum {}; Json::handleKey(json, "sum", sum, path)) {
+                [& details] (const Nln::Json & json2, const std::wstring & path2) -> bool {
+                    if (std::wstring sum {}; Json::handleKey(json2, "sum", sum, path2)) {
                         try {
                             Text::lower(sum);
                             if (sum == L"auto") {
@@ -542,36 +542,36 @@ namespace Kkm {
                                 details.m_paymentSum = Text::cast<double>(sum);
                             }
                         } catch (...) {
-                            throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path, L"sum")); // NOLINT(*-exception-baseclass)
+                            throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path2, L"sum")); // NOLINT(*-exception-baseclass)
                         }
                     } else {
-                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path, L"sum")); // NOLINT(*-exception-baseclass)
+                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path2, L"sum")); // NOLINT(*-exception-baseclass)
                     }
                     const bool found {
-                        Json::handleKey(json, "type", details.m_paymentType, Mbs::c_paymentTypeCastMap, path)
+                        Json::handleKey(json2, "type", details.m_paymentType, Mbs::c_paymentTypeCastMap, path2)
                     };
                     if (!found) {
-                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path, L"type")); // NOLINT(*-exception-baseclass)
+                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path2, L"type")); // NOLINT(*-exception-baseclass)
                     }
                     if (details.m_paymentType == PaymentType::Electronically) {
                         details.m_electroPaymentInfo
                             = Json::handleKey(
-                                json, "electroPaymentInfo",
-                                [& details] (const Nln::Json & json, const std::wstring & path) -> bool {
-                                    bool found { Json::handleKey(json, "method", details.m_electroPaymentMethod, path) };
+                                json2, "electroPaymentInfo",
+                                [& details] (const Nln::Json & json3, const std::wstring & path3) -> bool {
+                                    bool found { Json::handleKey(json3, "method", details.m_electroPaymentMethod, path3) };
                                     if (!found) {
-                                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path, L"method")); // NOLINT(*-exception-baseclass)
+                                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path3, L"method")); // NOLINT(*-exception-baseclass)
                                     }
                                     found
                                         = Json::handleKey(
-                                            json, "id", details.m_electroPaymentId, Text::Wcs::length(1, 256), path
+                                            json3, "id", details.m_electroPaymentId, Text::Wcs::length(1, 256), path3
                                         );
                                     if (!found) {
-                                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path, L"id")); // NOLINT(*-exception-baseclass)
+                                        throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path3, L"id")); // NOLINT(*-exception-baseclass)
                                     }
                                     Json::handleKey(
-                                        json, "addInfo", details.m_electroPaymentAddInfo,
-                                        Text::Wcs::maxLength(256), path
+                                        json3, "addInfo", details.m_electroPaymentAddInfo,
+                                        Text::Wcs::maxLength(256), path3
                                     );
                                     return true;
                                 }

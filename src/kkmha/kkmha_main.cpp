@@ -60,7 +60,7 @@ void usage(std::wostream & stream, const std::filesystem::path & path) {
 #endif
 }
 
-int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
+int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
     Config::initLogger();
     Config::initProfiler();

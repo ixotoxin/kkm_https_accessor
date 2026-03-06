@@ -7,7 +7,6 @@
 #include "winapi.h"
 #include <fcntl.h>
 #include <io.h>
-#include <type_traits>
 #include <utility>
 #include <cstdio>
 #include <clocale>
@@ -18,7 +17,7 @@ namespace Config {
     constexpr CodePage c_utf8Out [[maybe_unused]] { CP_UTF8, ".UTF8" };
 
     [[maybe_unused]]
-    inline void initConsole(CodePage codePage) {
+    inline void initConsole(const CodePage codePage) {
         ::SetConsoleOutputCP(codePage.first);
         ::SetConsoleCP(codePage.first);
         ::setlocale(LC_ALL, codePage.second);
@@ -28,7 +27,7 @@ namespace Config {
     constexpr OutputMode c_u16Text [[maybe_unused]] { _O_U16TEXT };
 
     [[maybe_unused]]
-    inline void initConsole(OutputMode outputMode) {
+    inline void initConsole(const OutputMode outputMode) {
         ::_setmode(::_fileno(stdout), outputMode);
         ::_setmode(::_fileno(stderr), outputMode);
     }

@@ -40,8 +40,8 @@ namespace Bin {
             // static_assert(N > 0);
             // static_assert(N + O <= S);
             using Txt = Meta::TextTrait<decltype(result)>;
-            if (result.size() < (pos + (N * 2))) {
-                result.resize(pos + (N * 2), Txt::c_defaultPadding);
+            if (result.size() < pos + N * 2) {
+                result.resize(pos + N * 2, Txt::c_defaultPadding);
             }
             for (size_t count { N }, offset { O + N - 1 }; count; --count) {
                 result[pos++] = Txt::c_hexDigits[m_bytes[offset].m_h];
@@ -66,8 +66,8 @@ namespace Bin {
             assert(count > 0);
             assert(count + offset <= S);
             using Txt = Meta::TextTrait<decltype(result)>;
-            if (result.size() < (pos + (count * 2))) {
-                result.resize(pos + (count * 2), Txt::c_defaultPadding);
+            if (result.size() < pos + count * 2) {
+                result.resize(pos + count * 2, Txt::c_defaultPadding);
             }
             offset += count - 1;
             while (count--) {
@@ -78,7 +78,7 @@ namespace Bin {
     };
 
 #if defined(_MSC_VER) && !defined(__clang__)
-    static_assert(0xfe == std::bit_cast<uint8_t>(Bin::Hexer<42>::HexPair { 0xe, 0xf }));
+    static_assert(0xfe == std::bit_cast<uint8_t>(Hexer<42>::HexPair { 0xe, 0xf }));
 #endif
 
     template<std::integral T>
