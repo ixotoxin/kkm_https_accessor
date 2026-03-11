@@ -443,7 +443,7 @@ namespace Server {
 
         LOG_DEBUG_TS(Wcs::c_stopping);
 
-        auto counter { c_controlTimeout / c_sleepQuantum };
+        auto counter = c_controlTimeout / c_sleepQuantum;
         while (counter > 0 && s_concurrentRequestsCounter > 0) {
             std::this_thread::sleep_for(c_sleepQuantum);
             --counter;
@@ -529,8 +529,8 @@ namespace Server {
 
         config.m_sslContext.set_password_callback([] (auto, auto) { return s_privateKeyPassword; });
         // TODO: Облагородить способ установки ключа и сертификатов.
-        config.m_sslContext.use_certificate_chain_file(Text::convert(s_certificateChainFile.native()));
-        config.m_sslContext.use_private_key_file(Text::convert(s_privateKeyFile.native()), Asio::SslContext::pem);
+        config.m_sslContext.use_certificate_chain_file(Text::convert(s_certificateChainFile.wstring()));
+        config.m_sslContext.use_private_key_file(Text::convert(s_privateKeyFile.wstring()), Asio::SslContext::pem);
         config.m_sslContext.set_verify_mode(asio::ssl::verify_none);
 
         return config;
@@ -571,7 +571,7 @@ namespace Server {
     bool stop() {
         s_state.store(State::Shutdown);
 
-        auto counter { (c_controlTimeout + c_controlOvertime2) / c_sleepQuantum };
+        auto counter = (c_controlTimeout + c_controlOvertime2) / c_sleepQuantum;
         while (counter > 0 && s_state.load() != State::Stopped) {
             std::this_thread::sleep_for(c_sleepQuantum);
             --counter;

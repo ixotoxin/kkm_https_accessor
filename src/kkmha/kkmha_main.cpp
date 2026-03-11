@@ -33,7 +33,7 @@ void usage(std::wostream & stream, const std::filesystem::path & path) {
     stream
         << L"\n"
         L"Версия: " << BUILD_VERSION << L"\n"
-        L"Использование: " << path.filename().native()
+        L"Использование: " << path.filename().wstring()
 #if BUILD_SEPARATED
         << L" команда\n"
 #else
@@ -105,7 +105,7 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
                 }
 
                 if (KKM_CMD_EQ(command, L"install", L"i")) {
-                    Service::Control::install(std::format(L"\"{}\" service", Main::s_file.native()));
+                    Service::Control::install(std::format(L"\"{}\" service", Main::s_file.wstring()));
                     ::Sleep(DateTime::c_basicSleep);
                     return EXIT_SUCCESS;
                 }

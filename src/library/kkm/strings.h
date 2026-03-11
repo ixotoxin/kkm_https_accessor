@@ -17,7 +17,6 @@ namespace Kkm {
         KKM_WSTR(c_unsupportedValue2, L"В данный момент значение '{}' свойства '{}.{}' не поддерживается");
 
         KKM_WSTR(c_invalidSerialNumber, L"Недопустимый серийный номер");
-        KKM_WSTR(c_invalidFilePath, L"Не удалось загрузить параметры подключения");
         KKM_WSTR(c_invalidConnParams, L"Недопустимые параметры подключения");
         KKM_WSTR(c_notImplemented, L"Не реализовано");
         KKM_WSTR(c_notAvailable, L"Недоступна");
@@ -25,13 +24,14 @@ namespace Kkm {
         KKM_WSTR(c_exchangeError, L"Ошибка обмена с ККМ");
         KKM_WSTR(c_serialNumberMismatch, L"Ошибка подключения (ожидаемый СН: {}, фактический СН: {})");
 
+        KKM_WSTR(c_registryError, L"Ошибка доступа к реестру ККМ");
+        KKM_WSTR(c_saved, L"Параметры подключения ККМ [{}] успешно сохранены");
+        KKM_WSTR(c_savingError, L"Не удалось сохранить параметры подключения ККМ [{}]");
+        KKM_WSTR(c_loaded, L"Параметры подключения ККМ [{}] успешно загружены");
+        KKM_WSTR(c_loadingError, L"Не удалось загрузить параметры подключения ККМ [{}]");
+
         KKM_WSTR(c_fault, L"{}ККМ [{}]: Ошибка: {}");
         KKM_WSTR(c_wrongLength, L"{}ККМ [{}]: Не удалось получить ширину ленты, будет использовано значение по-умолчанию");
-
-        KKM_WSTR(c_saved, L"ККМ [{}]: Параметры подключения успешно сохранены");
-        KKM_WSTR(c_savingError, L"ККМ [{}]: Не удалось сохранить параметры подключения");
-        KKM_WSTR(c_loaded, L"ККМ [{}]: Параметры подключения успешно загружены");
-        KKM_WSTR(c_loadingError, L"ККМ [{}]: Не удалось загрузить параметры подключения");
 
         KKM_WSTR(c_cancelingError, L"{}ККМ [{}]: Ошибка отмены чека: {}");
         KKM_WSTR(c_closingError, L"{}ККМ [{}]: Ошибка закрытия документа: {}");
@@ -95,7 +95,7 @@ namespace Kkm {
         KKM_WSTR(c_helloTitle, L"Привет!");
         KKM_WSTR(c_helloText, L"\nЯ трудолюбивая касса.\n\nЯ очень рада работать в компании таких замечательных людей.");
 
-        inline const std::array/*<std::wstring, 11>*/ c_allowedBaudRate {
+        inline const std::array c_allowedBaudRate {
             std::to_wstring(Atol::LIBFPTR_PORT_BR_1200),
             std::to_wstring(Atol::LIBFPTR_PORT_BR_2400),
             std::to_wstring(Atol::LIBFPTR_PORT_BR_4800),
@@ -223,14 +223,14 @@ namespace Kkm {
         inline const std::unordered_map<FfdVersionDetect, std::string_view> c_ffdVersionDetect {
             { FfdVersionDetect::Never, "never" },
             { FfdVersionDetect::Once, "once" },
-            { FfdVersionDetect::Sometimes, "sometimes" },
+            /*{ FfdVersionDetect::Sometimes, "sometimes" },*/
             { FfdVersionDetect::Always, "always" }
         };
 
         inline const std::unordered_map<std::string, FfdVersionDetect> c_ffdVersionDetectMap {
             { "never", FfdVersionDetect::Never },
             { "once", FfdVersionDetect::Once },
-            { "sometimes", FfdVersionDetect::Sometimes },
+            /*{ "sometimes", FfdVersionDetect::Sometimes },*/
             { "always", FfdVersionDetect::Always }
         };
 

@@ -13,14 +13,15 @@ namespace Kkm {
         Device() = delete;
         Device(const Device &) = delete;
         Device(Device &&) = delete;
-        explicit Device(const ConnParams &, std::wstring_view = {});
-        explicit Device(const KnownConnParams &, std::wstring_view = {});
+        explicit Device(ConnParams, std::wstring_view = {});
         ~Device();
 
         Device & operator=(const Device &) = delete;
         Device & operator=(Device &&) = delete;
 
         [[nodiscard]] const std::wstring & serialNumber() const;
+        [[nodiscard]] FfdVersion ffdVersion(bool = false);
+
         void getStatus(StatusResult &);
         void getShiftState(ShiftStateResult &);
         void getReceiptState(ReceiptStateResult &);
@@ -51,17 +52,19 @@ namespace Kkm {
         void closeShift(const CloseDetails &, Result &);
         void resetState(const CloseDetails &, Result &);
 
+    protected:
+        explicit Device(std::wstring_view);
+
+        void connect(ConnParams);
+
     private:
         Atol::Fptr m_kkm {};
         FfdVersionsResult m_ffdVersions {};
         std::wstring m_serialNumber {};
         std::wstring m_logPrefix;
         unsigned int m_lineLength { 0 };
+        FfdVersion m_storedFfdVersion { FfdVersion::Unknown };
         bool m_needToCancelReceipt { false };
-
-        explicit Device(std::wstring_view);
-
-        void connect(const ConnParams &);
 
         void fail(Result &, std::wstring_view, const SrcLoc::Point & = SrcLoc::Point::current());
         void fail(Result &, const std::wstring &, const SrcLoc::Point & = SrcLoc::Point::current());
@@ -69,7 +72,6 @@ namespace Kkm {
         void fail(Result &, const SrcLoc::Point & = SrcLoc::Point::current());
 
         void detectFfdVersions();
-        FfdVersion getFfdVersion();
 
         [[nodiscard, maybe_unused]] static std::wstring addMargins(std::wstring_view, int = 1, int = -1);
         [[maybe_unused]] void addSeparator(std::wstring &, int = 0, int = -1) const;
@@ -89,5 +91,17 @@ namespace Kkm {
         void subRegisterReceipt(ReceiptType, const ReceiptDetails &, Result &);
         void subCashOut(const OperatorDetails &, Result &);
         void subCloseShift(const OperatorDetails &, Result &);
+    };
+
+    class NewDevice : public Device {
+    public:
+        NewDevice() = delete;
+        NewDevice(const NewDevice &) = delete;
+        NewDevice(NewDevice &&) = delete;
+        explicit NewDevice(ConnParams, std::wstring_view = {});
+        ~NewDevice() = default;
+
+        NewDevice & operator=(const NewDevice &) = delete;
+        NewDevice & operator=(NewDevice &&) = delete;
     };
 }

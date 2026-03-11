@@ -27,10 +27,10 @@ namespace Server::Config {
             std::vector<std::string> serials {};
             for (auto const & entry: std::filesystem::directory_iterator { Kkm::s_dbDirectory }) {
                 if (entry.is_regular_file()) {
-                    if (Text::lowered(entry.path().extension().native()) != L".json") {
+                    if (Text::lowered(entry.path().extension().wstring()) != L".json") {
                         continue;
                     }
-                    serials.emplace_back(Text::convert(entry.path().stem().native()));
+                    serials.emplace_back(Text::convert(entry.path().stem().wstring()));
                 }
             }
             response->m_data["knownDevices"] = serials;

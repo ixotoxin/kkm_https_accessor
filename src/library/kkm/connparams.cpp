@@ -5,42 +5,9 @@
 #include "defaults.h"
 #include "variables.h"
 #include "strings.h"
-#include <lib/json.h>
-#include <cassert>
-#include <fstream>
 
 namespace Kkm {
-    using namespace std::string_literals;
-
-    constexpr std::wstring_view allowed { L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_" };
-
-    ConnParams::ConnParams(const Container & params)
-    : m_params { params } {}
-
-    ConnParams::ConnParams(Container && params)
-    : m_params { std::forward<Container>(params) } {}
-
-    ConnParams::operator std::wstring() const {
-        std::wstring params;
-        Text::joinTo(params, m_params, c_connParamsSeparator);
-        return params;
-    }
-
-    void ConnParams::apply(Atol::Fptr & kkm) const {
-        if (m_params[0] == L"com"s) {
-            applyCom(kkm);
-        } else if (m_params[0] == L"usb"s) {
-            applyUsb(kkm);
-        } else if (m_params[0] == L"tcpip"s || m_params[0] == L"ip"s) {
-            applyTcpIp(kkm);
-        } else if (m_params[0] == L"bluetooth"s || m_params[0] == L"bt"s) {
-            applyBluetooth(kkm);
-        } else {
-            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
-        }
-    }
-
-    void ConnParams::applyCommon(Atol::Fptr & kkm) const { // NOLINT(*-convert-member-functions-to-static)
+    void BaseConnParams::applyCommon(Atol::Fptr & kkm) {
         kkm.setSingleSetting(Atol::LIBFPTR_SETTING_MODEL, std::to_wstring(Atol::LIBFPTR_MODEL_ATOL_AUTO));
         if (s_timeZoneConfigured) {
             kkm.setSingleSetting(Atol::LIBFPTR_SETTING_TIME_ZONE, std::to_wstring(Meta::toUnderlying(s_timeZone)));
@@ -52,157 +19,142 @@ namespace Kkm {
         // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_AUTO_MEASUREMENT_UNIT, ???);
     }
 
-    void ConnParams::applyCom(Atol::Fptr & kkm) const {
-        if (m_params.size() < 2) {
-            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
-        }
-        std::wstring port { L"COM" };
-        port.append(m_params[1]);
-        std::wstring baudRate {};
-        if (m_params.size() < 3) {
-            baudRate.assign(s_defaultBaudRate);
-        } else if (std::ranges::find(Wcs::c_allowedBaudRate, m_params[2]) != Wcs::c_allowedBaudRate.end()) {
-            baudRate.assign(m_params[2]);
-        } else {
-            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
-        }
-        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_PORT, std::to_wstring(Atol::LIBFPTR_PORT_COM));
-        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_COM_FILE, port);
-        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_BAUDRATE, baudRate);
+    void BaseConnParams::apply(Atol::Fptr & kkm) const {
+        this->applyDetail(kkm);
         applyCommon(kkm);
         if (kkm.applySingleSettings() < 0) {
             throw Failure(kkm); // NOLINT(*-exception-baseclass)
         }
     }
 
-    void ConnParams::applyUsb(Atol::Fptr &) const { // NOLINT(*-convert-member-functions-to-static)
-        // TODO: Реализовать.
-        // if (m_params.size() < 2) {
-        //     throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
-        // }
-        // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_PORT, std::to_wstring(Atol::LIBFPTR_PORT_USB));
-        // ...
-        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass)
+    [[nodiscard]]
+    FfdVersion BaseConnParams::storedFfdVersion() const {
+        return m_ffdVersion;
     }
 
-    void ConnParams::applyTcpIp(Atol::Fptr &) const { // NOLINT(*-convert-member-functions-to-static)
-        // TODO: Реализовать.
-        // if (m_params.size() < 2) {
-        //     throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
-        // }
-        // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_PORT, std::to_wstring(Atol::LIBFPTR_PORT_TCPIP));
-        // ...
-        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass)
-    }
-
-    void ConnParams::applyBluetooth(Atol::Fptr &) const { // NOLINT(*-convert-member-functions-to-static)
-        // TODO: Реализовать.
-        // if (m_params.size() < 2) {
-        //     throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
-        // }
-        // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_PORT, std::to_wstring(Atol::LIBFPTR_PORT_BLUETOOTH));
-        // ...
-        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass)
-    }
-
-    NewConnParams::NewConnParams(const std::wstring_view params)
-    : ConnParams {} {
-        Text::splitTo(m_params, params, c_connParamsSeparator);
-        if (m_params.size() < 2) {
+    ComConnParams::ComConnParams(const ConnParamVector & paramVector) : BaseConnParams() {
+        if (paramVector.size() < 2) {
             throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
         }
-        Text::lower(m_params[0]);
+        m_port.assign(paramVector[1]);
+        if (paramVector.size() >= 3) {
+            if (std::ranges::find(Wcs::c_allowedBaudRate, paramVector[2]) != Wcs::c_allowedBaudRate.end()) {
+                m_baudRate.assign(paramVector[2]);
+            } else {
+                throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+            }
+        } else {
+            m_baudRate.assign(s_defaultBaudRate);
+        }
     }
 
-    void NewConnParams::save(const std::wstring & serialNumber) const {
-        if (serialNumber.empty() || std::string::npos != serialNumber.find_first_not_of(allowed)) {
-            throw Failure(KKM_WFMT(Wcs::c_savingError, L"-")); // NOLINT(*-exception-baseclass)
+    ComConnParams::ComConnParams(const ConnParamJson & paramJson) : BaseConnParams() {
+        if (!paramJson.is_object()) {
+            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
         }
-        std::filesystem::path filePath { s_dbDirectory };
-        if (!std::filesystem::is_directory(filePath)) {
-            std::filesystem::create_directories(filePath);
-            if (!std::filesystem::is_directory(filePath)) {
-                throw Failure(KKM_WFMT(Wcs::c_savingError, serialNumber)); // NOLINT(*-exception-baseclass)
+        if (!paramJson.contains("port")) {
+            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+        }
+        m_port.assign(std::to_wstring(Json::cast<unsigned>(paramJson["port"])));
+        if (paramJson.contains("baudRate")) {
+            auto baudRate = std::to_wstring(Json::cast<unsigned>(paramJson["baudRate"]));
+            if (std::ranges::find(Wcs::c_allowedBaudRate, baudRate) != Wcs::c_allowedBaudRate.end()) {
+                m_baudRate.assign(std::move(baudRate));
+            } else {
+                throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+            }
+        } else {
+            m_baudRate.assign(s_defaultBaudRate);
+        }
+        if (/*s_ffdVersionDetect == FfdVersionDetect::Once &&*/ paramJson.contains("ffdVersion")) {
+            m_ffdVersion
+                = static_cast<FfdVersion>(Json::cast<std::underlying_type_t<FfdVersion>>(paramJson["ffdVersion"]));
+            if (!Mbs::c_ffdVersions.contains(m_ffdVersion)) {
+                throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
             }
         }
-        filePath /= serialNumber + L".json"s;
-        // filePath /= serialNumber + L"#conn.json"s;
-        const Nln::Json json = Text::convert(m_params);
-        std::ofstream file { filePath };
-        file << json.dump();
-        file.close();
-        if (!std::filesystem::is_regular_file(filePath)) {
-            throw Failure(KKM_WFMT(Wcs::c_savingError, serialNumber)); // NOLINT(*-exception-baseclass)
+    }
+
+    void ComConnParams::applyDetail(Atol::Fptr & kkm) const {
+        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_PORT, std::to_wstring(Atol::LIBFPTR_PORT_COM));
+        std::wstring port { L"COM" };
+        port.append(m_port);
+        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_COM_FILE, port);
+        if (!m_baudRate.empty()) {
+            kkm.setSingleSetting(Atol::LIBFPTR_SETTING_BAUDRATE, m_baudRate);
         }
     }
 
-    KnownConnParams::KnownConnParams(const NewConnParams & params, const std::wstring_view serialNumber)
-    : ConnParams { params.m_params }, m_serialNumber { serialNumber } {}
-
-    KnownConnParams::KnownConnParams(NewConnParams && params, const std::wstring_view serialNumber)
-    : ConnParams { std::forward<Container>(params.m_params) }, m_serialNumber { serialNumber } {}
-
-    void KnownConnParams::load(const std::filesystem::path & path) {
-        assert(m_params.empty());
-        std::ifstream file { path };
-        if (!file.is_open() || !file.good()) {
-            throw Failure(LIB_WFMT(Basic::Wcs::c_couldntReadFile, path.native())); // NOLINT(*-exception-baseclass)
-        }
-        const Nln::Json json(Nln::Json::parse(std::ifstream(path)));
-        Json::handle(json, m_params);
+    ComConnParams::operator ConnParamString() const {
+        return L"COM"s + m_port;
     }
 
-    KnownConnParams::KnownConnParams(std::wstring serialNumber)
-    : ConnParams {}, m_serialNumber { filterSerialNumber(std::move(serialNumber)) } {
-        load(filterFilePath(filePath(m_serialNumber)));
+    ComConnParams::operator ConnParamJson() const {
+        return {
+            { "type", "com" },
+            { "port", Text::convert(m_port) },
+            { "baudRate", Text::convert(m_baudRate) },
+            { "ffdVersion", Meta::toUnderlying(m_ffdVersion) }
+        };
     }
 
-    KnownConnParams::KnownConnParams(const std::filesystem::path & filePath)
-    : ConnParams {}, m_serialNumber { filterSerialNumber(serialNumber(filePath)) } {
-        load(filterFilePath(filePath));
+    UsbConnParams::UsbConnParams(const ConnParamVector &) : BaseConnParams() {
+        // TODO: Реализовать.
     }
 
-    [[nodiscard]]
-    const std::wstring & KnownConnParams::serialNumber() const {
-        return m_serialNumber;
+    UsbConnParams::UsbConnParams(const ConnParamJson &) : BaseConnParams() {
+        // TODO: Реализовать.
     }
 
-    [[nodiscard]]
-    std::wstring KnownConnParams::serialNumber(const std::filesystem::path & filePath) {
-        auto fileName = filePath.filename();
-        fileName.replace_extension(L"");
-        return fileName.wstring();
+    void UsbConnParams::applyDetail(Atol::Fptr &) const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 
-    [[nodiscard]]
-    std::filesystem::path KnownConnParams::filePath(const std::wstring & serialNumber) {
-        std::filesystem::path path { s_dbDirectory };
-        path /= serialNumber + L".json"s;
-        // path /= serialNumber + L"#conn.json"s;
-        return path;
+    UsbConnParams::operator ConnParamString() const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 
-    [[nodiscard]]
-    std::wstring KnownConnParams::filterSerialNumber(std::wstring serialNumber) {
-        if (serialNumber.empty() || std::string::npos != serialNumber.find_first_not_of(allowed)) {
-            throw Failure(Wcs::c_invalidSerialNumber); // NOLINT(*-exception-baseclass)
-        }
-        return serialNumber;
+    UsbConnParams::operator ConnParamJson() const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 
-    [[nodiscard]]
-    std::filesystem::path KnownConnParams::filterFilePath(std::filesystem::path filePath) {
-        if (Text::lowered(filePath.extension().native()) != L".json") {
-        // if (!Text::lowered(filePath.native()).ends_with(L"#conn.json"sv)) {
-            throw Failure(Wcs::c_invalidFilePath); // NOLINT(*-exception-baseclass)
-        }
-        auto stem { filePath.stem().native() };
-        if (stem.empty() || std::string::npos != stem.find_first_not_of(allowed)) {
-            throw Failure(Wcs::c_invalidFilePath); // NOLINT(*-exception-baseclass)
-        }
-        if (!std::filesystem::is_regular_file(filePath)) {
-            throw Failure(Wcs::c_invalidFilePath); // NOLINT(*-exception-baseclass)
-        }
-        return filePath;
+    TcpIpConnParams::TcpIpConnParams(const ConnParamVector &) : BaseConnParams() {
+        // TODO: Реализовать.
+    }
+
+    TcpIpConnParams::TcpIpConnParams(const ConnParamJson &) : BaseConnParams() {
+        // TODO: Реализовать.
+    }
+
+    void TcpIpConnParams::applyDetail(Atol::Fptr &) const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
+    }
+
+    TcpIpConnParams::operator ConnParamString() const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
+    }
+
+    TcpIpConnParams::operator ConnParamJson() const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
+    }
+
+    BluetoothConnParams::BluetoothConnParams(const ConnParamVector &) : BaseConnParams() {
+        // TODO: Реализовать.
+    }
+
+    BluetoothConnParams::BluetoothConnParams(const ConnParamJson &) : BaseConnParams() {
+        // TODO: Реализовать.
+    }
+
+    void BluetoothConnParams::applyDetail(Atol::Fptr &) const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
+    }
+
+    BluetoothConnParams::operator ConnParamString() const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
+    }
+
+    BluetoothConnParams::operator ConnParamJson() const {
+        throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 }

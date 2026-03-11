@@ -40,6 +40,20 @@ namespace Kkm {
         Failure & operator=(Failure &&) noexcept = default;
     };
 
+    /*enum class BaudRate : std::remove_cv_t<decltype(Atol::LIBFPTR_PORT_BR_1200)> {
+        Br1200 = Atol::LIBFPTR_PORT_BR_1200,
+        Br2400 = Atol::LIBFPTR_PORT_BR_2400,
+        Br4800 = Atol::LIBFPTR_PORT_BR_4800,
+        Br9600 = Atol::LIBFPTR_PORT_BR_9600,
+        Br19200 = Atol::LIBFPTR_PORT_BR_19200,
+        Br38400 = Atol::LIBFPTR_PORT_BR_38400,
+        Br57600 = Atol::LIBFPTR_PORT_BR_57600,
+        Br115200 = Atol::LIBFPTR_PORT_BR_115200,
+        Br230400 = Atol::LIBFPTR_PORT_BR_230400,
+        Br460800 = Atol::LIBFPTR_PORT_BR_460800,
+        Br921600 = Atol::LIBFPTR_PORT_BR_921600
+    };*/
+
     enum class TimeZone : std::remove_cv_t<decltype(Atol::LIBFPTR_TIME_ZONE_DEVICE)> {
         Device = Atol::LIBFPTR_TIME_ZONE_DEVICE,
         Zone1 = Atol::LIBFPTR_TIME_ZONE_1,
@@ -62,7 +76,7 @@ namespace Kkm {
         V_1_2 = Atol::LIBFPTR_FFD_1_2
     };
 
-    enum class FfdVersionDetect { Never, Once, Sometimes, Always };
+    enum class FfdVersionDetect { Never, Once, /*Sometimes,*/ Always };
 
     enum class ShiftState : std::remove_cv_t<decltype(Atol::LIBFPTR_SS_CLOSED)> {
         Closed = Atol::LIBFPTR_SS_CLOSED,

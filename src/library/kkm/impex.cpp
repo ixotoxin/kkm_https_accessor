@@ -347,7 +347,7 @@ namespace Kkm {
                 bool separated { false };
                 bool separator { false };
                 std::wstring content {};
-                auto basePath { std::format(L"document[{}]", i++) };
+                auto basePath = std::format(L"document[{}]", i++);
                 Json::handleKey(block, "separator", separator, basePath);
                 if (separator) {
                     separated = true;
@@ -486,7 +486,7 @@ namespace Kkm {
             details.m_items.reserve(json["items"].size());
             int i { 0 };
             for (auto & item : json["items"].get<std::vector<Nln::Json>>()) {
-                auto basePath { std::format(L"items[{}]", i++) };
+                auto basePath = std::format(L"items[{}]", i++);
                 std::wstring title;
                 bool found {
                     Json::handleKey(item, "title", title, Text::Wcs::length(1, 128, Text::Wcs::trim()), basePath)

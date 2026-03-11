@@ -9,6 +9,7 @@
 #include <kkm/variables.h>
 #include <kkm/strings.h>
 #include <kkm/device.h>
+#include <kkm/registry.h>
 #include <kkm/callhelpers.h>
 #include <cassert>
 #include <cstdlib>
@@ -28,11 +29,11 @@ namespace KkmOperator {
 
         for (int i = 0, n = 1; i < connParamCount; ++i, ++n) {
             try {
-                NewConnParams connParams { std::wstring { connParamItems[i] } };
-                Device kkm { connParams, std::format(Wcs::c_commandPrefix, n) };
+                const auto connParams = Registry::make(connParamItems[i]);
+                NewDevice kkm { connParams, std::format(Wcs::c_commandPrefix, n) };
                 std::wstring serialNumber { kkm.serialNumber() };
                 LOG_DEBUG_NTS(Wcs::c_getKkmInfo, n, serialNumber);
-                connParams.save(serialNumber);
+                Registry::save(connParams, kkm);
                 kkm.printHello();
                 LOG_INFO_NTS(Wcs::c_connParamsSaved, n, serialNumber);
             } catch (const Failure & e) {
@@ -78,7 +79,7 @@ namespace KkmOperator {
         std::wstring serial { serialNumber };
 
         if (KKM_CMD_EQ(command, L"status", L"v")) {
-            Device kkm { KnownConnParams { serial } };
+            Device kkm { Registry::load(serial) };
 
             StatusResult status {};
             kkm.getStatus(status);
@@ -183,28 +184,28 @@ namespace KkmOperator {
                 KKM_LOG(fwVers, Wcs::c_fmtBootVersion, fwVers.m_bootVersion);
             }
         } else if (KKM_CMD_EQ(command, L"demo-print", L"d")) {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printDemo);
+            callMethod(Device { Registry::load(serial) }, &Device::printDemo);
         } else if (KKM_CMD_EQ(command, L"ofd-test", L"t")) {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printOfdTest);
+            callMethod(Device { Registry::load(serial) }, &Device::printOfdTest);
         } else if (KKM_CMD_EQ(command, L"shift-reports", L"j")) {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printCloseShiftReports);
+            callMethod(Device { Registry::load(serial) }, &Device::printCloseShiftReports);
         } else if (KKM_CMD_EQ(command, L"last-document", L"m")) {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printLastDocument);
+            callMethod(Device { Registry::load(serial) }, &Device::printLastDocument);
         } else if (KKM_CMD_EQ(command, L"report-x", L"p")) {
             callMethod(
-                Device { KnownConnParams { serial } },
+                Device { Registry::load(serial) },
                 &Device::reportX,
                 { s_cliOperatorName, s_cliOperatorInn, false, false }
             );
         } else if (KKM_CMD_EQ(command, L"close-shift", L"s")) {
             callMethod(
-                Device { KnownConnParams { serial } },
+                Device { Registry::load(serial) },
                 &Device::closeShift,
                 { s_cliOperatorName, s_cliOperatorInn, true, false }
             );
         } else if (KKM_CMD_EQ(command, L"reset-state", L"e")) {
             callMethod(
-                Device { KnownConnParams { serial } },
+                Device { Registry::load(serial) },
                 &Device::resetState,
                 { s_cliOperatorName, s_cliOperatorInn, true, true }
             );

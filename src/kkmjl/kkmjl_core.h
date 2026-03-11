@@ -6,9 +6,9 @@
 #include "kkmjl_strings.h"
 #include <lib/except.h>
 #include <lib/text.h>
-#include <log/write.h>
 #include <kkm/strings.h>
 #include <kkm/device.h>
+#include <kkm/registry.h>
 #include <kkm/impex.h>
 #include <kkm/callhelpers.h>
 #include <cstdlib>
@@ -25,7 +25,7 @@ namespace KkmJsonLoader {
         const std::filesystem::path path { fileName };
         std::ifstream file { path };
         if (!file.is_open() || !file.good()) {
-            throw Basic::Failure(LIB_WFMT(Basic::Wcs::c_couldntReadFile, path.native())); // NOLINT(*-exception-baseclass)
+            throw Basic::Failure(LIB_WFMT(Basic::Wcs::c_couldntReadFile, path.filename().wstring())); // NOLINT(*-exception-baseclass)
         }
 
         const Nln::Json details(Nln::Json::parse(file));
@@ -58,19 +58,19 @@ namespace KkmJsonLoader {
             if (!found) {
                 throw Basic::Failure(KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams")); // NOLINT(*-exception-baseclass)
             }
-            NewConnParams connParams { connString };
-            Device kkm { connParams };
-            connParams.save(kkm.serialNumber());
+            const auto connParams = Registry::make(connString);
+            NewDevice kkm { connParams };
+            Registry::save(connParams, kkm);
             StatusResult statusResult {};
             kkm.getStatus(statusResult);
             kkm.printHello();
             result << statusResult;
         } else if (query == L"base-status") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::getStatus, result);
+            callMethod(Device { Registry::load(serial) }, &Device::getStatus, result);
         } else if (query == L"status") {
             collectDataFromMethods(
                 result,
-                Device { KnownConnParams { serial } },
+                Device { Registry::load(serial) },
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
@@ -79,7 +79,7 @@ namespace KkmJsonLoader {
         } else if (query == L"full-status") {
             collectDataFromMethods(
                 result,
-                Device { KnownConnParams { serial } },
+                Device { Registry::load(serial) },
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
@@ -95,37 +95,37 @@ namespace KkmJsonLoader {
                 &Device::getFwVersions
             );
         } else if (query == L"print-demo") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printDemo, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printDemo, result);
         } else if (query == L"print-non-fiscal-doc") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printNonFiscalDocument, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printNonFiscalDocument, details, result);
         } else if (query == L"print-info") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printInfo, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printInfo, result);
         } else if (query == L"print-fn-registrations") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printFnRegistrations, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printFnRegistrations, result);
         } else if (query == L"print-ofd-exchange-status") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printOfdExchangeStatus, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printOfdExchangeStatus, result);
         } else if (query == L"print-ofd-test") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printOfdTest, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printOfdTest, result);
         } else if (query == L"print-close-shift-reports") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printCloseShiftReports, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printCloseShiftReports, result);
         } else if (query == L"print-last-document") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::printLastDocument, result);
+            callMethod(Device { Registry::load(serial) }, &Device::printLastDocument, result);
         } else if (query == L"cash-stat") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::getCashStat, result);
+            callMethod(Device { Registry::load(serial) }, &Device::getCashStat, result);
         } else if (query == L"cash-in") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::registerCashIn, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::registerCashIn, details, result);
         } else if (query == L"cash-out") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::registerCashOut, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::registerCashOut, details, result);
         } else if (query == L"sell") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::registerSell, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::registerSell, details, result);
         } else if (query == L"sell-return") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::registerSellReturn, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::registerSellReturn, details, result);
         } else if (query == L"report-z" || query == L"close-shift") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::closeShift, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::closeShift, details, result);
         } else if (query == L"report-x") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::reportX, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::reportX, details, result);
         } else if (query == L"reset-state") {
-            callMethod(Device { KnownConnParams { serial } }, &Device::resetState, details, result);
+            callMethod(Device { Registry::load(serial) }, &Device::resetState, details, result);
         } else {
             throw Basic::Failure(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
         }

@@ -1,10 +1,10 @@
 @ECHO OFF
 
 IF NOT "%CLANG_DIR%" == "" GOTO CLANG_DIR_IS_SET
-SET CLANG_DIR=C:\Devel\Platform\Clang\21.1.8-x86_64
-SET CLANG_SANLIB_DIR=%CLANG_DIR%\lib\clang\21\lib\windows
+SET CLANG_DIR=C:\Devel\Platform\Clang\22.1.1-x86_64
+SET CLANG_SANLIB_DIR=%CLANG_DIR%\lib\clang\22\lib\windows
 SET CLANG_ASAN_LIB=clang_rt.asan_dynamic-x86_64.dll
-SET CMAKE_DIR=C:\Devel\Platform\CMake\4.2.1-x86_64
+SET CMAKE_DIR=C:\Devel\Platform\CMake\4.2.3-x86_64
 SET NINJA_DIR=C:\Devel\Platform\Ninja\1.13.2
 SET VCPKG_DIR=C:\Devel\Platform\vcpkg
 SET VCPKG_BLD=C:\Devel\Platform\vcpkg\buildtrees

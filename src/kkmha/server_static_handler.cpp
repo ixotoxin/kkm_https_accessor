@@ -81,7 +81,7 @@ namespace Server::Static {
 
         // Cache::maintain(); // CLEANUP
         Cache::Key cacheKey { "static::::" };
-        cacheKey.append(Text::convert(path.native()));
+        cacheKey.append(Text::convert(path.wstring()));
 
         if (auto cacheEntry = Cache::load(cacheKey); cacheEntry) {
             auto fileTime = std::filesystem::last_write_time(path, error);
@@ -112,7 +112,7 @@ namespace Server::Static {
         response->m_size = fileSize;
 
         {
-            auto ext = Text::lowered(Text::convert(path.extension().native()));
+            auto ext = Text::lowered(Text::convert(path.extension().wstring()));
             if (!ext.empty() && s_mimeMap.contains(ext)) {
                 response->m_mimeType = s_mimeMap[ext].get<std::string>();
             } else if (s_enableUnknownType) {
