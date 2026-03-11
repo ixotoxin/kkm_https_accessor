@@ -4,79 +4,116 @@
 #pragma once
 
 #include "types.h"
-#include <filesystem>
+#include <lib/json.h>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace Kkm {
-    class ConnParams {
+    using ConnParamString = std::wstring;
+    using ConnParamVector = std::vector<std::wstring>;
+    using ConnParamJson = Nln::Json;
+
+    class BaseConnParams {
     public:
-        using Container = std::vector<std::wstring>;
+        BaseConnParams() = default;
+        BaseConnParams(const BaseConnParams &) = default;
+        BaseConnParams(BaseConnParams &&) noexcept = default;
+        virtual ~BaseConnParams() = default;
 
-        ConnParams(const ConnParams &) = default;
-        ConnParams(ConnParams &&) noexcept = default;
-        ~ConnParams() = default;
-
-        ConnParams & operator=(const ConnParams &) = default;
-        ConnParams & operator=(ConnParams &&) noexcept = default;
-        explicit operator std::wstring() const;
+        BaseConnParams & operator=(const BaseConnParams &) = default;
+        BaseConnParams & operator=(BaseConnParams &&) noexcept = default;
 
         void apply(Atol::Fptr &) const;
+        [[nodiscard]] FfdVersion storedFfdVersion() const;
+        virtual explicit operator ConnParamString() const = 0;
+        virtual explicit operator ConnParamJson() const = 0;
 
     protected:
-        Container m_params {};
+        FfdVersion m_ffdVersion { FfdVersion::Unknown };
 
-        ConnParams() = default;
-        explicit ConnParams(const Container &);
-        explicit ConnParams(Container &&);
-
-        void applyCommon(Atol::Fptr &) const;
-        void applyCom(Atol::Fptr &) const;
-        void applyUsb(Atol::Fptr &) const;
-        void applyTcpIp(Atol::Fptr &) const;
-        void applyBluetooth(Atol::Fptr &) const;
+        static void applyCommon(Atol::Fptr &);
+        virtual void applyDetail(Atol::Fptr &) const = 0;
     };
 
-    class NewConnParams : public ConnParams {
-        friend class KnownConnParams;
+    using ConnParams = std::shared_ptr<BaseConnParams>;
 
+    class ComConnParams final : public BaseConnParams {
     public:
-        NewConnParams() = delete;
-        NewConnParams(const NewConnParams &) = default;
-        NewConnParams(NewConnParams &&) noexcept = default;
-        explicit NewConnParams(std::wstring_view);
-        ~NewConnParams() = default;
+        explicit ComConnParams(const ConnParamVector &);
+        explicit ComConnParams(const ConnParamJson &);
+        ComConnParams(const ComConnParams &) = default;
+        ComConnParams(ComConnParams &&) noexcept = default;
+        ~ComConnParams() override = default;
 
-        NewConnParams & operator=(const NewConnParams &) = default;
-        NewConnParams & operator=(NewConnParams &&) noexcept = default;
+        ComConnParams & operator=(const ComConnParams &) = default;
+        ComConnParams & operator=(ComConnParams &&) noexcept = default;
 
-        void save(const std::wstring &) const;
-    };
-
-    class KnownConnParams : public ConnParams {
-    public:
-        KnownConnParams() = delete;
-        KnownConnParams(const KnownConnParams &) = default;
-        KnownConnParams(KnownConnParams &&) noexcept = default;
-        KnownConnParams(const NewConnParams &, std::wstring_view);
-        KnownConnParams(NewConnParams &&, std::wstring_view);
-        explicit KnownConnParams(std::wstring);
-        explicit KnownConnParams(const std::filesystem::path &);
-        ~KnownConnParams() = default;
-
-        KnownConnParams & operator=(const KnownConnParams &) = default;
-        KnownConnParams & operator=(KnownConnParams &&) noexcept = default;
-
-        [[nodiscard]] const std::wstring & serialNumber() const;
+        explicit operator ConnParamString() const override;
+        explicit operator ConnParamJson() const override;
 
     protected:
-        std::wstring m_serialNumber {};
+        std::wstring m_port {};
+        std::wstring m_baudRate {};
 
-        void load(const std::filesystem::path &);
+        ComConnParams() = default;
+        void applyDetail(Atol::Fptr &) const override;
+    };
 
-        [[nodiscard]] static std::wstring serialNumber(const std::filesystem::path &);
-        [[nodiscard]] static std::filesystem::path filePath(const std::wstring &);
-        [[nodiscard]] static std::wstring filterSerialNumber(std::wstring);
-        [[nodiscard]] static std::filesystem::path filterFilePath(std::filesystem::path);
+    class UsbConnParams final : public BaseConnParams {
+    public:
+        explicit UsbConnParams(const ConnParamVector &);
+        explicit UsbConnParams(const ConnParamJson &);
+        UsbConnParams(const UsbConnParams &) = default;
+        UsbConnParams(UsbConnParams &&) noexcept = default;
+        ~UsbConnParams() override = default;
+
+        UsbConnParams & operator=(const UsbConnParams &) = default;
+        UsbConnParams & operator=(UsbConnParams &&) noexcept = default;
+
+        explicit operator ConnParamString() const override;
+        explicit operator ConnParamJson() const override;
+
+    protected:
+        UsbConnParams() = default;
+        void applyDetail(Atol::Fptr &) const override;
+    };
+
+    class TcpIpConnParams final : public BaseConnParams {
+    public:
+        explicit TcpIpConnParams(const ConnParamVector &);
+        explicit TcpIpConnParams(const ConnParamJson &);
+        TcpIpConnParams(const TcpIpConnParams &) = default;
+        TcpIpConnParams(TcpIpConnParams &&) noexcept = default;
+        ~TcpIpConnParams() override = default;
+
+        TcpIpConnParams & operator=(const TcpIpConnParams &) = default;
+        TcpIpConnParams & operator=(TcpIpConnParams &&) noexcept = default;
+
+        explicit operator ConnParamString() const override;
+        explicit operator ConnParamJson() const override;
+
+    protected:
+        TcpIpConnParams() = default;
+        void applyDetail(Atol::Fptr &) const override;
+    };
+
+    class BluetoothConnParams final : public BaseConnParams {
+    public:
+        explicit BluetoothConnParams(const ConnParamVector &);
+        explicit BluetoothConnParams(const ConnParamJson &);
+        BluetoothConnParams(const BluetoothConnParams &) = default;
+        BluetoothConnParams(BluetoothConnParams &&) noexcept = default;
+        ~BluetoothConnParams() override = default;
+
+        BluetoothConnParams & operator=(const BluetoothConnParams &) = default;
+        BluetoothConnParams & operator=(BluetoothConnParams &&) noexcept = default;
+
+        explicit operator ConnParamString() const override;
+        explicit operator ConnParamJson() const override;
+
+    protected:
+        BluetoothConnParams() = default;
+        void applyDetail(Atol::Fptr &) const override;
     };
 }

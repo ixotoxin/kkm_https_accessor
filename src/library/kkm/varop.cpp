@@ -10,6 +10,8 @@
 #include <lib/text.h>
 #include <lib/path.h>
 
+#include "registry.h"
+
 namespace Kkm {
     void setVars(const Nln::Json & json) {
         Json::handleKey(
@@ -30,16 +32,6 @@ namespace Kkm {
                 );
                 Json::handleKey(json2, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path2);
                 Json::handleKey(json2, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path2);
-                if (s_ffdVersionDetect == FfdVersionDetect::Once || s_ffdVersionDetect == FfdVersionDetect::Sometimes) {
-                    throw Failure( // NOLINT(*-exception-baseclass)
-                        KKM_WFMT(
-                            Wcs::c_unsupportedValue2,
-                            wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect),
-                            path2,
-                            L"ffdVersionDetect"
-                        )
-                    );
-                }
                 Json::handleKey(
                     json2, "documentClosingTimeout", s_documentClosingTimeout,
                     DateTime::between(c_minDocumentClosingTimeout, c_maxDocumentClosingTimeout), path2
@@ -73,7 +65,7 @@ namespace Kkm {
 
     std::wostream & vars(std::wostream & stream) {
         stream
-            << L"CFG: kkm.dbDirectory = \"" << s_dbDirectory.native() << L"\"\n"
+            << L"CFG: kkm.dbDirectory = \"" << s_dbDirectory.wstring() << L"\"\n"
             L"CFG: kkm.defaultBaudRate = " << s_defaultBaudRate << L"\n"
             L"CFG: kkm.defaultLineLength = " << s_defaultLineLength << L"\n"
             L"CFG: kkm.timeZone = tz" << Meta::toUnderlying(s_timeZone) << L"\n"
@@ -94,20 +86,21 @@ namespace Kkm {
             for (auto const & entry: std::filesystem::directory_iterator { directory }) {
                 if (entry.is_regular_file()) {
                     const std::filesystem::path & filePath { entry.path() };
-                    std::wstring fileExt { filePath.extension().native() };
+                    auto fileExt = filePath.extension().wstring();
                     Text::lower(fileExt);
                     if (fileExt != L".json") {
                         continue;
                     }
-                    KnownConnParams connParams { entry.path() };
+                    auto serialNumber = Registry::serialNumber(filePath);
+                    auto connParams = Registry::read(filePath, serialNumber);
                     if (nonFirst) {
                         stream << L",\n";
                     } else {
                         nonFirst = true;
                     }
                     stream
-                        << L"LRN:     \"" << connParams.serialNumber()
-                        << L"\": \"" << static_cast<std::wstring>(connParams) << L'"';
+                        << L"LRN:     \"" << serialNumber
+                        << L"\": \"" << static_cast<ConnParamString>(*connParams) << L'"';
                 }
             }
         } catch (...) {}

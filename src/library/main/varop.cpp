@@ -12,8 +12,8 @@ namespace Main {
             << L"BLD: main.version = \"" << BUILD_VERSION << L"\"\n"
             L"BLD: main.buildTimestamp = \"" << BUILD_TIMESTAMP << L"\"\n"
             L"BLD: main.buildType = \"" << BUILD_TYPE << L"\"\n"
-            L"RTM: main.binaryFile = \"" << s_file.native() << L"\"\n"
-            L"RTM: main.workDirectory = \"" << s_directory.native() << L"\"\n";
+            L"RTM: main.binaryFile = \"" << s_file.wstring() << L"\"\n"
+            L"RTM: main.workDirectory = \"" << s_directory.wstring() << L"\"\n";
 
         return stream;
     }

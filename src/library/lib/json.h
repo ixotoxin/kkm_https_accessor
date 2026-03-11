@@ -72,8 +72,7 @@ namespace Json {
             auto it = text.begin();
 
             while (it != text.end()) {
-                uint32_t high { static_cast<uint32_t>(*it) };
-                switch (high) {
+                switch (const uint32_t high { static_cast<uint32_t>(*it) }) {
                     case Txt::c_quotationMark:
                     case Txt::c_solidus:
                     case Txt::c_reverseSolidus:

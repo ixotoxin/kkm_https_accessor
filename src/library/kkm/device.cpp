@@ -11,17 +11,25 @@
 namespace Kkm {
     Device::Device(const std::wstring_view logPrefix) : m_logPrefix { logPrefix } {}
 
-    Device::Device(const ConnParams & connParams, const std::wstring_view logPrefix)
+    Device::Device(const ConnParams connParams, const std::wstring_view logPrefix)
     : Device(logPrefix) {
         connect(connParams);
+        switch (s_ffdVersionDetect) {
+            case FfdVersionDetect::Never:
+                m_storedFfdVersion = s_fallbackFfdVersion;
+                break;
+            case FfdVersionDetect::Once:
+                m_storedFfdVersion = connParams->storedFfdVersion();
+                break;
+            case FfdVersionDetect::Always:
+            default:
+                break;
+        }
     }
 
-    Device::Device(const KnownConnParams & connParams, const std::wstring_view logPrefix)
+    NewDevice::NewDevice(const ConnParams connParams, const std::wstring_view logPrefix)
     : Device(logPrefix) {
         connect(connParams);
-        if (m_serialNumber != connParams.serialNumber()) {
-            throw Failure(KKM_WFMT(Wcs::c_serialNumberMismatch, connParams.serialNumber(), m_serialNumber)); // NOLINT(*-exception-baseclass)
-        }
     }
 
     Device::~Device() {
@@ -31,8 +39,8 @@ namespace Kkm {
         m_kkm.close();
     }
 
-    void Device::connect(const ConnParams & connParams) {
-        connParams.apply(m_kkm);
+    void Device::connect(const ConnParams connParams) {
+        connParams->apply(m_kkm);
         if (m_kkm.open() < 0) {
             throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
         }
@@ -142,21 +150,22 @@ namespace Kkm {
                 = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_MAX_FFD_VERSION));
             m_ffdVersions.m_ffdVersion
                 = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FFD_VERSION));
+            m_storedFfdVersion = m_ffdVersions.m_ffdVersion;
         }
     }
 
-    FfdVersion Device::getFfdVersion() {
-        if (s_ffdVersionDetect == FfdVersionDetect::Never) {
-            return s_fallbackFfdVersion;
-        }
-        if (s_ffdVersionDetect == FfdVersionDetect::Once) {
-        }
-        if (s_ffdVersionDetect == FfdVersionDetect::Sometimes) {
-        }
-        if (s_ffdVersionDetect == FfdVersionDetect::Always) {
+    FfdVersion Device::ffdVersion(const bool forcedLearn) {
+        if (forcedLearn) {
             detectFfdVersions();
+        } else {
+            if (s_ffdVersionDetect == FfdVersionDetect::Never) {
+                return s_fallbackFfdVersion;
+            }
+            if (s_ffdVersionDetect == FfdVersionDetect::Always || m_storedFfdVersion == FfdVersion::Unknown) {
+                detectFfdVersions();
+            }
         }
-        return m_ffdVersions.m_success ? m_ffdVersions.m_ffdVersion : s_fallbackFfdVersion;
+        return m_storedFfdVersion;
     }
 
     [[nodiscard, maybe_unused]]
@@ -321,7 +330,7 @@ namespace Kkm {
     }
 
     void Device::subSetCustomer(const ReceiptDetails & details) {
-        const bool legacyFfd { getFfdVersion() != FfdVersion::V_1_2 };
+        const bool legacyFfd { ffdVersion() != FfdVersion::V_1_2 };
 
         LOG_DEBUG_TS(Wcs::c_subSetCustomer, m_logPrefix, m_serialNumber);
 

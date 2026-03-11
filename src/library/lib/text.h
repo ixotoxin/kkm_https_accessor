@@ -139,7 +139,7 @@ namespace Text {
         if (end == text || *end) {
             throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
         }
-        if constexpr (sizeof(T) != sizeof(Num::CastType)) {
+        if constexpr (sizeof(T) != sizeof(typename Num::CastType)) {
             if (
                 value < static_cast<Num::CastType>(std::numeric_limits<T>::min())
                 || value > static_cast<Num::CastType>(std::numeric_limits<T>::max())

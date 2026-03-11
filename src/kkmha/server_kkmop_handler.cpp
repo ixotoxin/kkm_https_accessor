@@ -12,6 +12,7 @@
 #include <debug/memprof.h>
 #include <kkm/strings.h>
 #include <kkm/device.h>
+#include <kkm/registry.h>
 #include <kkm/callhelpers.h>
 #include <cassert>
 #include <utility>
@@ -21,7 +22,7 @@
 namespace Server::KkmOp {
     using namespace Kkm;
 
-    static std::unordered_map<std::wstring, std::shared_ptr<KnownConnParams>> s_connParamsRegistry {};
+    static std::unordered_map<std::wstring, ConnParams> s_connParamsRegistry {};
     static std::mutex s_registryMutex {};
 
     struct Payload {
@@ -76,7 +77,7 @@ namespace Server::KkmOp {
     };
 
     [[maybe_unused]]
-    std::shared_ptr<KnownConnParams> resolveConnParams(Payload & payload) {
+    ConnParams resolveConnParams(Payload & payload) {
         if (payload.m_serialNumber.empty()) {
             payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
             return nullptr;
@@ -84,12 +85,12 @@ namespace Server::KkmOp {
         std::wstring wcSerialNumber { Text::convert(payload.m_serialNumber) };
         std::scoped_lock registryLock(s_registryMutex);
         if (s_connParamsRegistry.contains(wcSerialNumber)) {
-            auto & params { s_connParamsRegistry.at(wcSerialNumber) };
+            auto & params = s_connParamsRegistry.at(wcSerialNumber);
             LOG_DEBUG_TS(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*params));
             return params;
         }
         auto [it, insert]
-            = s_connParamsRegistry.try_emplace(wcSerialNumber, std::make_shared<KnownConnParams>(wcSerialNumber));
+            = s_connParamsRegistry.try_emplace(wcSerialNumber, Registry::load(wcSerialNumber));
         if (insert) {
             LOG_DEBUG_TS(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*it->second));
             return it->second;
@@ -106,7 +107,7 @@ namespace Server::KkmOp {
     void callMethod(UndetailedMethod<R> method, Payload & payload) {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             callMethod(
-                Device { *connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
                 method, payload.m_result
             );
         }
@@ -117,7 +118,7 @@ namespace Server::KkmOp {
     void callMethod(DetailedMethod<R, D> method, Payload & payload) {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             callMethod(
-                Device { *connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
                 method, payload.m_details, payload.m_result
             );
         }
@@ -134,18 +135,15 @@ namespace Server::KkmOp {
             return payload.fail(Http::Status::BadRequest, KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"));
         }
 
-        NewConnParams connParams { connString };
-        Device kkm { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) };
+        const auto connParams = Registry::make(connString);
+        NewDevice kkm { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) };
         std::wstring serialNumber { kkm.serialNumber() };
         LOG_DEBUG_TS(Wcs::c_getKkmInfo, payload.m_requestId, serialNumber);
-        connParams.save(serialNumber);
+        Registry::save(connParams, kkm);
 
         {
             std::scoped_lock registryLock(s_registryMutex);
-            s_connParamsRegistry.insert_or_assign(
-                serialNumber,
-                std::make_shared<KnownConnParams>(connParams, serialNumber)
-            );
+            s_connParamsRegistry.insert_or_assign(serialNumber, connParams);
         }
 
         StatusResult result;
@@ -179,7 +177,7 @@ namespace Server::KkmOp {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             collectDataFromMethods(
                 payload.m_result,
-                Device { *connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
@@ -197,7 +195,7 @@ namespace Server::KkmOp {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             collectDataFromMethods(
                 payload.m_result,
-                Device { *connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
