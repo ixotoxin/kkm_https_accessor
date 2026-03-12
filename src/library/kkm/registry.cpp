@@ -7,10 +7,6 @@
 #include <fstream>
 
 namespace Kkm::Registry {
-    constexpr std::wstring_view c_allowedChars {
-        L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_"
-    };
-
     [[nodiscard]]
     std::wstring serialNumber(const std::filesystem::path & filePath) {
         return filePath.stem().wstring();
@@ -33,7 +29,7 @@ namespace Kkm::Registry {
 
     [[nodiscard]]
     const std::wstring & filterSerialNumber(const std::wstring & serialNumber) {
-        if (serialNumber.empty() || std::string::npos != serialNumber.find_first_not_of(c_allowedChars)) {
+        if (serialNumber.empty() || std::string::npos != serialNumber.find_first_not_of(c_serialNumberChars)) {
             throw Failure(Wcs::c_invalidSerialNumber); // NOLINT(*-exception-baseclass)
         }
         return serialNumber;
@@ -76,7 +72,7 @@ namespace Kkm::Registry {
 
     [[nodiscard]]
     ConnParams read(const std::filesystem::path & path, const std::wstring & serialNumber) {
-        std::ifstream file { path };
+        const std::ifstream file { path };
         if (!file.is_open() || !file.good()) {
             throw Failure(KKM_WFMT(Wcs::c_loadingError, serialNumber)); // NOLINT(*-exception-baseclass)
         }
@@ -99,7 +95,7 @@ namespace Kkm::Registry {
     }
 
     void save(const ConnParams & params, Device & kkm) {
-        auto && path = filePath(filterSerialNumber(kkm.serialNumber()), true);
+        const auto & path = filePath(filterSerialNumber(kkm.serialNumber()), true);
         std::ofstream file { path };
         auto paramJson = static_cast<ConnParamJson>(*params);
         paramJson["serialNumber"] = Text::convert(kkm.serialNumber());

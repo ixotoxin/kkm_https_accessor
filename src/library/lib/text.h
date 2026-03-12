@@ -184,7 +184,7 @@ namespace Text {
     convert(const T & container) {
         using Type = Meta::TextTrait<typename T::value_type>::Opposite::String;
         typename Meta::Rebind<T>::template With<Type> result;
-        for (auto & item : container) {
+        for (const auto & item : container) {
             result.emplace_back(convert(item));
         }
         return result;

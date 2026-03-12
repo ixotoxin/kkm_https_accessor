@@ -1,6 +1,6 @@
 @ECHO OFF
 CLS
-SET KKM=00106308755095
+SET KKM=98765432109876
 %~dp0..\_build\kkmha.exe exec %KKM% %~dp0json\learn.json
 %~dp0..\_build\kkmha.exe exec %KKM% %~dp0json\base-status.json
 %~dp0..\_build\kkmha.exe exec %KKM% %~dp0json\status.json

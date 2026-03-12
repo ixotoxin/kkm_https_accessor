@@ -32,7 +32,7 @@ namespace SrcLoc {
         ~Point() = default;
 
         Point & operator=(const Point &) = default;
-        Point & operator=(Point &&) = default;
+        Point & operator=(Point &&) noexcept = default;
 
         [[nodiscard]] static consteval Point current(
             const size_t line = __builtin_LINE(),

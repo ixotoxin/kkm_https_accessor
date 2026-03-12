@@ -469,7 +469,7 @@ namespace Kkm {
             return fail(result);
         }
         result.m_receiptNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_RECEIPT_NUMBER);
-        auto shiftNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_NUMBER);
+        const auto shiftNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_NUMBER);
         // ISSUE: Проверка дублирующейся информации. Не факт, что она должна совпадать.
         if (shiftNumber != result.m_shiftNumber) {
             // throw Failure(Wcs::c_invalidData); // NOLINT(*-exception-baseclass)
@@ -798,7 +798,7 @@ namespace Kkm {
             return fail(result);
         }
 
-        for (auto & block : details.m_document) {
+        for (const auto & block : details.m_document) {
             subPrintText(block);
         }
 
@@ -965,7 +965,7 @@ namespace Kkm {
         LOG_DEBUG_TS(Wcs::c_subRegisterItems, m_logPrefix, m_serialNumber);
 
         /** Регистрация позиций **/
-        for (auto & item : details.m_items) {
+        for (const auto & item : details.m_items) {
             m_kkm.setParam(Atol::LIBFPTR_PARAM_COMMODITY_NAME, item.m_commodityName);
             m_kkm.setParam(Atol::LIBFPTR_PARAM_PRICE, item.m_price);
             m_kkm.setParam(Atol::LIBFPTR_PARAM_QUANTITY, item.m_quantity);
@@ -1056,7 +1056,7 @@ namespace Kkm {
         if (m_kkm.queryData() < 0) {
             return fail(result);
         }
-        double cashSum { m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_SUM) };
+        const double cashSum { m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_SUM) };
         if (cashSum > 0) {
             subSetOperator(details);
             LOG_DEBUG_TS(Wcs::c_subCashOut, m_logPrefix, m_serialNumber);

@@ -36,7 +36,7 @@ namespace Server::Static {
         if (!json.is_object()) {
             throw Failure(Wcs::c_incorrectStructure); // NOLINT(*-exception-baseclass)
         }
-        for (auto & [key, value] : json.items()) {
+        for (const auto & [key, value] : json.items()) {
             if (!value.is_string()) {
                 throw Failure(Wcs::c_incorrectStructure); // NOLINT(*-exception-baseclass)
             }

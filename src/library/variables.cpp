@@ -55,6 +55,7 @@ namespace Log {
 
 namespace Kkm {
     constexpr DateTime::SleepUnit c_sleepQuantum { DateTime::c_basicSleepQuantum }; // Миллисекунды
+    constexpr std::wstring_view c_serialNumberChars { L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_" };
     constexpr std::wstring_view c_connParamsSeparator { L"," };
     const wchar_t c_separatorChar { L'-' };
     std::filesystem::path s_dbDirectory { L"kkm" };

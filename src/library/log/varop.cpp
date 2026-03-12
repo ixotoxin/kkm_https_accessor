@@ -49,8 +49,7 @@ namespace Log {
                                         Json::handleKey(json4, "background", File::s_bgLevel, Wcs::c_levelCastMap, path4);
                                     } else {
                                         LevelUnderlying level { c_levelNone };
-                                        const bool found { Json::handle(json4, level, Wcs::c_levelCastMap, path4) };
-                                        if (found) {
+                                        if (Json::handle(json4, level, Wcs::c_levelCastMap, path4)) {
                                             File::s_fgLevel = level;
                                             File::s_bgLevel = level;
                                         }
@@ -84,12 +83,12 @@ namespace Log {
                                         );
                                     } else {
                                         LevelUnderlying level { c_levelNone };
-                                        const bool found {
+                                        const bool found4 {
                                             Json::handle(
                                                 json4, level, Wcs::c_levelCastMap, Numeric::min(c_levelInfo), path4
                                             )
                                         };
-                                        if (found) {
+                                        if (found4) {
                                             EventLog::s_fgLevel = level;
                                             EventLog::s_bgLevel = level;
                                         }

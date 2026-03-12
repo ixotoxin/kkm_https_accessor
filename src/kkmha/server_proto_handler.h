@@ -17,7 +17,7 @@ namespace Server {
         virtual ~ProtoHandler() = default;
 
         ProtoHandler & operator=(const ProtoHandler &) = default;
-        ProtoHandler & operator=(ProtoHandler &&) = default;
+        ProtoHandler & operator=(ProtoHandler &&) noexcept = default;
 
         [[nodiscard]] virtual bool asyncReady() const noexcept = 0;
         virtual void operator()(Http::Request &) const noexcept = 0;

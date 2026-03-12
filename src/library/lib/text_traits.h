@@ -64,42 +64,6 @@ namespace Meta {
         [[nodiscard, maybe_unused]]
         static T toNumeric(const Char * str, Char ** end);
 
-        template<>
-        [[nodiscard, maybe_unused]]
-        signed long toNumeric<signed long>(const Char * str, Char ** end) {
-            return std::wcstol(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        unsigned long toNumeric<unsigned long>(const Char * str, Char ** end) {
-            return std::wcstoul(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        signed long long toNumeric<signed long long>(const Char * str, Char ** end) {
-            return std::wcstoll(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        unsigned long long toNumeric<unsigned long long>(const Char * str, Char ** end) {
-            return std::wcstoull(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        double toNumeric<double>(const Char * str, Char ** end) {
-            return std::wcstod(str, end);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        long double toNumeric<long double>(const Char * str, Char ** end) {
-            return std::wcstold(str, end);
-        }
-
         [[nodiscard, maybe_unused]]
         static bool contains(const Char * str, const Char ch) {
             return std::wcschr(str, ch) != nullptr;
@@ -120,6 +84,30 @@ namespace Meta {
             return str.length();
         }
     };
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    signed long Wcs::toNumeric<signed long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    unsigned long Wcs::toNumeric<unsigned long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    signed long long Wcs::toNumeric<signed long long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    unsigned long long Wcs::toNumeric<unsigned long long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    double Wcs::toNumeric<double>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    long double Wcs::toNumeric<long double>(const Char * str, Char ** end);
 
     struct Mbs {
         using Char = char;
@@ -173,42 +161,6 @@ namespace Meta {
         [[nodiscard, maybe_unused]]
         static T toNumeric(const Char * str, Char ** end);
 
-        template<>
-        [[nodiscard, maybe_unused]]
-        signed long toNumeric<signed long>(const Char * str, Char ** end) {
-            return std::strtol(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        unsigned long toNumeric<unsigned long>(const Char * str, Char ** end) {
-            return std::strtoul(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        signed long long toNumeric<signed long long>(const Char * str, Char ** end) {
-            return std::strtoll(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        unsigned long long toNumeric<unsigned long long>(const Char * str, Char ** end) {
-            return std::strtoull(str, end, 10);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        double toNumeric<double>(const Char * str, Char ** end) {
-            return std::strtod(str, end);
-        }
-
-        template<>
-        [[nodiscard, maybe_unused]]
-        long double toNumeric<long double>(const Char * str, Char ** end) {
-            return std::strtold(str, end);
-        }
-
         [[nodiscard, maybe_unused]]
         static bool contains(const Char * str, const Char ch) {
             return std::strchr(str, ch) != nullptr;
@@ -229,6 +181,30 @@ namespace Meta {
             return str.length();
         }
     };
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    signed long Mbs::toNumeric<signed long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    unsigned long Mbs::toNumeric<unsigned long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    signed long long Mbs::toNumeric<signed long long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    unsigned long long Mbs::toNumeric<unsigned long long>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    double Mbs::toNumeric<double>(const Char * str, Char ** end);
+
+    template<>
+    [[nodiscard, maybe_unused]]
+    long double Mbs::toNumeric<long double>(const Char * str, Char ** end);
 
     template<>
     struct WideTypes<Wcs> : std::true_type {};

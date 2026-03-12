@@ -73,7 +73,7 @@ else ()
         -Werror -Wall -Wextra -Wpedantic
         -Wcast-align -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wenum-compare -Wfloat-equal
         -Wnon-virtual-dtor -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo
-        -Wno-deprecated-declarations -Wno-implicit-int-conversion
+        -Wno-c2y-extensions -Wno-deprecated-declarations -Wno-implicit-int-conversion
         -Wno-sign-compare -Wno-sign-conversion -Wno-unknown-pragmas
     )
     if (WITH_RELSL)

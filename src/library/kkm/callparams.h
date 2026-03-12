@@ -248,13 +248,13 @@ namespace Kkm {
         : m_operatorName { std::forward<T>(name) }, m_operatorInn { std::forward<T>(inn) } {}
 
         [[maybe_unused]]
-        OperatorDetails(std::wstring_view name, std::wstring_view inn)
+        OperatorDetails(const std::wstring_view name, const std::wstring_view inn)
         : m_operatorName { name }, m_operatorInn { inn } {}
 
         ~OperatorDetails() = default;
 
         OperatorDetails & operator=(const OperatorDetails &) = default;
-        OperatorDetails & operator=(OperatorDetails &&) = default;
+        OperatorDetails & operator=(OperatorDetails &&) noexcept = default;
     };
 
     struct CashDetails : OperatorDetails {
@@ -334,17 +334,17 @@ namespace Kkm {
 
         template<std::same_as<std::wstring> T>
         [[maybe_unused]]
-        CloseDetails(T && name, T && inn, bool closeShift, bool cashOut)
+        CloseDetails(T && name, T && inn, const bool closeShift, const bool cashOut)
         : OperatorDetails(std::forward<T>(name), std::forward<T>(inn)),
           m_closeShift { closeShift }, m_cashOut { cashOut } {}
 
         [[maybe_unused]]
-        CloseDetails(std::wstring_view name, std::wstring_view inn, bool closeShift, bool cashOut)
+        CloseDetails(const std::wstring_view name, const std::wstring_view inn, const bool closeShift, const bool cashOut)
         : OperatorDetails(name, inn), m_closeShift { closeShift }, m_cashOut { cashOut } {}
 
         ~CloseDetails() = default;
 
         CloseDetails & operator=(const CloseDetails &) = default;
-        CloseDetails & operator=(CloseDetails &&) = default;
+        CloseDetails & operator=(CloseDetails &&) noexcept = default;
     };
 }

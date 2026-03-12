@@ -44,7 +44,7 @@ namespace Server {
     static Config::Handler s_configHandler {};
     static Ping::Handler s_pingHandler {};
 
-    void emergencyBrake(auto & e, const State state) noexcept {
+    void emergencyBrake(const auto & e, const State state) noexcept {
         assert(state >= State::Shutdown);
 
         LOG_ERROR_TS(e);
@@ -66,7 +66,7 @@ namespace Server {
         s_state.store(state);
     }
 
-    void completeHitmanJob(auto & e) noexcept {
+    void completeHitmanJob(const auto & e) noexcept {
         emergencyBrake(e, State::Stopping);
 
         {
@@ -79,7 +79,7 @@ namespace Server {
         s_shutdownSync.count_down();
     }
 
-    void cancelHitmanJob(auto & e) noexcept {
+    void cancelHitmanJob(const auto & e) noexcept {
         {
             /** Call off a hit **/
             std::scoped_lock lock { s_hitmanJobMutex };
@@ -130,12 +130,13 @@ namespace Server {
     asio::awaitable<void> handle(Asio::TcpSocket && socket, Asio::SslContext & sslContext) noexcept try {
         Counter counter { s_concurrentRequestsCounter };
         Asio::Stream stream { std::move(socket), sslContext };
-        Http::Request request { stream.lowest_layer().remote_endpoint().address() };
+        auto & streamLowestLayer = stream.lowest_layer();
+        Http::Request request { streamLowestLayer.remote_endpoint().address() };
         auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(s_requestTimeout);
         Asio::Timer timeoutTimer { co_await asio::this_coro::executor };
         Asio::Error error {};
         Asio::CancellationSignal signal {};
-        bool canceled { false };
+        volatile bool canceled { false };
 
         LOG_DEBUG_TS(
             [& request] {
@@ -282,9 +283,9 @@ namespace Server {
         timeoutTimer.cancel();
 
         {
-            stream.lowest_layer().cancel();
+            streamLowestLayer.cancel();
 
-            if (stream.lowest_layer().is_open()) {
+            if (streamLowestLayer.is_open()) {
                 error.clear();
                 stream.shutdown(error); // NOLINT(*-unused-return-value)
                 if (error) {
@@ -316,9 +317,9 @@ namespace Server {
                 }
             }
 
-            if (stream.lowest_layer().is_open()) {
+            if (streamLowestLayer.is_open()) {
                 error.clear();
-                stream.lowest_layer().close(error); // NOLINT(*-unused-return-value)
+                streamLowestLayer.close(error); // NOLINT(*-unused-return-value)
                 if (error) {
                     if (Log::s_appendLocation) {
                         LOG_ERROR_TS(
