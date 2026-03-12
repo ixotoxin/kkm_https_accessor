@@ -40,7 +40,7 @@ namespace Json {
     using Handler = std::function<bool(const Nln::Json &, const std::wstring &)>;
 
     namespace Detail {
-        void writeHex1(Meta::String auto & result, size_t & pos, uint32_t code) {
+        void writeHex1(Meta::String auto & result, size_t & pos, const uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
             Bin::Int2Hex hex { code };
             result[pos++] = Txt::c_letterU;
@@ -49,14 +49,14 @@ namespace Json {
             hex.writeTo<1>(result, pos);
         }
 
-        void writeHex2(Meta::String auto & result, size_t & pos, uint32_t code) {
+        void writeHex2(Meta::String auto & result, size_t & pos, const uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
             Bin::Int2Hex hex { code };
             result[pos++] = Txt::c_letterU;
             hex.writeTo<2>(result, pos);
         }
 
-        void writeHex3(Meta::String auto & result, size_t & pos, uint32_t code) {
+        void writeHex3(Meta::String auto & result, size_t & pos, const uint32_t code) {
             using Txt = Meta::TextTrait<decltype(result)>;
             Bin::Int2Hex hex { code };
             result[pos++] = Txt::c_letterU;
@@ -196,7 +196,7 @@ namespace Json {
             return { text.begin(), text.end() };
         }
 
-        size_t size { text.size() };
+        const size_t size { text.size() };
         std::wstring result(size + extraSpace, Meta::Wcs::c_reverseSolidus);
         size_t pos { 0 };
         auto it = text.begin();
@@ -730,7 +730,7 @@ namespace Json {
         const std::wstring & jsonPath = {}
     ) try {
         if (json.is_array()) {
-            for (auto & j : json) {
+            for (const auto & j : json) {
                 variable.push_back(cast<typename T::value_type>(j));
             }
             return true;
@@ -784,7 +784,7 @@ namespace Json {
         const std::wstring & jsonPath = {}
     ) try {
         if (json.is_array()) {
-            for (auto & j : json) {
+            for (const auto & j : json) {
                 variable.push_back(filter(cast<typename T::value_type>(j)));
             }
             return true;

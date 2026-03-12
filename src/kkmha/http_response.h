@@ -59,10 +59,10 @@ namespace Http {
                     [& buffer, status = m_status] (std::nullptr_t) {
                         render(buffer, status);
                     },
-                    [& buffer, status = m_status] (std::string_view data) {
+                    [& buffer, status = m_status] (const std::string_view data) {
                         render(buffer, status, data);
                     },
-                    [& buffer, status = m_status] (std::shared_ptr<ProtoResponse> data) {
+                    [& buffer, status = m_status] (const std::shared_ptr<ProtoResponse> data) {
                         if (data) {
                             data->render(buffer, status);
                         } else {

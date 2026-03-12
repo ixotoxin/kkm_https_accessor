@@ -17,7 +17,7 @@ namespace Config {
     constexpr CodePage c_utf8Out [[maybe_unused]] { CP_UTF8, ".UTF8" };
 
     [[maybe_unused]]
-    inline void initConsole(const CodePage codePage) {
+    inline void initConsole(const CodePage & codePage) {
         ::SetConsoleOutputCP(codePage.first);
         ::SetConsoleCP(codePage.first);
         ::setlocale(LC_ALL, codePage.second);

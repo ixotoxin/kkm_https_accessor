@@ -18,7 +18,7 @@ namespace Server {
 
         explicit Failure(
             const std::string_view operation,
-            const Asio::Error error,
+            const Asio::Error & error,
             SrcLoc::Point && location = SrcLoc::Point::current()
         ) : Basic::Failure(
                 Text::concat(operation, ": ", error.message()),
@@ -28,7 +28,7 @@ namespace Server {
         explicit Failure(
             const Http::Request::IdType id,
             const std::string_view operation,
-            const Asio::Error error,
+            const Asio::Error & error,
             SrcLoc::Point && location = SrcLoc::Point::current()
         ) : Basic::Failure(
                 std::format(Mbs::c_prefixedOperation, id, operation, error.message()),

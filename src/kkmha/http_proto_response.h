@@ -14,7 +14,7 @@ namespace Http {
         virtual ~ProtoResponse() = default;
 
         ProtoResponse & operator=(const ProtoResponse &) = default;
-        ProtoResponse & operator=(ProtoResponse &&) = default;
+        ProtoResponse & operator=(ProtoResponse &&) noexcept = default;
 
         virtual explicit operator bool() = 0;
 

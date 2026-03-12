@@ -55,7 +55,7 @@ namespace Basic {
         virtual ~Failure() = default;
 
         Failure & operator=(const Failure &) = default;
-        Failure & operator=(Failure &&) = default;
+        Failure & operator=(Failure &&) noexcept = default;
 
         [[nodiscard, maybe_unused]]
         const std::wstring & what() const noexcept {
@@ -126,7 +126,7 @@ namespace Basic {
         ~DataError() override = default;
 
         DataError & operator=(const DataError &) = default;
-        DataError & operator=(DataError &&) = default;
+        DataError & operator=(DataError &&) noexcept = default;
 
         [[maybe_unused]]
         void variable(const std::wstring_view variable, const bool override = false) noexcept {

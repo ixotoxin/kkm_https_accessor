@@ -14,7 +14,7 @@ namespace Server::Default {
         ~Handler() override = default;
 
         Handler & operator=(const Handler &) = default;
-        Handler & operator=(Handler &&) = default;
+        Handler & operator=(Handler &&) noexcept = default;
 
         [[nodiscard]] bool asyncReady() const noexcept override;
         void operator()(Http::Request &) const noexcept override;

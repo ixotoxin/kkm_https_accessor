@@ -8,9 +8,6 @@ namespace UnitTests {
     using namespace std::string_view_literals;
 
     TEST_CASE("wconv", "[convert]") {
-
-
-
         std::wstring wcString;
         std::string mbString;
 

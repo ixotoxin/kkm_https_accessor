@@ -82,7 +82,7 @@ namespace Server::KkmOp {
             payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
             return nullptr;
         }
-        std::wstring wcSerialNumber { Text::convert(payload.m_serialNumber) };
+        const std::wstring wcSerialNumber { Text::convert(payload.m_serialNumber) };
         std::scoped_lock registryLock(s_registryMutex);
         if (s_connParamsRegistry.contains(wcSerialNumber)) {
             auto & params = s_connParamsRegistry.at(wcSerialNumber);

@@ -341,7 +341,7 @@ namespace Kkm {
         if (json.contains("document") && json["document"].is_array()) {
             details.m_document.reserve(json["document"].size());
             int i { 0 };
-            for (auto & block : json["document"].get<std::vector<Nln::Json>>()) {
+            for (const auto & block : json["document"].get<std::vector<Nln::Json>>()) {
                 bool center { false };
                 bool magnified { false };
                 bool separated { false };
@@ -485,7 +485,7 @@ namespace Kkm {
         if (json.contains("items") && json["items"].is_array()) {
             details.m_items.reserve(json["items"].size());
             int i { 0 };
-            for (auto & item : json["items"].get<std::vector<Nln::Json>>()) {
+            for (const auto & item : json["items"].get<std::vector<Nln::Json>>()) {
                 auto basePath = std::format(L"items[{}]", i++);
                 std::wstring title;
                 bool found {
@@ -558,15 +558,15 @@ namespace Kkm {
                             = Json::handleKey(
                                 json2, "electroPaymentInfo",
                                 [& details] (const Nln::Json & json3, const std::wstring & path3) -> bool {
-                                    bool found { Json::handleKey(json3, "method", details.m_electroPaymentMethod, path3) };
-                                    if (!found) {
+                                    bool found3 { Json::handleKey(json3, "method", details.m_electroPaymentMethod, path3) };
+                                    if (!found3) {
                                         throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path3, L"method")); // NOLINT(*-exception-baseclass)
                                     }
-                                    found
+                                    found3
                                         = Json::handleKey(
                                             json3, "id", details.m_electroPaymentId, Text::Wcs::length(1, 256), path3
                                         );
-                                    if (!found) {
+                                    if (!found3) {
                                         throw Failure(KKM_WFMT(Wcs::c_requiresProperty2, path3, L"id")); // NOLINT(*-exception-baseclass)
                                     }
                                     Json::handleKey(

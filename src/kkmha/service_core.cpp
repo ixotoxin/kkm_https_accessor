@@ -99,7 +99,7 @@ namespace Service {
             s_status.dwCheckPoint = 0;
             s_status.dwWaitHint = 0;
 
-            const ::SERVICE_TABLE_ENTRYW serviceTable[] {
+            constexpr ::SERVICE_TABLE_ENTRYW serviceTable[] {
                 { const_cast<::LPWSTR>(c_systemName), main },
                 { nullptr, nullptr }
             };
@@ -111,7 +111,7 @@ namespace Service {
     }
 
     namespace Control {
-        void queryStatus(::SC_HANDLE & service, ::SERVICE_STATUS_PROCESS & status) {
+        void queryStatus(const ::SC_HANDLE & service, ::SERVICE_STATUS_PROCESS & status) {
             ::DWORD bytesNeeded;
 
             const auto result
@@ -129,7 +129,7 @@ namespace Service {
         }
 
         ::DWORD waitNewState(
-            ::SC_HANDLE & service,
+            const ::SC_HANDLE & service,
             ::SERVICE_STATUS_PROCESS & status,
             const ::DWORD value,
             const std::wstring_view message
@@ -155,7 +155,7 @@ namespace Service {
         }
 
         ::DWORD waitNewState(
-            ::SC_HANDLE & service,
+            const ::SC_HANDLE & service,
             const ::DWORD value,
             const std::wstring_view message
         ) {

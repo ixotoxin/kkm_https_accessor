@@ -91,7 +91,7 @@ namespace Bin {
         ~Int2Hex() = default;
 
         Int2Hex & operator=(const Int2Hex &) = default;
-        Int2Hex & operator=(Int2Hex &&) = default;
+        Int2Hex & operator=(Int2Hex &&) noexcept = default;
 
         using Hexer<sizeof(T)>::c_size;
         using Hexer<sizeof(T)>::writeTo;

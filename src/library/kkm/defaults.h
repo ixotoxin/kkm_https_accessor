@@ -10,6 +10,7 @@
 
 namespace Kkm {
     KKM_CONST(DateTime::SleepUnit, c_sleepQuantum, DateTime::c_basicSleepQuantum); // Миллисекунды
+    KKM_CONST(std::wstring_view, c_serialNumberChars, L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_");
     KKM_CONST(std::wstring_view, c_connParamsSeparator, L",");
     KKM_CONST(wchar_t, c_separatorChar, L'-');
     KKM_DEF(std::wstring_view, c_defDbDirectory, L"kkm");
