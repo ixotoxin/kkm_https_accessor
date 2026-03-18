@@ -34,7 +34,8 @@ namespace SrcLoc {
         Point & operator=(const Point &) = default;
         Point & operator=(Point &&) noexcept = default;
 
-        [[nodiscard]] static consteval Point current(
+        [[nodiscard]]
+        static consteval Point current(
             const size_t line = __builtin_LINE(),
             const char * file = __builtin_FILE()
         ) noexcept {

@@ -299,8 +299,8 @@ namespace Kkm {
         if (result.m_success) {
             json["ffdVersions"] = {
                 { "deviceFfd", safeGet(Mbs::c_ffdVersions, result.m_deviceFfdVersion) },
-                { "deviceMinFfd", safeGet(Mbs::c_ffdVersions, result.m_devMinFfdVersion) },
                 { "deviceMaxFfd", safeGet(Mbs::c_ffdVersions, result.m_devMaxFfdVersion) },
+                { "deviceMinFfd", safeGet(Mbs::c_ffdVersions, result.m_devMinFfdVersion) },
                 { "fnFfd", safeGet(Mbs::c_ffdVersions, result.m_fnFfdVersion) },
                 { "fnMaxFfd", safeGet(Mbs::c_ffdVersions, result.m_fnMaxFfdVersion) },
                 { "ffd", safeGet(Mbs::c_ffdVersions, result.m_ffdVersion) }

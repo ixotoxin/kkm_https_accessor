@@ -86,7 +86,10 @@ namespace Kkm {
     }
 
     ComConnParams::operator ConnParamString() const {
-        return L"COM"s + m_port;
+        std::wstring result { L"COM" };
+        result.append(c_connParamsSeparator);
+        result.append(m_port);
+        return result;
     }
 
     ComConnParams::operator ConnParamJson() const {

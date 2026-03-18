@@ -30,15 +30,18 @@ libraries can be used. In this case, you may need to correct `CMakeLists.txt`.
 The assembly was tested using the MSVC and Clang compilers. The scripts with the standard assembly for these compilers
 are located in the `.\_msvc` and `.\_clang` directories, respectively.
 
-| SCRIPT                     | DESCRIPTION                                                                                                                                            |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `config_env.cmd`           | Sets environment variables and runs the necessary bootstrap scripts. It is called from the scripts listed below                                        |
-| `install_dynamic_deps.cmd` | Installs dynamic build dependencies and copies the necessary header files from `%programfiles%\ATOL\Drivers10\KKT\langs\cpp\fptr10` to `.\deps\fptr10` |
-| `install_static_deps.cmd`  | Installs static build dependencies and copies the necessary header files from `%programfiles%\ATOL\Drivers10\KKT\langs\cpp\fptr10` to `.\deps\fptr10`  |
-| `config_build.cmd`         | Sets build options                                                                                                                                     |
-| `test.cmd`                 | Builds the debug version and runs unit tests                                                                                                           |
-| `build_debug.cmd`          | Builds the debug version                                                                                                                               |
-| `build_release.cmd`        | Builds the release version                                                                                                                             |
+| SCRIPT                     | DESCRIPTION                                                                                                                                             |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `config_env.cmd`           | Sets environment variables and runs the necessary bootstrap scripts. It is called from the scripts listed below.                                        |
+| `install_dynamic_deps.cmd` | Installs dynamic build dependencies and copies the necessary header files from `%programfiles%\ATOL\Drivers10\KKT\langs\cpp\fptr10` to `.\deps\fptr10`. |
+| `install_static_deps.cmd`  | Installs static build dependencies and copies the necessary header files from `%programfiles%\ATOL\Drivers10\KKT\langs\cpp\fptr10` to `.\deps\fptr10`.  |
+| `config_build.cmd`         | Sets build options.                                                                                                                                     |
+| `test.cmd`                 | Builds the debug version and runs unit tests.                                                                                                           |
+| `test_building.cmd`        | Builds with different sets of build parameters and runs unit tests.                                                                                     |
+| `build_debug.cmd`          | Builds the debug version.                                                                                                                               |
+| `build_crtd.cmd`           | Builds the debug version with enabled CRT Debug.                                                                                                        |
+| `build_sntz.cmd`           | Builds the release version with AddressSanitizer and UndefinedBehaviorSanitizer.                                                                        |
+| `build_release.cmd`        | Builds the release version.                                                                                                                             |
 
 It is assumed that the required software is installed in the following directories:
 
@@ -46,8 +49,8 @@ It is assumed that the required software is installed in the following directori
 |------------------------------------------------|---------------------------------------------------------|
 | ATOL Driver                                    | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
-| Clang                                          | `C:\Devel\Platform\Clang\21.1.7-x86_64`                 |
-| CMake                                          | `C:\Devel\Platform\CMake\4.1.4-x86_64`                  |
+| Clang                                          | `C:\Devel\Platform\Clang\22.1.1-x86_64`                 |
+| CMake                                          | `C:\Devel\Platform\CMake\4.2.3-x86_64`                  |
 | Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 
 The paths can be modified in the files `config_env.cmd` and `install_*_deps.cmd`. CMake and Ninja can be used from MSVS.
@@ -58,12 +61,14 @@ CMake options:
 |-------------------|---------------------------------------------------------|
 | `BUILD_SEPARATED` | Build separated .exe files.                             |
 | `BUILD_STATIC`    | Static build.                                           |
+| `BUILD_TESTS`     | Build with unit-tests.                                  |
 | `WITH_SHORTCUTS`  | Build with command shortcuts enabled.                   |
-| `WITH_CRTDBG`     | Enable CRT Debug for memory profiling.                  |
-| `WITH_LEAKS`      | Artificial memory leak generation.                      |
 | `WITH_RELSL`      | Use relative paths for source files in the application. |
+| `WITH_CRTD`       | Enable CRT Debug for memory profiling.                  |
+| `WITH_SNTZ`       | Enable AddressSanitizer and UndefinedBehaviorSanitizer. |
+| `WITH_LEAKS`      | Artificial memory leak generation.                      |
 
-<!-- | `WITH_SBIAC`      | Allow invasive access to the std::string buffer (heresy). | -->
+<!-- | `WITH_SBIAC` | Allow invasive access to the std::string buffer (heresy). | -->
 
 When building the project with the option `-D BUILD_STATIC=ON`, the dependencies must be installed using the
 `install_static_deps.cmd` script. Otherwise, you need to run `install_dynamic_deps.cmd`. After building with one of the

@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace Config {
-    CONFIG_CONST(std::wstring_view, c_directoryEnv, L"kkmha_conf_dir");
-    CONFIG_CONST(std::wstring_view, c_directory, L"conf");
-    CONFIG_CONST(std::wstring_view, c_file, L"kkmha.json");
+    CONF_CONST(std::wstring_view, c_directoryEnv, L"kkmha_conf_dir");
+    CONF_CONST(std::wstring_view, c_directory, L"conf");
+    CONF_CONST(std::wstring_view, c_file, L"kkmha.json");
 }

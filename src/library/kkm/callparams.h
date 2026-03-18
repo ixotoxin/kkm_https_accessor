@@ -117,14 +117,17 @@ namespace Kkm {
         unsigned int m_cashOutCount {};
     };
 
-    struct FndtOfdExchangeStatusResult : Result {
-        std::tm m_firstUnsentDateTime {};
-        std::tm m_okpDateTime {};
-        std::tm m_lastSentDateTime {};
-        unsigned int m_exchangeStatus {};
-        unsigned int m_firstUnsentNumber {};
-        unsigned int m_unsentCount {};
-        bool m_ofdMessageRead {};
+    struct FndtLastReceiptResult : Result {
+        std::tm m_documentDateTime {};
+        std::wstring m_fiscalSign {};
+        double m_receiptSum {};
+        unsigned int m_documentNumber {};
+    };
+
+    struct FndtLastDocumentResult : Result {
+        std::tm m_documentDateTime {};
+        std::wstring m_fiscalSign {};
+        unsigned int m_documentNumber {};
     };
 
     struct FndtFnInfoResult : Result {
@@ -180,17 +183,14 @@ namespace Kkm {
         unsigned int m_registrationsCount {};
     };
 
-    struct FndtLastReceiptResult : Result {
-        std::tm m_documentDateTime {};
-        std::wstring m_fiscalSign {};
-        double m_receiptSum {};
-        unsigned int m_documentNumber {};
-    };
-
-    struct FndtLastDocumentResult : Result {
-        std::tm m_documentDateTime {};
-        std::wstring m_fiscalSign {};
-        unsigned int m_documentNumber {};
+    struct FndtOfdExchangeStatusResult : Result {
+        std::tm m_firstUnsentDateTime {};
+        std::tm m_okpDateTime {};
+        std::tm m_lastSentDateTime {};
+        unsigned int m_exchangeStatus {};
+        unsigned int m_firstUnsentNumber {};
+        unsigned int m_unsentCount {};
+        bool m_ofdMessageRead {};
     };
 
     struct FndtErrorsResult : Result {
@@ -213,6 +213,29 @@ namespace Kkm {
         FfdVersion m_fnFfdVersion { FfdVersion::Unknown };
         FfdVersion m_fnMaxFfdVersion { FfdVersion::Unknown };
         FfdVersion m_ffdVersion { FfdVersion::Unknown };
+
+        FfdVersionsResult() = default;
+        FfdVersionsResult(const FfdVersionsResult &) = default;
+        FfdVersionsResult(FfdVersionsResult &&) = default;
+        ~FfdVersionsResult() = default;
+
+        explicit FfdVersionsResult(std::wstring && message)
+        : Result { .m_message = std::move(message), .m_success = false } {}
+
+        explicit FfdVersionsResult(
+            const FfdVersion deviceFfdVersion,
+            const FfdVersion devMaxFfdVersion,
+            const FfdVersion devMinFfdVersion,
+            const FfdVersion fnFfdVersion,
+            const FfdVersion fnMaxFfdVersion,
+            const FfdVersion ffdVersion
+        ) : Result {},
+            m_deviceFfdVersion { deviceFfdVersion }, m_devMaxFfdVersion { devMaxFfdVersion },
+            m_devMinFfdVersion { devMinFfdVersion }, m_fnFfdVersion { fnFfdVersion },
+            m_fnMaxFfdVersion { fnMaxFfdVersion }, m_ffdVersion { ffdVersion } {}
+
+        FfdVersionsResult & operator=(const FfdVersionsResult &) = default;
+        FfdVersionsResult & operator=(FfdVersionsResult &&) = default;
     };
 
     struct FwVersionsResult : Result {

@@ -7,6 +7,6 @@
 #include <filesystem>
 
 namespace Config {
-    CONFIG_VAR(std::filesystem::path, s_directory, );
-    CONFIG_VAR(std::filesystem::path, s_file, );
+    CONF_VAR(std::filesystem::path, s_directory, );
+    CONF_VAR(std::filesystem::path, s_file, );
 }

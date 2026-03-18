@@ -66,6 +66,18 @@ namespace Kkm {
         }
     }
 
+    [[nodiscard]]
+    std::wstring Device::fault(const SrcLoc::Point & location) {
+        std::wstring message { m_kkm.errorDescription() };
+        m_kkm.resetError();
+        if (Log::s_appendLocation) {
+            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
+        } else {
+            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
+        }
+        return message;
+    }
+
     void Device::fail(Result & result, const std::wstring_view message, const SrcLoc::Point & location) {
         if (Log::s_appendLocation) {
             LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
@@ -116,12 +128,13 @@ namespace Kkm {
         }
     }
 
-    const std::wstring & Device::serialNumber() const {
+    [[nodiscard]]
+    std::wstring Device::serialNumber() const {
         return m_serialNumber;
     }
 
     void Device::detectFfdVersions() {
-        if (m_ffdVersions.m_ffdVersion != FfdVersion::Unknown || !m_ffdVersions.m_success) {
+        if (m_ffdVersions.has_value()) {
             return;
         }
 
@@ -130,30 +143,21 @@ namespace Kkm {
         /** Запрос версий ФФД **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_FFD_VERSIONS);
         if (m_kkm.fnQueryData() < 0) {
-            fail(m_ffdVersions);
-            m_ffdVersions.m_deviceFfdVersion = FfdVersion::Unknown;
-            m_ffdVersions.m_devMinFfdVersion = FfdVersion::Unknown;
-            m_ffdVersions.m_devMaxFfdVersion = FfdVersion::Unknown;
-            m_ffdVersions.m_fnFfdVersion = FfdVersion::Unknown;
-            m_ffdVersions.m_fnMaxFfdVersion = FfdVersion::Unknown;
-            m_ffdVersions.m_ffdVersion = FfdVersion::Unknown;
+            m_ffdVersions.emplace(fault());
         } else {
-            m_ffdVersions.m_deviceFfdVersion
-                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_FFD_VERSION));
-            m_ffdVersions.m_devMinFfdVersion
-                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MIN_FFD_VERSION));
-            m_ffdVersions.m_devMaxFfdVersion
-                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MAX_FFD_VERSION));
-            m_ffdVersions.m_fnFfdVersion
-                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_FFD_VERSION));
-            m_ffdVersions.m_fnMaxFfdVersion
-                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_MAX_FFD_VERSION));
-            m_ffdVersions.m_ffdVersion
-                = static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FFD_VERSION));
-            m_storedFfdVersion = m_ffdVersions.m_ffdVersion;
+            m_ffdVersions.emplace(
+                static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_FFD_VERSION)),
+                static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MAX_FFD_VERSION)),
+                static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DEVICE_MIN_FFD_VERSION)),
+                static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_FFD_VERSION)),
+                static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FN_MAX_FFD_VERSION)),
+                static_cast<FfdVersion>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_FFD_VERSION))
+            );
+            m_storedFfdVersion = m_ffdVersions->m_ffdVersion;
         }
     }
 
+    [[nodiscard]]
     FfdVersion Device::ffdVersion(const bool forcedLearn) {
         if (forcedLearn) {
             detectFfdVersions();
@@ -168,7 +172,7 @@ namespace Kkm {
         return m_storedFfdVersion;
     }
 
-    [[nodiscard, maybe_unused]]
+    [[nodiscard]]
     std::wstring Device::addMargins(const std::wstring_view text, int marginTop, int marginBottom) {
         Numeric::doubleClamp(marginTop, marginBottom, 0, 10);
         std::wstring result;
@@ -182,7 +186,6 @@ namespace Kkm {
         return result;
     }
 
-    [[maybe_unused]]
     void Device::addSeparator(std::wstring & text, int marginTop, int marginBottom) const {
         Numeric::doubleClamp(marginTop, marginBottom, 0, 10);
         ++marginBottom;
@@ -195,7 +198,7 @@ namespace Kkm {
         }
     }
 
-    [[nodiscard, maybe_unused]]
+    [[nodiscard]]
     std::wstring Device::addSeparators(const std::wstring_view text, int marginOuter, int marginInner) const {
         std::wstring result;
         Numeric::doubleClamp(marginOuter, marginInner, 0, 10);
@@ -218,7 +221,6 @@ namespace Kkm {
         return result;
     }
 
-    [[maybe_unused]]
     void Device::subPrintSeparator(int marginTop, int marginBottom) {
         std::wstring separator;
         Numeric::doubleClamp(marginTop, marginBottom, 0, 10);
@@ -313,100 +315,6 @@ namespace Kkm {
             if (!i) {
                 return fail(result, Wcs::c_checkingError);
             }
-        }
-    }
-
-    void Device::subSetOperator(const OperatorDetails & details) {
-        LOG_DEBUG_TS(Wcs::c_subSetOperator, m_logPrefix, m_serialNumber);
-
-        /** Регистрация оператора **/
-        m_kkm.setParam(1021, details.m_operatorName);
-        if (!details.m_operatorInn.empty()) {
-            m_kkm.setParam(1203, details.m_operatorInn);
-        }
-        if (m_kkm.operatorLogin() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
-        }
-    }
-
-    void Device::subSetCustomer(const ReceiptDetails & details) {
-        const bool legacyFfd { ffdVersion() != FfdVersion::V_1_2 };
-
-        LOG_DEBUG_TS(Wcs::c_subSetCustomer, m_logPrefix, m_serialNumber);
-
-        if (legacyFfd) {
-            /** Регистрация информации о покупателе / клиенте для ФФД < 1.2 **/
-            if (!details.m_customerName.empty()) {
-                m_kkm.setParam(1227, details.m_customerName);
-            }
-            if (!details.m_customerInn.empty()) {
-                m_kkm.setParam(1228, details.m_customerInn);
-            }
-        } else {
-            /** Регистрация информации о покупателе / клиенте для ФФД >= 1.2 **/
-            bool hasRequisite1256 { false };
-            if (!details.m_customerName.empty()) {
-                m_kkm.setParam(1227, details.m_customerName);
-                hasRequisite1256 = true;
-            }
-            if (!details.m_customerInn.empty()) {
-                m_kkm.setParam(1228, details.m_customerInn);
-                hasRequisite1256 = true;
-            }
-            if (!details.m_customerBirthdate.empty()) {
-                m_kkm.setParam(1243, details.m_customerBirthdate);
-                hasRequisite1256 = true;
-            }
-            if (!details.m_customerCitizenship.empty()) {
-                m_kkm.setParam(1244, details.m_customerCitizenship);
-                hasRequisite1256 = true;
-            }
-            if (!details.m_customerDocumentCode.empty()) {
-                m_kkm.setParam(1245, details.m_customerDocumentCode);
-                hasRequisite1256 = true;
-            }
-            if (!details.m_customerDocumentData.empty()) {
-                m_kkm.setParam(1246, details.m_customerDocumentData);
-                hasRequisite1256 = true;
-            }
-            if (!details.m_customerAddress.empty()) {
-                m_kkm.setParam(1254, details.m_customerAddress);
-                hasRequisite1256 = true;
-            }
-            if (hasRequisite1256) {
-                if (m_kkm.utilFormTlv() < 0) {
-                    throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
-                }
-                const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
-                m_kkm.setParam(1256, clientInfo);
-            }
-        }
-
-        /** Регистрация номера лицевого счёта покупателя **/
-        if (!details.m_customerAccount.empty()) {
-            std::wstring customerAccount { L"  " };
-            customerAccount.append(details.m_customerAccount);
-            m_kkm.setParam(1085, s_customerAccountField); // Наименование дополнительного реквизита пользователя
-            m_kkm.setParam(1086, customerAccount); // Значение дополнительного реквизита пользователя
-            if (m_kkm.utilFormTlv() < 0) {
-                throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
-            }
-            const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
-            m_kkm.setParam(1084, clientInfo);
-        }
-
-        /** Регистрация информации о покупателе / клиенте **/
-        if (!details.m_customerContact.empty()) {
-            m_kkm.setParam(1008, details.m_customerContact);
-        }
-    }
-
-    void Device::subSetSeller(const ReceiptDetails & details) {
-        LOG_DEBUG_TS(Wcs::c_subSetSeller, m_logPrefix, m_serialNumber);
-
-        /** Регистрация информации о продавце / поставщике **/
-        if (!details.m_sellerEmail.empty()) {
-            m_kkm.setParam(1117, details.m_sellerEmail);
         }
     }
 
@@ -557,27 +465,31 @@ namespace Kkm {
         result.m_cashSum = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_SUM);
     }
 
-    void Device::getFndtOfdExchangeStatus(FndtOfdExchangeStatusResult & result) {
-        LOG_DEBUG_TS(Wcs::c_ofdExchangeStatusMethod, m_logPrefix, m_serialNumber);
+    void Device::getFndtLastReceipt(FndtLastReceiptResult & result) {
+        LOG_DEBUG_TS(Wcs::c_lastReceiptMethod, m_logPrefix, m_serialNumber);
 
-        /** Запрос статуса информационного обмена с ОФД **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_OFD_EXCHANGE_STATUS);
+        /** Запрос информации о последнем чеке **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_RECEIPT);
         if (m_kkm.fnQueryData() < 0) {
             return fail(result);
         }
-        result.m_exchangeStatus = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_OFD_EXCHANGE_STATUS);
-        result.m_unsentCount = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENTS_COUNT);
-        result.m_firstUnsentNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENT_NUMBER);
-        result.m_ofdMessageRead = m_kkm.getParamBool(Atol::LIBFPTR_PARAM_OFD_MESSAGE_READ);
-        result.m_firstUnsentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
-        result.m_okpDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_LAST_SUCCESSFUL_OKP);
+        result.m_documentNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENT_NUMBER);
+        result.m_receiptSum = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_RECEIPT_SUM);
+        result.m_fiscalSign = m_kkm.getParamString(Atol::LIBFPTR_PARAM_FISCAL_SIGN);
+        result.m_documentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
+    }
 
-        /** Запрос даты и времени последней успешной отправки документа в ОФД **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_LAST_SENT_OFD_DOCUMENT_DATE_TIME);
-        if (m_kkm.queryData() < 0) {
+    void Device::getFndtLastDocument(FndtLastDocumentResult & result) {
+        LOG_DEBUG_TS(Wcs::c_lastDocumentMethod, m_logPrefix, m_serialNumber);
+
+        /** Запрос информации о последнем фискальном документе **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_DOCUMENT);
+        if (m_kkm.fnQueryData() < 0) {
             return fail(result);
         }
-        result.m_lastSentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
+        result.m_documentNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENT_NUMBER);
+        result.m_fiscalSign = m_kkm.getParamString(Atol::LIBFPTR_PARAM_FISCAL_SIGN);
+        result.m_documentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
     }
 
     void Device::getFndtFnInfo(FndtFnInfoResult & result) {
@@ -657,31 +569,27 @@ namespace Kkm {
         result.m_registrationDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
     }
 
-    void Device::getFndtLastReceipt(FndtLastReceiptResult & result) {
-        LOG_DEBUG_TS(Wcs::c_lastReceiptMethod, m_logPrefix, m_serialNumber);
+    void Device::getFndtOfdExchangeStatus(FndtOfdExchangeStatusResult & result) {
+        LOG_DEBUG_TS(Wcs::c_ofdExchangeStatusMethod, m_logPrefix, m_serialNumber);
 
-        /** Запрос информации о последнем чеке **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_RECEIPT);
+        /** Запрос статуса информационного обмена с ОФД **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_OFD_EXCHANGE_STATUS);
         if (m_kkm.fnQueryData() < 0) {
             return fail(result);
         }
-        result.m_documentNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENT_NUMBER);
-        result.m_receiptSum = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_RECEIPT_SUM);
-        result.m_fiscalSign = m_kkm.getParamString(Atol::LIBFPTR_PARAM_FISCAL_SIGN);
-        result.m_documentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
-    }
+        result.m_exchangeStatus = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_OFD_EXCHANGE_STATUS);
+        result.m_unsentCount = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENTS_COUNT);
+        result.m_firstUnsentNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENT_NUMBER);
+        result.m_ofdMessageRead = m_kkm.getParamBool(Atol::LIBFPTR_PARAM_OFD_MESSAGE_READ);
+        result.m_firstUnsentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
+        result.m_okpDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_LAST_SUCCESSFUL_OKP);
 
-    void Device::getFndtLastDocument(FndtLastDocumentResult & result) {
-        LOG_DEBUG_TS(Wcs::c_lastDocumentMethod, m_logPrefix, m_serialNumber);
-
-        /** Запрос информации о последнем фискальном документе **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_DOCUMENT);
-        if (m_kkm.fnQueryData() < 0) {
+        /** Запрос даты и времени последней успешной отправки документа в ОФД **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_LAST_SENT_OFD_DOCUMENT_DATE_TIME);
+        if (m_kkm.queryData() < 0) {
             return fail(result);
         }
-        result.m_documentNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_DOCUMENT_NUMBER);
-        result.m_fiscalSign = m_kkm.getParamString(Atol::LIBFPTR_PARAM_FISCAL_SIGN);
-        result.m_documentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
+        result.m_lastSentDateTime = m_kkm.getParamDateTime(Atol::LIBFPTR_PARAM_DATE_TIME);
     }
 
     void Device::getFndtErrors(FndtErrorsResult & result) {
@@ -706,7 +614,7 @@ namespace Kkm {
 
     void Device::getFfdVersions(FfdVersionsResult & result) {
         detectFfdVersions();
-        result = m_ffdVersions;
+        result = *m_ffdVersions;
     }
 
     void Device::getFwVersions(FwVersionsResult & result) {
@@ -833,6 +741,17 @@ namespace Kkm {
         }
     }
 
+    void Device::printOfdTest(Result & result) {
+        LOG_DEBUG_TS(Wcs::c_printOfdTestMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+
+        /** Диагностика соединения с ОФД **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_OFD_TEST);
+        if (m_kkm.report() < 0) {
+            return fail(result);
+        }
+    }
+
     void Device::printOfdExchangeStatus(Result & result) {
         LOG_DEBUG_TS(Wcs::c_printOfdExchangeStatusMethod, m_logPrefix, m_serialNumber);
         LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
@@ -843,17 +762,6 @@ namespace Kkm {
             return fail(result);
         }
         subCheckDocumentClosed(result);
-    }
-
-    void Device::printOfdTest(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printOfdTestMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
-
-        /** Диагностика соединения с ОФД **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_OFD_TEST);
-        if (m_kkm.report() < 0) {
-            return fail(result);
-        }
     }
 
     void Device::printCloseShiftReports(Result & result) {
@@ -875,6 +783,19 @@ namespace Kkm {
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_LAST_DOCUMENT);
         if (m_kkm.report() < 0) {
             return fail(result);
+        }
+    }
+
+    void Device::subSetOperator(const OperatorDetails & details) {
+        LOG_DEBUG_TS(Wcs::c_subSetOperator, m_logPrefix, m_serialNumber);
+
+        /** Регистрация оператора **/
+        m_kkm.setParam(1021, details.m_operatorName);
+        if (!details.m_operatorInn.empty()) {
+            m_kkm.setParam(1203, details.m_operatorInn);
+        }
+        if (m_kkm.operatorLogin() < 0) {
+            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
         }
     }
 
@@ -905,6 +826,87 @@ namespace Kkm {
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DOCUMENT_ELECTRONICALLY, details.m_electronically);
         if (m_kkm.cashOutcome() < 0) {
             return fail(result);
+        }
+    }
+
+    void Device::subSetCustomer(const ReceiptDetails & details) {
+        const bool legacyFfd { ffdVersion() != FfdVersion::V_1_2 };
+
+        LOG_DEBUG_TS(Wcs::c_subSetCustomer, m_logPrefix, m_serialNumber);
+
+        if (legacyFfd) {
+            /** Регистрация информации о покупателе / клиенте для ФФД < 1.2 **/
+            if (!details.m_customerName.empty()) {
+                m_kkm.setParam(1227, details.m_customerName);
+            }
+            if (!details.m_customerInn.empty()) {
+                m_kkm.setParam(1228, details.m_customerInn);
+            }
+        } else {
+            /** Регистрация информации о покупателе / клиенте для ФФД >= 1.2 **/
+            bool hasRequisite1256 { false };
+            if (!details.m_customerName.empty()) {
+                m_kkm.setParam(1227, details.m_customerName);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerInn.empty()) {
+                m_kkm.setParam(1228, details.m_customerInn);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerBirthdate.empty()) {
+                m_kkm.setParam(1243, details.m_customerBirthdate);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerCitizenship.empty()) {
+                m_kkm.setParam(1244, details.m_customerCitizenship);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerDocumentCode.empty()) {
+                m_kkm.setParam(1245, details.m_customerDocumentCode);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerDocumentData.empty()) {
+                m_kkm.setParam(1246, details.m_customerDocumentData);
+                hasRequisite1256 = true;
+            }
+            if (!details.m_customerAddress.empty()) {
+                m_kkm.setParam(1254, details.m_customerAddress);
+                hasRequisite1256 = true;
+            }
+            if (hasRequisite1256) {
+                if (m_kkm.utilFormTlv() < 0) {
+                    throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+                }
+                const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
+                m_kkm.setParam(1256, clientInfo);
+            }
+        }
+
+        /** Регистрация номера лицевого счёта покупателя **/
+        if (!details.m_customerAccount.empty()) {
+            std::wstring customerAccount { L"  " };
+            customerAccount.append(details.m_customerAccount);
+            m_kkm.setParam(1085, s_customerAccountField); // Наименование дополнительного реквизита пользователя
+            m_kkm.setParam(1086, customerAccount); // Значение дополнительного реквизита пользователя
+            if (m_kkm.utilFormTlv() < 0) {
+                throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            }
+            const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
+            m_kkm.setParam(1084, clientInfo);
+        }
+
+        /** Регистрация информации о покупателе / клиенте **/
+        if (!details.m_customerContact.empty()) {
+            m_kkm.setParam(1008, details.m_customerContact);
+        }
+    }
+
+    void Device::subSetSeller(const ReceiptDetails & details) {
+        LOG_DEBUG_TS(Wcs::c_subSetSeller, m_logPrefix, m_serialNumber);
+
+        /** Регистрация информации о продавце / поставщике **/
+        if (!details.m_sellerEmail.empty()) {
+            m_kkm.setParam(1117, details.m_sellerEmail);
         }
     }
 
@@ -1029,27 +1031,6 @@ namespace Kkm {
         subRegisterReceipt(ReceiptType::SellReturn, details, result);
     }
 
-    void Device::subCloseShift(const OperatorDetails & details, Result & result) {
-        /** Запрос состояния смены **/
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_SHIFT_STATE);
-        if (m_kkm.queryData() < 0) {
-            return fail(result);
-        }
-        if (static_cast<ShiftState>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_STATE)) == ShiftState::Closed) {
-            LOG_DEBUG_TS(Wcs::c_subCloseShiftNoNeed, m_logPrefix, m_serialNumber);
-        } else {
-            subSetOperator(details);
-            LOG_DEBUG_TS(Wcs::c_subCloseShift, m_logPrefix, m_serialNumber);
-            // LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
-            /** Закрытие смены **/
-            m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_CLOSE_SHIFT);
-            if (m_kkm.report() < 0) {
-                return fail(result);
-            }
-            subCheckDocumentClosed(result);
-        }
-    }
-
     void Device::subCashOut(const OperatorDetails & details, Result & result) {
         /** Запрос суммы наличных в денежном ящике **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_CASH_SUM);
@@ -1068,6 +1049,27 @@ namespace Kkm {
             }
         } else {
             LOG_DEBUG_TS(Wcs::c_subCashOutNoNeed, m_logPrefix, m_serialNumber);
+        }
+    }
+
+    void Device::subCloseShift(const OperatorDetails & details, Result & result) {
+        /** Запрос состояния смены **/
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_SHIFT_STATE);
+        if (m_kkm.queryData() < 0) {
+            return fail(result);
+        }
+        if (static_cast<ShiftState>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_STATE)) == ShiftState::Closed) {
+            LOG_DEBUG_TS(Wcs::c_subCloseShiftNoNeed, m_logPrefix, m_serialNumber);
+        } else {
+            subSetOperator(details);
+            LOG_DEBUG_TS(Wcs::c_subCloseShift, m_logPrefix, m_serialNumber);
+            // LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+            /** Закрытие смены **/
+            m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_CLOSE_SHIFT);
+            if (m_kkm.report() < 0) {
+                return fail(result);
+            }
+            subCheckDocumentClosed(result);
         }
     }
 

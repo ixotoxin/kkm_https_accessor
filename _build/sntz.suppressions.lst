@@ -1,0 +1,5 @@
+#interceptor_via_fun:init*
+#interceptor_via_fun:realloc*
+#interceptor_via_fun:recalloc*
+#interceptor_via_fun:register_onexit_function
+#interceptor_via_lib:clang_rt.asan_dynamic-x86_64.dll

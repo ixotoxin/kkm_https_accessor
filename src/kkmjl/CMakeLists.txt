@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 
 add_executable(kkmjl kkmjl_main.cpp kkmjl_variables.cpp)
+
+if (WITH_SNTZ)
+    target_sntzr_link_options(kkmjl)
+endif()
+
 target_compile_definitions(kkmjl PUBLIC ${KKMHA_PUBLIC_DEFS} PRIVATE ${KKMHA_PRIVATE_DEFS})
 target_link_libraries(kkmjl PRIVATE kkmha_lib)
 target_link_libraries(kkmjl PRIVATE nlohmann_json::nlohmann_json)
@@ -11,5 +16,6 @@ install(
     RUNTIME_DEPENDENCIES
     PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
     POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
+    DIRECTORIES "$ENV{CLANG_SANLIB_DIR}"
     DESTINATION .
 )

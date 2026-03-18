@@ -5,9 +5,8 @@
 
 #cmakedefine01 BUILD_SEPARATED
 #cmakedefine01 WITH_SHORTCUTS
-#cmakedefine01 WITH_ASAN
-#cmakedefine01 WITH_UBSAN
-#cmakedefine01 WITH_CRTDBG
-#cmakedefine01 WITH_LEAKS
 #cmakedefine01 WITH_RELSL
 #cmakedefine01 WITH_SBIAC
+#cmakedefine01 WITH_CRTD
+#cmakedefine01 WITH_SNTZ
+#cmakedefine01 WITH_LEAKS
