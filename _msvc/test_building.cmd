@@ -35,14 +35,14 @@ cmake --build %TEST_PATH% --config Debug --verbose >> %TEST_PATH%.log 2>&1
 ctest --test-dir %TEST_PATH% --build-config Debug --rerun-failed --output-on-failure >> %TEST_PATH%.log 2>&1
 
 ECHO   configured debug...
-SET TEST_OPTS=-D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTS=ON %DEBUG_OPTS%
+SET TEST_OPTS=-D CMAKE_BUILD_TYPE=Debug %COMMON_OPTS% -D BUILD_TESTS=ON
 SET TEST_PATH=../__temp/test5-msvc
 cmake -G "Visual Studio 17 2022" %TEST_OPTS% -B %TEST_PATH% -S .. > %TEST_PATH%.log 2>&1
 cmake --build %TEST_PATH% --config Debug --verbose >> %TEST_PATH%.log 2>&1
 ctest --test-dir %TEST_PATH% --build-config Debug --rerun-failed --output-on-failure >> %TEST_PATH%.log 2>&1
 
 ECHO   configured release...
-SET TEST_OPTS=-D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON %RELEASE_OPTS%
+SET TEST_OPTS=-D CMAKE_BUILD_TYPE=Release %COMMON_OPTS% -D BUILD_TESTS=ON
 SET TEST_PATH=../__temp/test6-msvc
 cmake -G "Visual Studio 17 2022" %TEST_OPTS% -B %TEST_PATH% -S .. > %TEST_PATH%.log 2>&1
 cmake --build %TEST_PATH% --config Release --verbose >> %TEST_PATH%.log 2>&1

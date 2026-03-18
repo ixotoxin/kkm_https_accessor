@@ -6,6 +6,7 @@
 #include "types.h"
 #include "connparams.h"
 #include "callparams.h"
+#include <optional>
 
 namespace Kkm {
     class Device {
@@ -19,19 +20,19 @@ namespace Kkm {
         Device & operator=(const Device &) = delete;
         Device & operator=(Device &&) = delete;
 
-        [[nodiscard]] const std::wstring & serialNumber() const;
+        [[nodiscard]] std::wstring serialNumber() const;
         [[nodiscard]] FfdVersion ffdVersion(bool = false);
 
         void getStatus(StatusResult &);
         void getShiftState(ShiftStateResult &);
         void getReceiptState(ReceiptStateResult &);
         void getCashStat(CashStatResult &);
-        void getFndtOfdExchangeStatus(FndtOfdExchangeStatusResult &);
+        void getFndtLastReceipt(FndtLastReceiptResult &);
+        void getFndtLastDocument(FndtLastDocumentResult &);
         void getFndtFnInfo(FndtFnInfoResult &);
         void getFndtRegistrationInfo(FndtRegistrationInfoResult &);
         void getFndtLastRegistration(FndtLastRegistrationResult &);
-        void getFndtLastReceipt(FndtLastReceiptResult &);
-        void getFndtLastDocument(FndtLastDocumentResult &);
+        void getFndtOfdExchangeStatus(FndtOfdExchangeStatusResult &);
         void getFndtErrors(FndtErrorsResult &);
         void getFfdVersions(FfdVersionsResult &);
         void getFwVersions(FwVersionsResult &);
@@ -40,32 +41,32 @@ namespace Kkm {
         void printNonFiscalDocument(const PrintDetails &, Result &);
         void printInfo(Result &);
         void printFnRegistrations(Result &);
-        void printOfdExchangeStatus(Result &);
         void printOfdTest(Result &);
+        void printOfdExchangeStatus(Result &);
         void printCloseShiftReports(Result &);
         void printLastDocument(Result &);
         void registerCashIn(const CashDetails &, Result &);
         void registerCashOut(const CashDetails &, Result &);
         void registerSell(const ReceiptDetails &, Result &);
         void registerSellReturn(const ReceiptDetails &, Result &);
-        void reportX(const CloseDetails &, Result &);
         void closeShift(const CloseDetails &, Result &);
+        void reportX(const CloseDetails &, Result &);
         void resetState(const CloseDetails &, Result &);
 
     protected:
-        explicit Device(std::wstring_view);
-
-        void connect(ConnParams);
-
-    private:
         Atol::Fptr m_kkm {};
-        FfdVersionsResult m_ffdVersions {};
+        std::optional<FfdVersionsResult> m_ffdVersions { std::nullopt };
         std::wstring m_serialNumber {};
         std::wstring m_logPrefix;
         unsigned int m_lineLength { 0 };
         FfdVersion m_storedFfdVersion { FfdVersion::Unknown };
         bool m_needToCancelReceipt { false };
 
+        explicit Device(std::wstring_view);
+
+        void connect(ConnParams);
+
+        [[nodiscard]] std::wstring fault(const SrcLoc::Point & = SrcLoc::Point::current());
         void fail(Result &, std::wstring_view, const SrcLoc::Point & = SrcLoc::Point::current());
         void fail(Result &, const std::wstring &, const SrcLoc::Point & = SrcLoc::Point::current());
         void fail(Result &, std::wstring &&, const SrcLoc::Point & = SrcLoc::Point::current());
@@ -73,10 +74,11 @@ namespace Kkm {
 
         void detectFfdVersions();
 
-        [[nodiscard, maybe_unused]] static std::wstring addMargins(std::wstring_view, int = 1, int = -1);
-        [[maybe_unused]] void addSeparator(std::wstring &, int = 0, int = -1) const;
-        [[nodiscard, maybe_unused]] std::wstring addSeparators(std::wstring_view, int = 0, int = -1) const;
-        [[maybe_unused]] void subPrintSeparator(int = 0, int = -1);
+        [[nodiscard]] static std::wstring addMargins(std::wstring_view, int = 1, int = -1);
+        void addSeparator(std::wstring &, int = 0, int = -1) const;
+        [[nodiscard]] std::wstring addSeparators(std::wstring_view, int = 0, int = -1) const;
+
+        void subPrintSeparator(int = 0, int = -1);
 
         void subPrintText(
             std::wstring_view, bool = false, bool = false, bool = false,

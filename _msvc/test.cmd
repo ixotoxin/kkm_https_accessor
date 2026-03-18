@@ -2,7 +2,10 @@
 CLS
 CALL "%~dp0config_env.cmd"
 CALL "%~dp0config_build.cmd"
-
-cmake -G "Visual Studio 17 2022" -D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTS=ON %DEBUG_OPTS% -B ../__temp/tests-msvc -S ..
-cmake --build ../__temp/tests-msvc --config Debug --verbose
-ctest --test-dir ../__temp/tests-msvc --build-config Debug --rerun-failed --output-on-failure
+SET GENERATE_OPTS=-D CMAKE_BUILD_TYPE=Debug %COMMON_OPTS% -D BUILD_TESTS=ON
+SET BUILD_OPTS=--config Debug --verbose
+SET BUILD_DIR=../__temp/tests-msvc
+SET TEST_OPTS=--build-config Debug --rerun-failed --output-on-failure
+cmake -G "Visual Studio 17 2022" %GENERATE_OPTS% -B %BUILD_DIR% -S ..
+cmake --build %BUILD_DIR% %BUILD_OPTS%
+ctest --test-dir %BUILD_DIR% %TEST_OPTS%

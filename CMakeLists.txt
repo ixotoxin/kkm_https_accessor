@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(kkm_https_accessor VERSION 1.8.5 LANGUAGES CXX)
+project(kkm_https_accessor VERSION 1.8.6 LANGUAGES CXX)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_FIND_DEBUG_MODE ON)
@@ -17,12 +17,11 @@ option(BUILD_SEPARATED "Build separated" OFF)
 option(BUILD_STATIC "Build static" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 option(WITH_SHORTCUTS "Build with command shortcuts enabled" OFF)
-#option(WITH_ASAN "Build with AddressSanitizer" OFF)
-#option(WITH_UBSAN "Build with UndefinedBehaviorSanitizer" OFF)
-option(WITH_CRTDBG "Build with memory profiling" OFF)
-option(WITH_LEAKS "Build with artificial memory leaks" OFF)
 option(WITH_RELSL "Enable relative paths for the source location" ON)
 option(WITH_SBIAC "Enable invasive access to the std::string buffer" OFF)
+option(WITH_CRTD "Build with memory profiling (CRT Debug)" OFF)
+option(WITH_SNTZ "Build with sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer)" OFF)
+option(WITH_LEAKS "Build with artificial memory leaks" OFF)
 
 string(TIMESTAMP KKMHA_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S")
 set(KKMHA_BUILD_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
@@ -34,21 +33,12 @@ if (BUILD_STATIC)
     message(STATUS "Build static executables")
     set(KKMHA_BUILD_TYPE "Static/${CMAKE_BUILD_TYPE}")
     set(KKMHA_DEPS_VCPKG "${CMAKE_CURRENT_SOURCE_DIR}/deps/static/vcpkg_installed/x64-windows-static")
-    if (CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
-        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
-    else ()
-        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
-    endif ()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else ()
     set(KKMHA_BUILD_TYPE "Dynamic/${CMAKE_BUILD_TYPE}")
     set(KKMHA_DEPS_VCPKG "${CMAKE_CURRENT_SOURCE_DIR}/deps/dynamic/vcpkg_installed/x64-windows")
-    if (CMAKE_BUILD_TYPE MATCHES "Debug|RelWithDebInfo")
-        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDebugDLL)
-        set(KKMHA_DEPS_VCPKG_DLL "${KKMHA_DEPS_VCPKG}/debug/bin")
-    else ()
-        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
-        set(KKMHA_DEPS_VCPKG_DLL "${KKMHA_DEPS_VCPKG}/bin")
-    endif ()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    set(KKMHA_DEPS_VCPKG_DLL "${KKMHA_DEPS_VCPKG}/$<$<CONFIG:Debug>:debug/>bin")
 endif ()
 
 set(OPENSSL_ROOT_DIR ${KKMHA_DEPS_VCPKG})
@@ -61,45 +51,138 @@ set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Oy- /RTC1 /Zi /DDEBUG /D_DEBUG")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Oy- /RTC1 /Zi /DDEBUG /D_DEBUG")
     add_compile_options(/W4 /WX /EHsc /Zc:preprocessor /utf-8 /await:strict)
     add_compile_options(/wd4068 /wd4244 /wd4267 /wd4310 /wd4996)
+    set(WITH_SNTZ OFF)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
+        set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG -D_DEBUG")
+        add_compile_options(
+            #-nostdlib -nodefaultlibs
+            -Werror -Wall -Wextra -Wpedantic
+            -Wcast-align -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wenum-compare -Wfloat-equal
+            -Wnon-virtual-dtor -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo
+            -Wno-c2y-extensions -Wno-deprecated-declarations -Wno-implicit-int-conversion
+            -Wno-sign-compare -Wno-sign-conversion -Wno-unknown-pragmas
+        )
+        if (WITH_RELSL)
+            add_compile_options("-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=.\\")
+        endif ()
+        if (BUILD_STATIC)
+            add_compile_options(-static)
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+        endif ()
+    elseif (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 -DNDEBUG")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/O2 /Ob2 -g -DNDEBUG")
+        set(CMAKE_CXX_FLAGS_DEBUG "/Od -g -DDEBUG -D_DEBUG")
+        add_definitions(-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+        #add_definitions(-D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
+        add_compile_options(
+            #/clang:-nostdlib /clang:-nodefaultlibs
+            /clang:-Werror /clang:-Wall /clang:-Wextra /clang:-Wpedantic
+            /clang:-Wcast-align /clang:-Wcast-qual /clang:-Wconversion /clang:-Wctor-dtor-privacy /clang:-Wenum-compare
+            /clang:-Wfloat-equal /clang:-Wnon-virtual-dtor /clang:-Woverloaded-virtual /clang:-Wredundant-decls
+            /clang:-Wsign-conversion /clang:-Wsign-promo /clang:-Wno-c2y-extensions /clang:-Wno-deprecated-declarations
+            /clang:-Wno-implicit-int-conversion /clang:-Wno-sign-compare /clang:-Wno-sign-conversion
+            /clang:-Wno-unknown-pragmas
+        )
+        if (WITH_RELSL)
+            add_compile_options("/clang:-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=.\\")
+        endif ()
+        if (BUILD_STATIC)
+        endif ()
+    else ()
+        message(FATAL_ERROR "Unsupported compiler")
+    endif ()
 else ()
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG -D_DEBUG")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-    add_compile_options(
-        -nostdlib -nodefaultlibs
-        -Werror -Wall -Wextra -Wpedantic
-        -Wcast-align -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wenum-compare -Wfloat-equal
-        -Wnon-virtual-dtor -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo
-        -Wno-c2y-extensions -Wno-deprecated-declarations -Wno-implicit-int-conversion
-        -Wno-sign-compare -Wno-sign-conversion -Wno-unknown-pragmas
-    )
-    if (WITH_RELSL)
-        add_compile_options("-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=.\\")
-    endif ()
-    if (BUILD_STATIC)
-        add_compile_options(-static)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-    endif ()
+    message(FATAL_ERROR "Unsupported compiler")
 endif ()
 
 add_definitions(/DUNICODE /D_UNICODE /DWIN32_LEAN_AND_MEAN /DNOMINMAX /D_WIN32_WINNT=0x0601)
+
+if (WITH_CRTD)
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(FATAL_ERROR "Allowed only in Debug build type")
+    endif ()
+    set(BUILD_TESTS OFF)
+    set(WITH_SNTZ OFF)
+endif ()
+
+if (WITH_SNTZ)
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        message(FATAL_ERROR "Allowed only in RelWithDebInfo build type")
+    endif ()
+    if ("$ENV{CLANG_SANLIB_DIR}" STREQUAL "")
+        message(FATAL_ERROR "The CLANG_SANLIB_DIR environment variable is required")
+    else ()
+        message(STATUS "Sanitizers library directory: $ENV{CLANG_SANLIB_DIR}")
+    endif()
+    string(REPLACE "-nostartfiles" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "-nostdlib" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+    string(REPLACE "-nostartfiles" "" CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
+    string(REPLACE "-nostdlib" "" CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
+    link_directories(BEFORE "$ENV{CLANG_SANLIB_DIR}")
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+        add_compile_options(
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+            -fno-sanitize-merge
+            -fsanitize-recover=address,undefined
+    )
+    elseif (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Oy-")
+        add_compile_options(
+            -fsanitize=address,undefined
+            -fno-sanitize-merge
+            -fsanitize-recover=address,undefined
+        )
+    endif()
+    function (target_sntzr_link_options target)
+        if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+            target_link_options(${target} PRIVATE -fsanitize=address,undefined)
+            target_link_options(${target} PRIVATE -Wl,/INCREMENTAL:NO)
+            #target_link_options(${target} PRIVATE -Wl,/WHOLEARCHIVE:clang_rt.asan_dynamic-x86_64.lib)
+            #target_link_options(${target} PRIVATE -Wl,/WHOLEARCHIVE:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib)
+            #target_link_options(${target} PRIVATE -Wl,/WHOLEARCHIVE:clang_rt.ubsan_standalone-x86_64.lib)
+            #target_link_options(${target} PRIVATE -Wl,/WHOLEARCHIVE:clang_rt.ubsan_standalone_cxx-x86_64.lib)
+        elseif (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+            target_link_options(${target} PRIVATE /INCREMENTAL:NO)
+            target_link_options(${target} PRIVATE /WHOLEARCHIVE:clang_rt.asan_dynamic-x86_64.lib)
+            target_link_options(${target} PRIVATE /WHOLEARCHIVE:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib)
+            #target_link_options(${target} PRIVATE /WHOLEARCHIVE:clang_rt.ubsan_standalone-x86_64.lib)
+            #target_link_options(${target} PRIVATE /WHOLEARCHIVE:clang_rt.ubsan_standalone_cxx-x86_64.lib)
+        endif()
+        if (NOT BUILD_STATIC)
+            target_link_libraries(${target} PRIVATE DbgHelp.lib)
+            target_link_libraries(${target} PRIVATE Crypt32.lib)
+        endif()
+        add_custom_command(
+            TARGET ${target}
+            POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E
+                copy_if_different
+                "$ENV{CLANG_SANLIB_DIR}/clang_rt.asan_dynamic-x86_64.dll"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/clang_rt.asan_dynamic-x86_64.dll"
+        )
+    endfunction ()
+    set(BUILD_TESTS OFF)
+endif()
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/deps/fptr10")
 
 set(KKMHA_CONFIG_INCLUDE_DIR "${PROJECT_BINARY_DIR}/_Include_${CMAKE_BUILD_TYPE}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/options.h.in" "${KKMHA_CONFIG_INCLUDE_DIR}/cmake/options.h")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/variables.h.in" "${KKMHA_CONFIG_INCLUDE_DIR}/cmake/variables.h")
-include_directories("${KKMHA_CONFIG_INCLUDE_DIR}" BEFORE)
+include_directories(BEFORE "${KKMHA_CONFIG_INCLUDE_DIR}")
 
 file(GLOB_RECURSE KKMHA_LIBRARY_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/library/lib/*.cpp")
 file(GLOB_RECURSE KKMHA_COMMON_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/library/*/*.cpp")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/library" BEFORE)
-
-#set(ENV{KKMHA_CONF_DIR} "${PROJECT_SOURCE_DIR}/_build/conf")
-#set(ENV{KKMHA_LOGS_DIR} "${PROJECT_SOURCE_DIR}/_build/logs")
+include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/src/library")
 
 set(
     KKMHA_PUBLIC_DEFS
@@ -119,7 +202,7 @@ if (BUILD_SEPARATED)
             EXTERNAL_MAIN_VARIABLES
             EXTERNAL_LOG_VARIABLES
             EXTERNAL_KKM_VARIABLES
-            EXTERNAL_CONFIG_VARIABLES
+            EXTERNAL_CONF_VARIABLES
     )
 else ()
     set(KKMHA_PRIVATE_DEFS)

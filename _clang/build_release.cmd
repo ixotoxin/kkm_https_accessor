@@ -2,6 +2,9 @@
 CLS
 CALL "%~dp0config_env.cmd"
 CALL "%~dp0config_build.cmd"
-cmake -G Ninja -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_BUILD_TYPE=Release %RELEASE_OPTS% -B ../__temp/release-clang -S ..
-cmake --build ../__temp/release-clang --config Release --verbose
-cmake --install ../__temp/release-clang --prefix ../_build/ --config Release --verbose
+SET GENERATE_OPTS=-D CMAKE_CXX_COMPILER=%CLANG_CXX_FRONTEND% -D CMAKE_BUILD_TYPE=Release %COMMON_OPTS%
+SET BUILD_OPTS=--config Release --verbose
+SET BUILD_DIR=../__temp/release-clang
+cmake -G Ninja %GENERATE_OPTS% -B %BUILD_DIR% -S ..
+cmake --build %BUILD_DIR% %BUILD_OPTS%
+cmake --install %BUILD_DIR% --prefix %INSTALL_DIR% %BUILD_OPTS%

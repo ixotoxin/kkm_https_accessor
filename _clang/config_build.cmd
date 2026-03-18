@@ -9,25 +9,14 @@ SET SEPARATED=OFF
 REM Статическая сборка
 SET STATIC=OFF
 
-REM !!! НЕ РЕАЛИЗОВАНО !!!
-REM Профилирование памяти в отладочной сборке с использованием AddressSanitizer
-REM SET ASAN=OFF
-
-REM !!! НЕ РЕАЛИЗОВАНО !!!
-REM Сборка с UndefinedBehaviorSanitizer
-REM SET UBSAN=OFF
-
-REM Профилирование памяти в отладочной сборке с использованием CRT Debug
-SET CRTDBG=OFF
-
-REM Создание утечек памяти в отладочной сборке
-SET LEAKS=%CRTDBG%
-
 REM Использовать относительные пути исходных файлов в приложении
 SET RELSL=ON
 
 REM Разрешить инвазивный доступ к буферу std::string (ересь)
 SET SBIAC=OFF
 
-SET RELEASE_OPTS=-D WITH_SHORTCUTS=%SHORTCUTS% -D BUILD_SEPARATED=%SEPARATED% -D BUILD_STATIC=%STATIC% -D WITH_RELSL=%RELSL% -D WITH_SBIAC=%SBIAC%
-SET DEBUG_OPTS=%RELEASE_OPTS% -D WITH_ASAN=%ASAN% -D WITH_UBSAN=%UBSAN% -D WITH_CRTDBG=%CRTDBG% -D WITH_LEAKS=%LEAKS%
+REM Создание утечек памяти в отладочной сборке
+SET LEAKS=ON
+
+SET COMMON_OPTS=-D WITH_SHORTCUTS=%SHORTCUTS% -D BUILD_SEPARATED=%SEPARATED% -D BUILD_STATIC=%STATIC% -D WITH_RELSL=%RELSL% -D WITH_SBIAC=%SBIAC%
+SET INSTALL_DIR=../_build/

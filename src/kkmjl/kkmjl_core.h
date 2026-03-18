@@ -130,7 +130,7 @@ namespace KkmJsonLoader {
             throw Basic::Failure(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
         }
 
-#if WITH_ASAN || WITH_CRTDBG
+#if WITH_CRTD || WITH_SNTZ
         result[MEMORY_PROFILING_FLAG_KEY] = MEMORY_PROFILING_FLAG_VALUE;
 #endif
 
@@ -141,7 +141,7 @@ namespace KkmJsonLoader {
     inline void printError(const std::wstring_view error) {
         std::wcerr
             << L"{\n"
-#if WITH_ASAN || WITH_CRTDBG
+#if WITH_CRTD || WITH_SNTZ
             L"    \"" MEMORY_PROFILING_FLAG_KEY "\": \"" MEMORY_PROFILING_FLAG_VALUE "\",\n"
 #endif
             L"    \"" << Json::Wcs::c_successKey << L"\": false,\n"

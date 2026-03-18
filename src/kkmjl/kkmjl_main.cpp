@@ -25,7 +25,7 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
         }
         std::wcerr
             << L"{\n"
-#if WITH_ASAN || WITH_CRTDBG
+#if WITH_CRTD || WITH_SNTZ
             L"    \"" MEMORY_PROFILING_FLAG_KEY "\": \"" MEMORY_PROFILING_FLAG_VALUE "\",\n"
 #endif
             L"    \"" << Json::Wcs::c_successKey << L"\": false,\n"

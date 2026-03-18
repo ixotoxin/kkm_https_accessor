@@ -21,6 +21,10 @@ if (BUILD_SEPARATED)
     target_sources(kkmha PRIVATE kkmha_variables.cpp)
 endif ()
 
+if (WITH_SNTZ)
+    target_sntzr_link_options(kkmha)
+endif()
+
 target_compile_definitions(kkmha PUBLIC ${KKMHA_PUBLIC_DEFS} PRIVATE ${KKMHA_PRIVATE_DEFS})
 target_link_libraries(kkmha PRIVATE kkmha_lib)
 target_link_libraries(kkmha PRIVATE OpenSSL::SSL OpenSSL::Crypto)
@@ -37,7 +41,7 @@ if (BUILD_STATIC)
         RUNTIME_DEPENDENCIES
         PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
         POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
-        DIRECTORIES "${CLANG_SANLIB_DIR}"
+        DIRECTORIES "$ENV{CLANG_SANLIB_DIR}"
         DESTINATION .
     )
 else ()
@@ -55,7 +59,7 @@ else ()
         RUNTIME_DEPENDENCIES
         PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
         POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
-        DIRECTORIES "${KKMHA_DEPS_VCPKG_DLL}" "${CLANG_SANLIB_DIR}"
+        DIRECTORIES "$ENV{CLANG_SANLIB_DIR}" "${KKMHA_DEPS_VCPKG_DLL}"
         DESTINATION .
     )
 endif ()
