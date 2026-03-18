@@ -1,6 +1,6 @@
 {
     "name": "kkm-https-accessor",
-    "version": "1.8",
+    "version": "1.9",
     "dependencies": [
         {
             "name": "asio",
