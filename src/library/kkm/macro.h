@@ -1,7 +1,9 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
+
+#include <cmake/options.h>
 
 #ifdef EXTERNAL_KKM_VARIABLES
 #   define KKM_DEF(TYPE, NAME, VALUE)
@@ -23,4 +25,17 @@
 #   define KKM_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
 #   define KKM_WSTR(NAME, VALUE) constexpr const std::wstring_view NAME { VALUE }
 #   define KKM_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+#endif
+
+#define VERSION_10108 10'010'008
+#define VERSION_10107 10'010'007
+#define VERSION_10106 10'010'006
+#define FALLBACK_VERSION VERSION_10106
+
+#if defined(WITH_10108) && WITH_10108
+#   define VERSION_LIMIT VERSION_10108
+#elif defined(WITH_10107) && WITH_10107
+#   define VERSION_LIMIT VERSION_10107
+#else
+#   define VERSION_LIMIT VERSION_10106
 #endif

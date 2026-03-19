@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "varop.h"
@@ -26,10 +26,12 @@ namespace Kkm {
                     json2, "defaultLineLength", s_defaultLineLength,
                     Numeric::between(c_minLineLength, c_maxLineLength), path2
                 );
+#if VERSION_LIMIT >= VERSION_10107
                 Json::handleKey(
                     json2, "timeZone", s_timeZone,
                     Mbs::c_timeZoneMap, [] (auto value) { s_timeZoneConfigured = true; return value; }, path2
                 );
+#endif
                 Json::handleKey(json2, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path2);
                 Json::handleKey(json2, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path2);
                 Json::handleKey(
@@ -68,7 +70,9 @@ namespace Kkm {
             << L"CFG: kkm.dbDirectory = \"" << s_dbDirectory.wstring() << L"\"\n"
             L"CFG: kkm.defaultBaudRate = " << s_defaultBaudRate << L"\n"
             L"CFG: kkm.defaultLineLength = " << s_defaultLineLength << L"\n"
+#if VERSION_LIMIT >= VERSION_10107
             L"CFG: kkm.timeZone = tz" << Meta::toUnderlying(s_timeZone) << L"\n"
+#endif
             L"CFG: kkm.fallbackFfdVersion = \"" << wcsSafeGet(Mbs::c_ffdVersions, s_fallbackFfdVersion) << L"\"\n"
             L"CFG: kkm.ffdVersionDetect = \"" << wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect) << L"\"\n"
             L"CFG: kkm.documentClosingTimeout = " << s_documentClosingTimeout << L"\n"

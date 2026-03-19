@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -10,3 +10,6 @@
 #cmakedefine01 WITH_CRTD
 #cmakedefine01 WITH_SNTZ
 #cmakedefine01 WITH_LEAKS
+#cmakedefine01 WITH_10106
+#cmakedefine01 WITH_10107
+#cmakedefine01 WITH_10108

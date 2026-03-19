@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -24,16 +24,13 @@ namespace Kkm {
         BaseConnParams & operator=(const BaseConnParams &) = default;
         BaseConnParams & operator=(BaseConnParams &&) noexcept = default;
 
-        void apply(Atol::Fptr &) const;
+        virtual void apply(Atol::Fptr &) const = 0;
         [[nodiscard]] FfdVersion storedFfdVersion() const;
         virtual explicit operator ConnParamString() const = 0;
         virtual explicit operator ConnParamJson() const = 0;
 
     protected:
         FfdVersion m_ffdVersion { FfdVersion::Unknown };
-
-        static void applyCommon(Atol::Fptr &);
-        virtual void applyDetail(Atol::Fptr &) const = 0;
     };
 
     using ConnParams = std::shared_ptr<BaseConnParams>;
@@ -49,6 +46,7 @@ namespace Kkm {
         ComConnParams & operator=(const ComConnParams &) = default;
         ComConnParams & operator=(ComConnParams &&) noexcept = default;
 
+        void apply(Atol::Fptr &) const override;
         explicit operator ConnParamString() const override;
         explicit operator ConnParamJson() const override;
 
@@ -57,7 +55,6 @@ namespace Kkm {
         std::wstring m_baudRate {};
 
         ComConnParams() = default;
-        void applyDetail(Atol::Fptr &) const override;
     };
 
     class UsbConnParams final : public BaseConnParams {
@@ -71,12 +68,12 @@ namespace Kkm {
         UsbConnParams & operator=(const UsbConnParams &) = default;
         UsbConnParams & operator=(UsbConnParams &&) noexcept = default;
 
+        void apply(Atol::Fptr &) const override;
         explicit operator ConnParamString() const override;
         explicit operator ConnParamJson() const override;
 
     protected:
         UsbConnParams() = default;
-        void applyDetail(Atol::Fptr &) const override;
     };
 
     class TcpIpConnParams final : public BaseConnParams {
@@ -90,12 +87,12 @@ namespace Kkm {
         TcpIpConnParams & operator=(const TcpIpConnParams &) = default;
         TcpIpConnParams & operator=(TcpIpConnParams &&) noexcept = default;
 
+        void apply(Atol::Fptr &) const override;
         explicit operator ConnParamString() const override;
         explicit operator ConnParamJson() const override;
 
     protected:
         TcpIpConnParams() = default;
-        void applyDetail(Atol::Fptr &) const override;
     };
 
     class BluetoothConnParams final : public BaseConnParams {
@@ -109,11 +106,11 @@ namespace Kkm {
         BluetoothConnParams & operator=(const BluetoothConnParams &) = default;
         BluetoothConnParams & operator=(BluetoothConnParams &&) noexcept = default;
 
+        void apply(Atol::Fptr &) const override;
         explicit operator ConnParamString() const override;
         explicit operator ConnParamJson() const override;
 
     protected:
         BluetoothConnParams() = default;
-        void applyDetail(Atol::Fptr &) const override;
     };
 }

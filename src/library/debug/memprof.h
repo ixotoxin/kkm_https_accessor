@@ -1,9 +1,8 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
 
-// TODO: А нужен ли здесь этот include?
 #include <cmake/options.h>
 
 #if !defined(WITH_CRTD) || !defined(WITH_SNTZ) || !defined(WITH_LEAKS)
@@ -16,6 +15,12 @@
 #   endif
 #   undef WITH_SNTZ
 #   define WITH_SNTZ 0
+#   ifndef _CRTDBG_MAP_ALLOC
+#       define _CRTDBG_MAP_ALLOC 1 /* NOLINT(*-reserved-identifier) */
+#   endif
+#   include <lib/winapi.h>
+#   include <stdlib.h>
+#   include <crtdbg.h>
 #endif
 
 #if WITH_SNTZ

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -20,6 +20,7 @@ namespace Kkm {
         Device & operator=(const Device &) = delete;
         Device & operator=(Device &&) = delete;
 
+        [[nodiscard]] unsigned long drvVersion() const;
         [[nodiscard]] std::wstring serialNumber() const;
         [[nodiscard]] FfdVersion ffdVersion(bool = false);
 
@@ -58,6 +59,7 @@ namespace Kkm {
         std::optional<FfdVersionsResult> m_ffdVersions { std::nullopt };
         std::wstring m_serialNumber {};
         std::wstring m_logPrefix;
+        unsigned long m_drvVersion { FALLBACK_VERSION };
         unsigned int m_lineLength { 0 };
         FfdVersion m_storedFfdVersion { FfdVersion::Unknown };
         bool m_needToCancelReceipt { false };
@@ -93,6 +95,8 @@ namespace Kkm {
         void subRegisterReceipt(ReceiptType, const ReceiptDetails &, Result &);
         void subCashOut(const OperatorDetails &, Result &);
         void subCloseShift(const OperatorDetails &, Result &);
+
+        static unsigned long versionStrToInt(std::string) noexcept;
     };
 
     class NewDevice : public Device {
