@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "memprof.h"
@@ -8,10 +8,10 @@
 #endif
 
 #if WITH_CRTD
-#   define _CRTDBG_MAP_ALLOC // NOLINT(*-reserved-identifier)
-#   include <lib/winapi.h>
-#   include <crtdbg.h>
-#   include <cstdlib>
+// #   define _CRTDBG_MAP_ALLOC // NOLINT(*-reserved-identifier)
+// #   include <lib/winapi.h>
+// #   include <crtdbg.h>
+// #   include <cstdlib>
 #   include <format>
 #endif
 

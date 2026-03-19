@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include <lib/winapi.h>
@@ -64,8 +64,10 @@ namespace Kkm {
     constexpr size_t c_maxLineLength { 192 };
     constexpr size_t c_maxTextLength { 512 };
     size_t s_defaultLineLength { 42 };
+#if VERSION_LIMIT >= VERSION_10107
     TimeZone s_timeZone { TimeZone::Device };
     bool s_timeZoneConfigured { false };
+#endif
     constexpr FfdVersion c_defFallbackFfdVersion { FfdVersion::V_1_0_5 };
     FfdVersion s_fallbackFfdVersion { c_defFallbackFfdVersion };
     constexpr FfdVersionDetect c_ffdVersionDetect { FfdVersionDetect::Never };

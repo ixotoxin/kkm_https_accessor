@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -138,7 +138,9 @@ namespace Kkm {
         inline const std::unordered_map<unsigned int, std::string_view> c_models {
             { Atol::LIBFPTR_MODEL_ALLIANCE_20F, "АЛЬЯНС 20Ф" },
             { Atol::LIBFPTR_MODEL_ATOL_1F, "АТОЛ 1Ф" },
+#if VERSION_LIMIT >= VERSION_10107
             { Atol::LIBFPTR_MODEL_ATOL_2F, "АТОЛ 2Ф" },
+#endif
             { Atol::LIBFPTR_MODEL_ATOL_11F, "АТОЛ 11Ф" },
             { Atol::LIBFPTR_MODEL_ATOL_15F, "АТОЛ 15Ф" },
             { Atol::LIBFPTR_MODEL_ATOL_20F, "АТОЛ 20Ф" },
@@ -169,6 +171,7 @@ namespace Kkm {
             { Atol::LIBFPTR_MODEL_KAZNACHEY_FA, "Казначей ФА" }
         };
 
+#if VERSION_LIMIT >= VERSION_10107
         inline const std::unordered_map<std::string, TimeZone> c_timeZoneMap {
             { "device", TimeZone::Device },
             { "tz" + std::to_string(Meta::toUnderlying(TimeZone::Device)), TimeZone::Device },
@@ -206,6 +209,7 @@ namespace Kkm {
             { "utc+12", TimeZone::Zone11 },
             { "tz" + std::to_string(Meta::toUnderlying(TimeZone::Zone11)), TimeZone::Zone11 }
         };
+#endif
 
         inline const std::unordered_map<FfdVersion, std::string_view> c_ffdVersions {
             { FfdVersion::Unknown, "[неизвестная версия]" },
@@ -357,12 +361,14 @@ namespace Kkm {
             { "120%", Tax::Vat120 },
             { "vat120", Tax::Vat120 },
             { std::to_string(Meta::toUnderlying(Tax::Vat120)), Tax::Vat120 },
+#if VERSION_LIMIT >= VERSION_10108
             { "22%", Tax::Vat22 },
             { "vat22", Tax::Vat22 },
             { std::to_string(Meta::toUnderlying(Tax::Vat22)), Tax::Vat22 },
             { "122%", Tax::Vat122 },
             { "vat122", Tax::Vat122 },
-            { std::to_string(Meta::toUnderlying(Tax::Vat122)), Tax::Vat122 }
+            { std::to_string(Meta::toUnderlying(Tax::Vat122)), Tax::Vat122 },
+#endif
         };
 
         inline const std::unordered_map<std::string, PaymentType> c_paymentTypeCastMap {

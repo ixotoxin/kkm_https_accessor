@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "device.h"
@@ -9,7 +9,8 @@
 #include <cassert>
 
 namespace Kkm {
-    Device::Device(const std::wstring_view logPrefix) : m_logPrefix { logPrefix } {}
+    Device::Device(const std::wstring_view logPrefix)
+    : m_logPrefix { logPrefix }, m_drvVersion { versionStrToInt(m_kkm.version()) } {}
 
     Device::Device(const ConnParams connParams, const std::wstring_view logPrefix)
     : Device(logPrefix) {
@@ -41,6 +42,20 @@ namespace Kkm {
 
     void Device::connect(const ConnParams connParams) {
         connParams->apply(m_kkm);
+        m_kkm.setSingleSetting(Atol::LIBFPTR_SETTING_MODEL, std::to_wstring(Atol::LIBFPTR_MODEL_ATOL_AUTO));
+#if VERSION_LIMIT >= VERSION_10107
+        if (m_drvVersion >= VERSION_10107 && s_timeZoneConfigured) {
+            m_kkm.setSingleSetting(Atol::LIBFPTR_SETTING_TIME_ZONE, std::to_wstring(Meta::toUnderlying(s_timeZone)));
+        }
+#endif
+        m_kkm.setSingleSetting(Atol::LIBFPTR_SETTING_OFD_CHANNEL, std::to_wstring(Atol::LIBFPTR_OFD_CHANNEL_AUTO));
+        // ISSUE: Из документации не ясно, что передавать в качестве значения параметра.
+        //  Но нам этот параметр не очень нужен, потому как при формировании чека единицы у нас
+        //  всегда передаются и проблем с ФФД 1.2+ не должно возникнуть.
+        // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_AUTO_MEASUREMENT_UNIT, ???);
+        if (m_kkm.applySingleSettings() < 0) {
+            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+        }
         if (m_kkm.open() < 0) {
             throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
         }
@@ -126,6 +141,11 @@ namespace Kkm {
             result.m_success = false;
             result.m_message = std::move(message);
         }
+    }
+
+    [[nodiscard]]
+    unsigned long Device::drvVersion() const {
+        return m_drvVersion;
     }
 
     [[nodiscard]]
@@ -989,24 +1009,27 @@ namespace Kkm {
             }
             // result.m_remainder = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_REMAINDER); // Неоплаченный остаток чека
             // result.m_change = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_CHANGE); // Сдача по чеку
-
-            /**
-             * «Сведения обо всех оплатах по чеку безналичными»
-             * (необязательный реквизит, приказ ФНС России от 26.03.2025 № ЕД-7-20/236@).
-             * https://www.nalog.gov.ru/rn71/news/activities_fts/16524721/
-             **/
-            if (details.m_electroPaymentInfo) {
-                m_kkm.setParam(Atol::LIBFPTR_PARAM_PAYMENT_TYPE, Atol::LIBFPTR_PT_ADD_INFO);
-                m_kkm.setParam(Atol::LIBFPTR_PARAM_PAYMENT_SUM, details.m_paymentSum);
-                m_kkm.setParam(Atol::LIBFPTR_PARAM_ELECTRONICALLY_PAYMENT_METHOD, details.m_electroPaymentMethod);
-                m_kkm.setParam(Atol::LIBFPTR_PARAM_ELECTRONICALLY_ID, details.m_electroPaymentId);
-                if (!details.m_electroPaymentAddInfo.empty()) {
-                    m_kkm.setParam(Atol::LIBFPTR_PARAM_ELECTRONICALLY_ADD_INFO, details.m_electroPaymentAddInfo);
-                }
-                if (m_kkm.payment() < 0) {
-                    return fail(result);
+#if VERSION_LIMIT >= VERSION_10107
+            if (m_drvVersion >= VERSION_10107) {
+                /**
+                 * «Сведения обо всех оплатах по чеку безналичными»
+                 * (необязательный реквизит, приказ ФНС России от 26.03.2025 № ЕД-7-20/236@).
+                 * https://www.nalog.gov.ru/rn71/news/activities_fts/16524721/
+                 **/
+                if (details.m_electroPaymentInfo) {
+                    m_kkm.setParam(Atol::LIBFPTR_PARAM_PAYMENT_TYPE, Atol::LIBFPTR_PT_ADD_INFO);
+                    m_kkm.setParam(Atol::LIBFPTR_PARAM_PAYMENT_SUM, details.m_paymentSum);
+                    m_kkm.setParam(Atol::LIBFPTR_PARAM_ELECTRONICALLY_PAYMENT_METHOD, details.m_electroPaymentMethod);
+                    m_kkm.setParam(Atol::LIBFPTR_PARAM_ELECTRONICALLY_ID, details.m_electroPaymentId);
+                    if (!details.m_electroPaymentAddInfo.empty()) {
+                        m_kkm.setParam(Atol::LIBFPTR_PARAM_ELECTRONICALLY_ADD_INFO, details.m_electroPaymentAddInfo);
+                    }
+                    if (m_kkm.payment() < 0) {
+                        return fail(result);
+                    }
                 }
             }
+#endif
         }
 
         LOG_DEBUG_TS(Wcs::c_subRegisterReceiptAndPrint, m_logPrefix, m_serialNumber);
@@ -1126,5 +1149,29 @@ namespace Kkm {
         if (details.m_closeShift) {
             subCloseShift(details, result);
         }
+    }
+
+    unsigned long Device::versionStrToInt(std::string version) noexcept {
+        unsigned long result {};
+        if (version.length() < 7 || version.length() > 15) {
+            return FALLBACK_VERSION;
+        }
+        auto pos = version.c_str();
+        char * end {};
+        result += 1'000'000 * std::strtoul(pos, &end, 10);
+        if (end == pos || *end != '.') {
+            return FALLBACK_VERSION;
+        }
+        pos = end + 1;
+        result += 1'000 * std::strtoul(pos, &end, 10);
+        if (end == pos || *end != '.') {
+            return FALLBACK_VERSION;
+        }
+        pos = end + 1;
+        result += std::strtoul(pos, &end, 10);
+        if (end == pos || *end != '.') {
+            return FALLBACK_VERSION;
+        }
+        return result;
     }
 }

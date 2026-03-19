@@ -1,8 +1,9 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
 
+#include "macro.h"
 #include <lib/except.h>
 #include <string_view>
 #include <unordered_map>
@@ -40,6 +41,7 @@ namespace Kkm {
         Failure & operator=(Failure &&) noexcept = default;
     };
 
+#if VERSION_LIMIT >= VERSION_10107
     enum class TimeZone : std::remove_cv_t<decltype(Atol::LIBFPTR_TIME_ZONE_DEVICE)> {
         Device = Atol::LIBFPTR_TIME_ZONE_DEVICE,
         Zone1 = Atol::LIBFPTR_TIME_ZONE_1,
@@ -54,6 +56,7 @@ namespace Kkm {
         Zone10 = Atol::LIBFPTR_TIME_ZONE_10,
         Zone11 = Atol::LIBFPTR_TIME_ZONE_11
     };
+#endif
 
     enum class FfdVersion : std::remove_cv_t<decltype(Atol::LIBFPTR_FFD_UNKNOWN)> {
         Unknown = Atol::LIBFPTR_FFD_UNKNOWN,
@@ -141,8 +144,10 @@ namespace Kkm {
         // Vat118 = Atol::LIBFPTR_TAX_VAT118,
         Vat20 = Atol::LIBFPTR_TAX_VAT20,
         Vat120 = Atol::LIBFPTR_TAX_VAT120,
+#if VERSION_LIMIT >= VERSION_10108
         Vat22 = Atol::LIBFPTR_TAX_VAT22,
         Vat122 = Atol::LIBFPTR_TAX_VAT122,
+#endif
         // Department = Atol::LIBFPTR_TAX_DEPARTMENT
     };
 

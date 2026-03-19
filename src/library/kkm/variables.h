@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -13,8 +13,10 @@ namespace Kkm {
     KKM_VAR(std::filesystem::path, s_dbDirectory, c_defDbDirectory);
     KKM_VAR(std::wstring, s_defaultBaudRate, c_defBaudRate);
     KKM_VAR(size_t, s_defaultLineLength, c_defLineLength);
+#if VERSION_LIMIT >= VERSION_10107
     KKM_VAR(TimeZone, s_timeZone, TimeZone::Device);
     KKM_VAR(bool, s_timeZoneConfigured, false);
+#endif
     KKM_VAR(FfdVersion, s_fallbackFfdVersion, c_defFallbackFfdVersion);
     KKM_VAR(FfdVersionDetect, s_ffdVersionDetect, c_ffdVersionDetect);
     KKM_VAR(DateTime::SleepUnit, s_documentClosingTimeout, c_defDocumentClosingTimeout);

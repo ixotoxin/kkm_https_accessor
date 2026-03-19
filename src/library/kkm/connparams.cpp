@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "connparams.h"
@@ -7,26 +7,6 @@
 #include "strings.h"
 
 namespace Kkm {
-    void BaseConnParams::applyCommon(Atol::Fptr & kkm) {
-        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_MODEL, std::to_wstring(Atol::LIBFPTR_MODEL_ATOL_AUTO));
-        if (s_timeZoneConfigured) {
-            kkm.setSingleSetting(Atol::LIBFPTR_SETTING_TIME_ZONE, std::to_wstring(Meta::toUnderlying(s_timeZone)));
-        }
-        kkm.setSingleSetting(Atol::LIBFPTR_SETTING_OFD_CHANNEL, std::to_wstring(Atol::LIBFPTR_OFD_CHANNEL_AUTO));
-        // ISSUE: Из документации не ясно, что передавать в качестве значения параметра.
-        //  Но нам этот параметр не очень нужен, потому как при формировании чека единицы у нас
-        //  всегда передаются и проблем с ФФД 1.2+ не должно возникнуть.
-        // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_AUTO_MEASUREMENT_UNIT, ???);
-    }
-
-    void BaseConnParams::apply(Atol::Fptr & kkm) const {
-        this->applyDetail(kkm);
-        applyCommon(kkm);
-        if (kkm.applySingleSettings() < 0) {
-            throw Failure(kkm); // NOLINT(*-exception-baseclass)
-        }
-    }
-
     [[nodiscard]]
     FfdVersion BaseConnParams::storedFfdVersion() const {
         return m_ffdVersion;
@@ -75,7 +55,7 @@ namespace Kkm {
         }
     }
 
-    void ComConnParams::applyDetail(Atol::Fptr & kkm) const {
+    void ComConnParams::apply(Atol::Fptr & kkm) const {
         kkm.setSingleSetting(Atol::LIBFPTR_SETTING_PORT, std::to_wstring(Atol::LIBFPTR_PORT_COM));
         std::wstring port { L"COM" };
         port.append(m_port);
@@ -109,7 +89,7 @@ namespace Kkm {
         // TODO: Реализовать.
     }
 
-    void UsbConnParams::applyDetail(Atol::Fptr &) const {
+    void UsbConnParams::apply(Atol::Fptr &) const {
         throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 
@@ -129,7 +109,7 @@ namespace Kkm {
         // TODO: Реализовать.
     }
 
-    void TcpIpConnParams::applyDetail(Atol::Fptr &) const {
+    void TcpIpConnParams::apply(Atol::Fptr &) const {
         throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 
@@ -149,7 +129,7 @@ namespace Kkm {
         // TODO: Реализовать.
     }
 
-    void BluetoothConnParams::applyDetail(Atol::Fptr &) const {
+    void BluetoothConnParams::apply(Atol::Fptr &) const {
         throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass) // TODO: Реализовать.
     }
 

@@ -67,6 +67,9 @@ CMake options:
 | `WITH_CRTD`       | Enable CRT Debug for memory profiling.                  |
 | `WITH_SNTZ`       | Enable AddressSanitizer and UndefinedBehaviorSanitizer. |
 | `WITH_LEAKS`      | Artificial memory leak generation.                      |
+| `WITH_10106`      | Restrict functionality to driver version 10.10.6        |
+| `WITH_10107`      | Restrict functionality to driver version 10.10.7        |
+| `WITH_10108`      | Restrict functionality to driver version 10.10.8        |
 
 <!-- | `WITH_SBIAC` | Allow invasive access to the std::string buffer (heresy). | -->
 
