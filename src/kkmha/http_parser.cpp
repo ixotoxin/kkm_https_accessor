@@ -4,7 +4,7 @@
 #include "http_parser.h"
 #include "http_defaults.h"
 #include <lib/text.h>
-#include <log/write.h>
+#include <log2/core.h>
 
 namespace Http {
     using Basic::Failure;
@@ -72,7 +72,7 @@ namespace Http {
         if (field == "content-length") {
             m_expectedBodySize = Text::cast<size_t>(value);
             if (m_expectedBodySize > c_requestBodySizeLimit) {
-                LOG_ERROR_TS(Wcs::c_bodySizeLimitExceeded, m_request.m_id);
+                LOG_ERROR(Wcs::c_bodySizeLimitExceeded, m_request.m_id);
                 m_expectedBodySize = 0;
                 m_request.m_response.m_status = Status::BadRequest;
                 m_request.m_response.m_data.emplace<std::string>(Mbs::c_bodySizeLimitExceeded);
@@ -104,11 +104,11 @@ namespace Http {
             }
             return; /** Не удаляй, смотри дальше. **/
         } catch (const Failure & e) {
-            LOG_ERROR_TS(e);
+            LOG_ERROR(e);
         } catch (const std::exception & e) {
-            LOG_ERROR_TS(e);
+            LOG_ERROR(e);
         } catch (...) {
-            LOG_ERROR_TS(Basic::Wcs::c_somethingWrong);
+            LOG_ERROR(Basic::Wcs::c_somethingWrong);
         }
         if (m_request.m_response.m_status == Status::Ok) {
             m_request.m_response.m_status = Status::BadRequest;

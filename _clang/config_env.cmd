@@ -2,7 +2,7 @@
 
 IF NOT "%CLANG_DIR%" == "" GOTO CLANG_DIR_IS_SET
 @REM --- Standalone Clang -------------------------------------------------------------
-SET CLANG_DIR=C:\Devel\Platform\Clang\22.1.1-x86_64
+SET CLANG_DIR=C:\Devel\Platform\Clang\22.1.2-x86_64
 SET CLANG_SANLIB_DIR=%CLANG_DIR%\lib\clang\22\lib\windows
 SET CMAKE_DIR=C:\Devel\Platform\CMake\4.2.3-x86_64
 SET NINJA_DIR=C:\Devel\Platform\Ninja\1.13.2

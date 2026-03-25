@@ -10,7 +10,7 @@
 #include <string>
 
 namespace Text {
-    constexpr int c_convertBufferReserve { 2 };
+    constexpr int c_convertBufferReserve { 1 };
 
     [[maybe_unused]]
     inline bool convert(std::wstring & result, const std::string_view text) noexcept try {
@@ -94,5 +94,57 @@ namespace Text {
             result.assign(Basic::Mbs::c_fallbackErrorMessage);
         }
         return result;
+    }
+
+    [[maybe_unused]]
+    inline bool appendConverted(std::wstring & result, const std::string_view text) noexcept try {
+        if (text.empty()) {
+            return false;
+        }
+        auto size = WIN_MB2WC_ESTIMATED(text.data(), static_cast<int>(text.size()));
+        if (size <= 0) {
+            return false;
+        }
+        const auto initialSize = result.size();
+        if (initialSize + size >= result.capacity()) {
+            result.reserve(initialSize + size + c_convertBufferReserve);
+        }
+        result.resize(result.capacity(), L'\0');
+        size = WIN_MB2WC(
+            text.data(),
+            static_cast<int>(text.size()),
+            result.data() + initialSize,
+            static_cast<int>(result.capacity() - initialSize - 1)
+        );
+        result.resize(initialSize + size);
+        return true;
+    } catch (...) {
+        return false;
+    }
+
+    [[maybe_unused]]
+    inline bool appendConverted(std::string & result, const std::wstring_view text) noexcept try {
+        if (text.empty()) {
+            return false;
+        }
+        auto size = WIN_WC2MB_ESTIMATED(text.data(), static_cast<int>(text.size()));
+        if (size <= 0) {
+            return false;
+        }
+        const auto initialSize = result.size();
+        if (initialSize + size >= result.capacity()) {
+            result.reserve(initialSize + size + c_convertBufferReserve);
+        }
+        result.resize(result.capacity(), '\0');
+        size = WIN_WC2MB(
+            text.data(),
+            static_cast<int>(text.size()),
+            result.data() + initialSize,
+            static_cast<int>(result.capacity() - initialSize - 1)
+        );
+        result.resize(initialSize + size);
+        return true;
+    } catch (...) {
+        return false;
     }
 }

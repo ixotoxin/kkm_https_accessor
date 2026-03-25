@@ -8,7 +8,8 @@
 #include "server_core.h"
 #include <lib/errexp.h>
 #include <lib/except.h>
-#include <log/write.h>
+#include <lib/defer.h>
+#include <log2/core.h>
 #include <winsvc.h>
 
 namespace Service {
@@ -45,11 +46,11 @@ namespace Service {
                     return; /** Не удаляй, смотри дальше. **/
                 }
             } catch (const Failure & e) {
-                LOG_ERROR_TS(e);
+                LOG_ERROR(e);
             } catch (const std::exception & e) {
-                LOG_ERROR_TS(e);
+                LOG_ERROR(e);
             } catch (...) {
-                LOG_ERROR_TS(Wcs::c_startingFailed);
+                LOG_ERROR(Wcs::c_startingFailed);
             }
 
             setStatus(SERVICE_STOPPED, ERROR_SERVICE_NO_THREAD);
@@ -65,11 +66,11 @@ namespace Service {
                     return; /** Не удаляй, смотри дальше. **/
                 }
             } catch (const Failure & e) {
-                LOG_ERROR_TS(e);
+                LOG_ERROR(e);
             } catch (const std::exception & e) {
-                LOG_ERROR_TS(e);
+                LOG_ERROR(e);
             } catch (...) {
-                LOG_ERROR_TS(Wcs::c_startingFailed);
+                LOG_ERROR(Wcs::c_startingFailed);
             }
 
             setStatus(originalState);
@@ -86,7 +87,7 @@ namespace Service {
             if (s_statusHandle) {
                 start();
             } else {
-                LOG_ERROR_TS(System::explainError());
+                LOG_ERROR(System::explainError());
             }
         }
 

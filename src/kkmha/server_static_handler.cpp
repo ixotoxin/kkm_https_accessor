@@ -91,7 +91,7 @@ namespace Server::Static {
             if (DateTime::cast<DateTime::Point>(fileTime) <= cacheEntry->m_cachedAt) {
                 request.m_response.m_status = cacheEntry->m_status;
                 request.m_response.m_data = cacheEntry->m_data;
-                LOG_DEBUG_TS(Cache::Wcs::c_fromCache, request.m_id);
+                LOG_DEBUG(Cache::Wcs::c_fromCache, request.m_id);
                 return;
             }
         }

@@ -3,10 +3,13 @@
 
 #pragma once
 
-#include "macro.h"
+#include "defaults.h"
 #include <filesystem>
 
 namespace Config {
-    CONF_VAR(std::filesystem::path, s_directory, );
-    CONF_VAR(std::filesystem::path, s_file, );
+    CONF_CVARI(std::wstring_view, c_directoryEnv, c_directoryEnvDef);
+    CONF_CVARI(std::wstring_view, c_directory, c_directoryDef);
+    CONF_CVARI(std::wstring_view, c_file, c_fileDef);
+    CONF_MVARI(std::filesystem::path, s_directory, );
+    CONF_MVARI(std::filesystem::path, s_file, );
 }

@@ -1,93 +1,67 @@
 // Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-#include <lib/winapi.h>
-#include <lib/datetime.h>
-#include <log/variables.h>
+#include <main/variables.h>
+#include <log2/variables.h>
 #include <kkm/variables.h>
-#include <config/defaults.h>
 #include <config/variables.h>
-#include <string>
-#include <filesystem>
 
 namespace Main {
-    std::filesystem::path s_file {};
-    std::filesystem::path s_directory {};
+    MAIN_MVARE(std::filesystem::path, s_file, );
+    MAIN_MVARE(std::filesystem::path, s_directory, );
 }
 
 namespace Config {
-    constexpr std::wstring_view c_directoryEnv { L"kkmha_conf_dir" };
-    constexpr std::wstring_view c_directory { L"conf" };
-    constexpr std::wstring_view c_file { L"kkmha.json" };
-    std::filesystem::path s_directory {};
-    std::filesystem::path s_file {};
+    CONF_CVARE(std::wstring_view, c_directoryEnv, c_directoryEnvDef);
+    CONF_CVARE(std::wstring_view, c_directory, c_directoryDef);
+    CONF_CVARE(std::wstring_view, c_file, c_fileDef);
+    CONF_MVARE(std::filesystem::path, s_directory, );
+    CONF_MVARE(std::filesystem::path, s_file, );
 }
 
 namespace Log {
-    constexpr std::wstring_view c_directoryEnv { L"kkmha_logs_dir" };
-    constexpr std::wstring_view c_directory { L"logs" };
-    constexpr ::DWORD c_eventId { 0 };
-    constexpr ::WORD c_eventCategory { 0 };
-
-    namespace Console {
-        LevelUnderlying s_level { c_levelDebug };
-        bool s_outputTimestamp { false };
-        bool s_outputLevel { true };
-    }
-
-    namespace File {
-        LevelUnderlying s_bgLevel { c_levelNone };
-        LevelUnderlying s_fgLevel { c_levelInfo };
-        std::filesystem::path s_directory { L"logs" };
-    }
-
-    namespace EventLog {
-        LevelUnderlying s_bgLevel { c_levelNone };
-        LevelUnderlying s_fgLevel { c_levelInfo };
-    }
+    LOG_MVARE(bool, s_enableAsync, c_enableAsyncDef);
+    LOG_MVARE(size_t, s_lineSize, c_lineSizeDef);
+    LOG_MVARE(size_t, s_blocksNumber, c_blocksNumberDef);
 
 #ifdef DEBUG
     bool s_appendLocation { true };
 #else
     bool s_appendLocation { false };
 #endif
+
+    namespace Console {
+        LOG_MVARE(bool, s_terse, c_terseDef);
+        LOG_MVARE(LevelUnderlying, s_level, c_levelDebug);
+    }
+
+    namespace File {
+        LOG_MVARE(std::filesystem::path, s_directory, );
+        LOG_MVARE(LevelUnderlying, s_fgLevel, c_levelNone);
+        LOG_MVARE(LevelUnderlying, s_bgLevel, c_levelInfo);
+    }
+
+    namespace EventLog {
+        LOG_MVARE(LevelUnderlying, s_fgLevel, c_levelNone);
+        LOG_MVARE(LevelUnderlying, s_bgLevel, c_levelInfo);
+    }
 }
 
 namespace Kkm {
-    constexpr DateTime::SleepUnit c_sleepQuantum { DateTime::c_basicSleepQuantum }; // Миллисекунды
-    constexpr std::wstring_view c_serialNumberChars { L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_" };
-    constexpr std::wstring_view c_connParamsSeparator { L"," };
-    const wchar_t c_separatorChar { L'-' };
-    std::filesystem::path s_dbDirectory { L"kkm" };
-    std::wstring s_defaultBaudRate { L"115200" };
-    constexpr size_t c_minLineLength { 24 };
-    constexpr size_t c_maxLineLength { 192 };
-    constexpr size_t c_maxTextLength { 512 };
-    size_t s_defaultLineLength { 42 };
+    KKM_MVARE(std::filesystem::path, s_dbDirectory, c_dbDirectoryDef);
+    KKM_MVARE(std::wstring, s_defaultBaudRate, c_defaultBaudRateDef);
+    KKM_MVARE(size_t, s_defaultLineLength, c_defaultLineLengthDef);
 #if VERSION_LIMIT >= VERSION_10107
-    TimeZone s_timeZone { TimeZone::Device };
-    bool s_timeZoneConfigured { false };
+    KKM_MVARE(TimeZone, s_timeZone, TimeZone::Device);
+    KKM_MVARE(bool, s_timeZoneConfigured, false);
 #endif
-    constexpr FfdVersion c_defFallbackFfdVersion { FfdVersion::V_1_0_5 };
-    FfdVersion s_fallbackFfdVersion { c_defFallbackFfdVersion };
-    constexpr FfdVersionDetect c_ffdVersionDetect { FfdVersionDetect::Never };
-    FfdVersionDetect s_ffdVersionDetect { c_ffdVersionDetect };
-    constexpr DateTime::SleepUnit c_minDocumentClosingTimeout { DateTime::c_basicSleepQuantum }; // Миллисекунды
-    constexpr DateTime::SleepUnit c_maxDocumentClosingTimeout { 10 * DateTime::c_basicSleep }; // Миллисекунды
-    DateTime::SleepUnit s_documentClosingTimeout { DateTime::c_basicSleep }; // Миллисекунды
-    std::wstring s_cliOperatorName { L"Оператор" };
-    std::wstring s_cliOperatorInn {};
-    std::wstring s_customerAccountField { L"Лицевой счёт (идентификатор для оплаты):" };
-    constexpr double c_minCashInOut { 0.01 };
-    constexpr double c_minMaxCashInOut { 1 };
-    constexpr double c_maxMaxCashInOut { 1e9 };
-    double s_maxCashInOut { 5e5 };
-    constexpr double c_minPrice { 0.01 };
-    constexpr double c_minMaxPrice { 1 };
-    constexpr double c_maxMaxPrice { 1e9 };
-    double s_maxPrice { 3e5 };
-    constexpr double c_minQuantity { 0.001 };
-    constexpr double c_minMaxQuantity { 1 };
-    constexpr double c_maxMaxQuantity { 1e9 };
-    double s_maxQuantity { 1e3 };
+    KKM_MVARE(FfdVersion, s_fallbackFfdVersion, c_fallbackFfdVersionDef);
+    KKM_MVARE(FfdVersionDetect, s_ffdVersionDetect, c_ffdVersionDetectDef);
+    KKM_MVARE(DateTime::SleepUnit, s_documentClosingTimeout, c_documentClosingTimeoutDef);
+    KKM_MVARE(std::wstring, s_cliOperatorName, c_cliOperatorNameDef);
+    KKM_MVARE(std::wstring, s_cliOperatorInn, );
+    KKM_MVARE(std::wstring, s_customerAccountField, c_customerAccountFieldDef);
+    KKM_MVARE(double, s_maxCashInOut, c_maxCashInOutDef);
+    KKM_MVARE(double, s_maxPrice, c_maxPriceDef);
+    KKM_MVARE(double, s_maxQuantity, c_maxQuantityDef);
 }

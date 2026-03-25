@@ -35,7 +35,7 @@
 |------------------------------------------------|---------------------------------------------------------|
 | АТОЛ Драйвер                                   | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
-| Clang                                          | `C:\Devel\Platform\Clang\22.1.1-x86_64`                 |
+| Clang                                          | `C:\Devel\Platform\Clang\22.1.2-x86_64`                 |
 | CMake                                          | `C:\Devel\Platform\CMake\4.2.3-x86_64`                  |
 | Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 

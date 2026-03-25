@@ -9,21 +9,24 @@
 
 namespace Basic {
     namespace Wcs {
-        LIB_WCSTR(c_ok, L"OK");
-        LIB_WCSTR(c_somethingWrong, L"Что-то пошло не так!");
-        LIB_WCSTR(c_fallbackErrorMessage, L"[ error ]");
-        LIB_WSTR(c_source, L"источник");
-        LIB_WSTR(c_directoryNotFound, L"Директория '{}' не найдена");
-        LIB_WSTR(c_fileNotFound, L"Файл '{}' не найден");
-        LIB_WSTR(c_couldntReadFile, L"Не удалось прочитать файл '{}'");
-        LIB_WSTR(c_couldntWriteFile, L"Не удалось записать файл '{}'");
+        LIB_WCSTRI(c_ok, L"OK");
+        LIB_WCSTRI(c_somethingWrong, L"Что-то пошло не так!");
+        LIB_WCSTRI(c_fallbackErrorMessage, L"[ error ]");
+        LIB_WSTRI(c_invalidValue, L"Недопустимое значение");
+        LIB_WSTRI(c_rangeError, L"Значение вне диапазона");
+        LIB_WSTRI(c_dataError, L"{0} (свойство '{1}')");
+        LIB_WSTRI(c_source, L"источник");
+        LIB_WSTRI(c_directoryNotFound, L"Директория '{}' не найдена");
+        LIB_WSTRI(c_fileNotFound, L"Файл '{}' не найден");
+        LIB_WSTRI(c_couldntReadFile, L"Не удалось прочитать файл '{}'");
+        LIB_WSTRI(c_couldntWriteFile, L"Не удалось записать файл '{}'");
     }
 
     namespace Mbs {
-        LIB_CSTR(c_ok, "OK");
-        LIB_CSTR(c_somethingWrong, "Что-то пошло не так!");
-        LIB_CSTR(c_fallbackErrorMessage, "[ error ]");
-        LIB_STR(c_source, "источник");
+        LIB_CSTRI(c_ok, "OK");
+        LIB_CSTRI(c_somethingWrong, "Что-то пошло не так!");
+        LIB_CSTRI(c_fallbackErrorMessage, "[ error ]");
+        LIB_STRI(c_source, "источник");
     }
 }
 
@@ -75,4 +78,17 @@ namespace Meta {
         static constexpr std::string_view c_true [[maybe_unused]] { "true" };
         static constexpr std::string_view c_false [[maybe_unused]] { "false" };
     };
+}
+
+namespace Json {
+    namespace Wcs {
+        LIB_WSTRI(c_jsonObjectWasExpected, L"Ожидался JSON-объект");
+        LIB_WCSTRI(c_successKey, L"!success");
+        LIB_WCSTRI(c_messageKey, L"!message");
+    }
+
+    namespace Mbs {
+        LIB_CSTRI(c_successKey, "!success");
+        LIB_CSTRI(c_messageKey, "!message");
+    }
 }

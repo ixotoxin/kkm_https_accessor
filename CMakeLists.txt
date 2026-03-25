@@ -58,6 +58,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Oy- /RTC1 /Zi /DDEBUG /D_DEBUG")
     add_compile_options(/W4 /WX /EHsc /Zc:preprocessor /utf-8 /await:strict)
     add_compile_options(/wd4068 /wd4244 /wd4267 /wd4310 /wd4996)
+    add_compile_options(/wd4324) # ??? Compiler Warning (level 4) C4324: structure was padded due to alignment specifier
     set(WITH_SNTZ OFF)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
@@ -184,24 +185,23 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/options.h.in" "${KKMHA_CON
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/variables.h.in" "${KKMHA_CONFIG_INCLUDE_DIR}/cmake/variables.h")
 include_directories(BEFORE "${KKMHA_CONFIG_INCLUDE_DIR}")
 
-file(GLOB_RECURSE KKMHA_LIBRARY_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/library/lib/*.cpp")
-file(GLOB_RECURSE KKMHA_COMMON_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/library/*/*.cpp")
+file(GLOB_RECURSE LIBRARY_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/library/*/*.cpp")
 include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/src/library")
 
 set(
-    KKMHA_PUBLIC_DEFS
+    MTLIB_PUBLIC_DEFS
+        JSON_USE_IMPLICIT_CONVERSIONS=0
         ASIO_STANDALONE
         ASIO_NO_WIN32_LEAN_AND_MEAN
         ASIO_NO_NOMINMAX
         ASIO_HAS_THREADS
         ASIO_HAS_STD_COROUTINE
         ASIO_HAS_CO_AWAIT
-        JSON_USE_IMPLICIT_CONVERSIONS=0
 )
 
 if (BUILD_SEPARATED)
-    set(
-        KKMHA_PRIVATE_DEFS
+    list(APPEND
+        MTLIB_PUBLIC_DEFS
             EXTERNAL_LIB_VARIABLES
             EXTERNAL_MAIN_VARIABLES
             EXTERNAL_LOG_VARIABLES
@@ -209,10 +209,13 @@ if (BUILD_SEPARATED)
             EXTERNAL_CONF_VARIABLES
     )
 else ()
-    set(KKMHA_PRIVATE_DEFS)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmop")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmjl")
 endif ()
+
+set(STLIB_PUBLIC_DEFS ${MTLIB_PUBLIC_DEFS} SINGLE_THREAD)
+set(MTLIB_PRIVATE_DEFS)
+set(STLIB_PRIVATE_DEFS)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/library")
 

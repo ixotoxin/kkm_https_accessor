@@ -2,8 +2,7 @@
     "log": {
         "console": {
             "level": "info",
-            "outputTimestamp": false,
-            "outputLevel": true
+            "terse": true
         },
         "file": {
             "level": {
@@ -15,7 +14,10 @@
         "eventLog": {
             "level": "none"
         },
-        "appendLocation": false
+        "appendLocation": false,
+        "lineSize": 384,
+        "enableAsync": true,
+        "maxQueueBlocks": 16
     },
     "server": {
         "ipv4Only": false,

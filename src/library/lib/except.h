@@ -4,6 +4,7 @@
 #pragma once
 
 #include "macro.h"
+#include "strings.h"
 #include "wconv.h"
 #include "srcloc.h"
 #include <utility>
@@ -12,12 +13,6 @@
 #include <format>
 
 namespace Basic {
-    namespace Wcs {
-        LIB_WSTR(c_invalidValue, L"Недопустимое значение");
-        LIB_WSTR(c_rangeError, L"Значение вне диапазона");
-        LIB_WSTR(c_dataError, L"{0} (свойство '{1}')");
-    }
-
     class Failure {
     protected:
         std::wstring m_message {};
@@ -72,6 +67,11 @@ namespace Basic {
             return m_message;
         }
 
+        [[maybe_unused]]
+        virtual void appendExplanation(std::wstring & result) const noexcept {
+            result.append(m_message);
+        }
+
         [[nodiscard, maybe_unused]]
         virtual std::wstring explain(const bool appendLocation) const noexcept {
             std::wstring result { m_message };
@@ -79,6 +79,14 @@ namespace Basic {
                 result += m_location;
             }
             return result;
+        }
+
+        [[maybe_unused]]
+        virtual void appendExplanation(std::wstring & result, const bool appendLocation) const noexcept {
+            result.append(m_message);
+            if (appendLocation) {
+                result += m_location;
+            }
         }
     };
 
@@ -147,6 +155,15 @@ namespace Basic {
                : LIB_WFMT(Wcs::c_dataError, m_message, m_variable);
         }
 
+        [[maybe_unused]]
+        void appendExplanation(std::wstring & result) const noexcept override {
+            if (m_variable.empty()) {
+                result.append(m_message);
+            } else {
+                LIB_WFMT2(result, Wcs::c_dataError, m_message, m_variable);
+            }
+        }
+
         [[nodiscard, maybe_unused]]
         std::wstring explain(const bool appendLocation) const noexcept override {
             std::wstring message {
@@ -158,6 +175,18 @@ namespace Basic {
                 message += m_location;
             }
             return message;
+        }
+
+        [[maybe_unused]]
+        void appendExplanation(std::wstring & result, const bool appendLocation) const noexcept override {
+            if (m_variable.empty()) {
+                result.append(m_message);
+            } else {
+                LIB_WFMT2(result, Wcs::c_dataError, m_message, m_variable);
+            }
+            if (appendLocation) {
+                result += m_location;
+            }
         }
     };
 }

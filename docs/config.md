@@ -11,8 +11,7 @@
     "log": {
         "console": {
             "level": "debug",
-            "outputTimestamp": false,
-            "outputLevel": true
+            "terse": true
         },
         "file": {
             "level": {
@@ -27,7 +26,10 @@
                 "background": "info"
             }
         },
-        "appendLocation": false
+        "appendLocation": false,
+        "lineSize": 384,
+        "enableAsync": true,
+        "maxQueueBlocks": 16
     },
     "server": {
         "ipv4Only": false,
@@ -69,14 +71,16 @@
 | ОПЦИЯ                           | ОПИСАНИЕ                                                                                                              |
 |---------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | `log.console.level`             | Уровень логирования в консоль.                                                                                        |
-| `log.console.outputTimestamp`   | Включить/выключить вывод даты и времени в консоль.                                                                    |
-| `log.console.outputLevel`       | Включить/выключить вывод уровня сообщений в консоль.                                                                  |
+| `log.console.terse`             | Включить/выключить вывод даты и времени в консоль.                                                                    |
 | `log.file.level.foreground`     | Уровень логирования в файл для foreground-процесса.                                                                   |
 | `log.file.level.background`     | Уровень логирования в файл для background-процесса.                                                                   |
 | `log.file.directory`            | Директория, в которую будет происходить логирование.                                                                  |
 | `log.eventLog.level.foreground` | Уровень логирования в журнал событий Windows для foreground-процесса.                                                 |
 | `log.eventLog.level.background` | Уровень логирования в журнал событий Windows для background-процесса.                                                 |
 | `log.appendLocation`            | Включить/выключить вывод точки происхождения сообщения в исходных файлах.                                             |
+| `log.lineSize`                  | Первичное резезервирование памяти для строки.                                                                         |
+| `log.enableAsync`               | Включить/выключить асинхронное логирование.                                                                           |
+| `log.maxQueueBlocks`            | Максимально количество блоков допустимое для очереди в режиме асинхронного логирования (размер блока 1024 записи).    |
 | `server.ipv4Only`               | Включить/выключить поддержку IPv6.                                                                                    |
 | `server.port`                   | Порт, который будет слушать сервер.                                                                                   |
 | `server.requestTimeout`         | Таймаут (в секундах).                                                                                                 |
@@ -113,13 +117,17 @@ openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout kkmha.test.
 ```
 -->
 Так же можно изменить параметры по-умолчанию и недоступные для конфигурирования в следующих файлах:
-- `.\src\library\log\defaults.h`;
+- `.\src\library\log2\defaults.h`;
 - `.\src\library\kkm\defaults.h`;
 - `.\src\library\config\defaults.h`;
+- `.\src\library\variables.cpp`;
+- `.\src\kkmha\kkmha_variables.cpp`;
 - `.\src\kkmha\http_defaults.h`;
 - `.\src\kkmha\server_defaults.h`;
 - `.\src\kkmha\server_static_defaults.h`;
-- `.\src\kkmha\service_defaults.h`.
+- `.\src\kkmha\service_defaults.h`;
+- `.\src\kkmop\kkmop_variables.cpp`;
+- `.\src\kkmjl\kkmjl_variables.cpp`.
 
 ---
 [Назад к содержанию](../README.md)

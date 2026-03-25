@@ -69,9 +69,9 @@ namespace Server::KkmOp {
             m_result.value()[Json::Mbs::c_successKey] = false;
             m_result.value()[Json::Mbs::c_messageKey] = message;
             if (Log::s_appendLocation) {
-                LOG_ERROR_TS(Server::Mbs::c_prefixedTextWithSource, m_requestId, message, SrcLoc::toMbs(location));
+                LOG_ERROR(Server::Mbs::c_prefixedTextWithSource, m_requestId, message, SrcLoc::toMbs(location));
             } else {
-                LOG_ERROR_TS(Server::Mbs::c_prefixedText, m_requestId, message);
+                LOG_ERROR(Server::Mbs::c_prefixedText, m_requestId, message);
             }
         }
     };
@@ -86,13 +86,13 @@ namespace Server::KkmOp {
         std::scoped_lock registryLock(s_registryMutex);
         if (s_connParamsRegistry.contains(wcSerialNumber)) {
             auto & params = s_connParamsRegistry.at(wcSerialNumber);
-            LOG_DEBUG_TS(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*params));
+            LOG_DEBUG(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*params));
             return params;
         }
         auto [it, insert]
             = s_connParamsRegistry.try_emplace(wcSerialNumber, Registry::load(wcSerialNumber));
         if (insert) {
-            LOG_DEBUG_TS(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*it->second));
+            LOG_DEBUG(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*it->second));
             return it->second;
         }
         payload.fail(
@@ -138,7 +138,7 @@ namespace Server::KkmOp {
         const auto connParams = Registry::make(connString);
         NewDevice kkm { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) };
         std::wstring serialNumber { kkm.serialNumber() };
-        LOG_DEBUG_TS(Wcs::c_getKkmInfo, payload.m_requestId, serialNumber);
+        LOG_DEBUG(Wcs::c_getKkmInfo, payload.m_requestId, serialNumber);
         Registry::save(connParams, kkm);
 
         {
@@ -151,7 +151,7 @@ namespace Server::KkmOp {
         kkm.printHello();
         payload.m_result << result;
 
-        LOG_INFO_TS(Wcs::c_connParamsSaved, payload.m_requestId, serialNumber);
+        LOG_INFO(Wcs::c_connParamsSaved, payload.m_requestId, serialNumber);
     }
 
     void resetRegistry(Payload & payload) {
@@ -375,7 +375,7 @@ namespace Server::KkmOp {
             if (auto cacheEntry = Cache::load(cacheKey); cacheEntry) {
                 request.m_response.m_status = cacheEntry->m_status;
                 request.m_response.m_data = cacheEntry->m_data;
-                LOG_DEBUG_TS(Cache::Wcs::c_fromCache, request.m_id);
+                LOG_DEBUG(Cache::Wcs::c_fromCache, request.m_id);
                 return;
             }
         }

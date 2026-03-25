@@ -6,8 +6,6 @@
 #include "spinlock.h"
 #include <cassert>
 #include <new>
-#include <cstdint>
-#include <limits>
 #include <type_traits>
 #include <concepts>
 #include <atomic>
@@ -18,48 +16,46 @@ namespace MtHelp {
     enum class QueueSlotState { Free, ProdLocked, Ready, ConsLocked };
 
 #ifdef __cpp_lib_hardware_interference_size
-    constexpr std::size_t c_queueAlignment { std::hardware_constructive_interference_size };
+    constexpr size_t c_queueAlignment { std::hardware_constructive_interference_size };
 #else
-    constexpr std::size_t c_queueAlignment { 64 };
+    constexpr size_t c_queueAlignment { 64 };
 #endif
 
-    constexpr int32_t c_queueDefaultBlockSize [[maybe_unused]] { 0x10 };
-    constexpr int32_t c_queueDefaultCapacityLimit [[maybe_unused]] { c_queueDefaultBlockSize * 0x1'0000 };
-    constexpr int32_t c_queueMaxCapacityLimit [[maybe_unused]] { std::numeric_limits<int32_t>::max() };
-    constexpr bool c_queueDefaultCompletion [[maybe_unused]] { true };
-    constexpr unsigned c_queueDefaultAttempts [[maybe_unused]] { 5 };
-    constexpr unsigned c_queueMaxAttempts [[maybe_unused]] { std::numeric_limits<unsigned>::max() };
+    constexpr int c_queueDefaultBlockSize { 1024 };
+    constexpr int c_queueDefaultBlocksNumberLimit { 16 };
+    constexpr bool c_queueDefaultAutoCompletion { true };
+    constexpr unsigned c_queueDefaultAcquireAttempts { 5 };
 
-    class AutoCompletion {
+    class QueueSlotAutoCompletion {
     public:
-        static constexpr bool c_autoComplete [[maybe_unused]] { true };
+        static constexpr bool c_autoComplete { true };
 
-        AutoCompletion() noexcept = default;
-        AutoCompletion(const AutoCompletion &) = delete;
-        AutoCompletion(AutoCompletion &&) = delete;
-        ~AutoCompletion() noexcept = default;
+        QueueSlotAutoCompletion() noexcept = default;
+        QueueSlotAutoCompletion(const QueueSlotAutoCompletion &) = delete;
+        QueueSlotAutoCompletion(QueueSlotAutoCompletion &&) = delete;
+        ~QueueSlotAutoCompletion() noexcept = default;
 
-        AutoCompletion & operator=(const AutoCompletion &) = delete;
-        AutoCompletion & operator=(AutoCompletion &&) = delete;
+        QueueSlotAutoCompletion & operator=(const QueueSlotAutoCompletion &) = delete;
+        QueueSlotAutoCompletion & operator=(QueueSlotAutoCompletion &&) = delete;
 
         [[maybe_unused]]
-        void complete() noexcept {}
+        void complete() noexcept {} // NOLINT
     };
 
-    class ManualCompletion {
+    class QueueSlotManualCompletion {
     protected:
         bool m_complete { false };
 
     public:
-        static constexpr bool c_autoComplete [[maybe_unused]] { false };
+        static constexpr bool c_autoComplete { false };
 
-        ManualCompletion() noexcept = default;
-        ManualCompletion(const ManualCompletion &) = delete;
-        ManualCompletion(ManualCompletion &&) = delete;
-        ~ManualCompletion() = default;
+        QueueSlotManualCompletion() noexcept = default;
+        QueueSlotManualCompletion(const QueueSlotManualCompletion &) = delete;
+        QueueSlotManualCompletion(QueueSlotManualCompletion &&) = delete;
+        ~QueueSlotManualCompletion() = default;
 
-        ManualCompletion & operator=(const ManualCompletion &) = delete;
-        ManualCompletion & operator=(ManualCompletion &&) = delete;
+        QueueSlotManualCompletion & operator=(const QueueSlotManualCompletion &) = delete;
+        QueueSlotManualCompletion & operator=(QueueSlotManualCompletion &&) = delete;
 
         [[maybe_unused]]
         void complete() noexcept {
@@ -67,26 +63,25 @@ namespace MtHelp {
         }
     };
 
-    template<bool C = c_queueDefaultCompletion>
-    using QueueSlotCompletion = std::conditional_t<C, AutoCompletion, ManualCompletion>;
+    template<bool C>
+    using QueueSlotCompletion = std::conditional_t<C, QueueSlotAutoCompletion, QueueSlotManualCompletion>;
 
     template<
         std::default_initializable T,
-        int32_t S = c_queueDefaultBlockSize,
-        int32_t L = c_queueDefaultCapacityLimit,
-        bool C = c_queueDefaultCompletion,
-        unsigned A = c_queueDefaultAttempts,
+        class U = void,
+        int S = c_queueDefaultBlockSize,
+        bool C = c_queueDefaultAutoCompletion,
+        unsigned A = c_queueDefaultAcquireAttempts,
         QueueGrowthPolicy G = QueueGrowthPolicy::Round
     >
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
     class alignas(c_queueAlignment) Queue {
+    protected:
+        using MO = std::memory_order;
+        using SlotState = QueueSlotState;
+        using SlotCompletion = QueueSlotCompletion<C>;
         struct Slot;
         struct Block;
-        using SlotCompletion = QueueSlotCompletion<C>;
-        class ProducerAccessor;
-        class ConsumerAccessor;
-        using MO = std::memory_order;
-        using State = QueueSlotState;
 
         static constexpr bool c_ntdct = std::is_nothrow_default_constructible_v<T>;
         Block * m_firstBlock;
@@ -95,6 +90,7 @@ namespace MtHelp {
         std::atomic<Slot *> m_consumerCursor { nullptr };
         std::atomic_int_fast32_t m_capacity { S };
         std::atomic_int_fast32_t m_free { S };
+        int m_blocksNumberLimit;
         std::atomic_bool m_producing { true };
         std::atomic_bool m_consuming { true };
         SpinLock<Spin::YieldThread> m_spinlock {};
@@ -102,19 +98,17 @@ namespace MtHelp {
         bool grow() noexcept;
 
     public:
-        using PayloadType [[maybe_unused]] = T;
+        using Payload = T;
+        using Interface = std::conditional_t<std::is_same_v<U, void>, T, U>;
         using SizeType = decltype(m_capacity)::value_type;
 
-        static constexpr SizeType c_blockSize [[maybe_unused]] { S };
-        static constexpr SizeType c_maxCapacity [[maybe_unused]] { L };
-        static constexpr bool c_autoComplete [[maybe_unused]] { C };
-        static constexpr unsigned c_defaultAttempts [[maybe_unused]] { A };
-        static constexpr QueueGrowthPolicy c_growthPolicy [[maybe_unused]] { G };
+        class ProducerAccessor;
+        class ConsumerAccessor;
 
-        Queue() noexcept(c_ntdct);
+        explicit Queue(int = c_queueDefaultBlocksNumberLimit) noexcept(c_ntdct);
         Queue(const Queue &) = delete;
         Queue(Queue &&) = delete;
-        ~Queue() { delete m_firstBlock; }
+        ~Queue();
 
         Queue & operator=(const Queue &) = delete;
         Queue & operator=(Queue &&) = delete;
@@ -144,8 +138,8 @@ namespace MtHelp {
             return m_consuming.load(MO::relaxed);
         }
 
-        [[nodiscard]] ProducerAccessor producerSlot(unsigned = c_defaultAttempts) noexcept;
-        [[nodiscard]] ConsumerAccessor consumerSlot(unsigned = c_defaultAttempts) noexcept;
+        [[nodiscard]] ProducerAccessor producerSlot(unsigned = A) noexcept;
+        [[nodiscard]] ConsumerAccessor consumerSlot(unsigned = A) noexcept;
 
         [[maybe_unused]]
         void shutdown() noexcept {
@@ -159,12 +153,12 @@ namespace MtHelp {
         }
     };
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    struct Queue<T, S, L, C, A, G>::Slot {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    struct Queue<T, U, S, C, A, G>::Slot {
+        Payload m_payload {};
         Slot * m_next { nullptr };
-        std::atomic<State> m_state { State::Free };
-        T m_payload {};
+        std::atomic<SlotState> m_state { SlotState::Free };
 
         Slot() noexcept(c_ntdct) = default;
         Slot(const Slot &) = delete;
@@ -175,9 +169,9 @@ namespace MtHelp {
         Slot & operator=(Slot &&) = delete;
     };
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    struct Queue<T, S, L, C, A, G>::Block {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    struct Queue<T, U, S, C, A, G>::Block {
         std::array<Slot, static_cast<size_t>(S)> m_slots {};
         Block * m_next { nullptr };
 
@@ -201,9 +195,9 @@ namespace MtHelp {
         }
     };
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    Queue<T, S, L, C, A, G>::Block::Block() noexcept(c_ntdct) {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    Queue<T, U, S, C, A, G>::Block::Block() noexcept(c_ntdct) {
         auto it = m_slots.begin();
         auto last = m_slots.end() - 1;
 
@@ -215,9 +209,9 @@ namespace MtHelp {
         last->m_next = &m_slots[0];
     }
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    Queue<T, S, L, C, A, G>::Block::Block(Block * & lastBlock) noexcept(c_ntdct) {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    Queue<T, U, S, C, A, G>::Block::Block(Block * & lastBlock) noexcept(c_ntdct) {
         assert(lastBlock);
         auto it = m_slots.begin();
         auto last = m_slots.end() - 1;
@@ -231,13 +225,11 @@ namespace MtHelp {
         last->m_next = tail->m_next;
         tail->m_next = &m_slots[0];
         lastBlock->m_next = this;
-
-        /** It is guaranteed that no exceptions will be thrown after modifying the object pointed to by last_block. **/
     }
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    class Queue<T, S, L, C, A, G>::ProducerAccessor : public SlotCompletion {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    class Queue<T, U, S, C, A, G>::ProducerAccessor : public SlotCompletion {
     protected:
         Queue & m_queue;
         Slot * const m_slot;
@@ -254,47 +246,43 @@ namespace MtHelp {
             }
         }
 
-        ~ProducerAccessor();
+        ~ProducerAccessor() {
+            if (m_slot) {
+                if constexpr (SlotCompletion::c_autoComplete) {
+                    m_slot->m_state.store(SlotState::Ready, MO::release);
+                } else {
+                    if (SlotCompletion::m_complete) {
+                        m_slot->m_state.store(SlotState::Ready, MO::release);
+                    } else {
+                        m_queue.m_free.fetch_add(1, MO::acq_rel);
+                        m_slot->m_state.store(SlotState::Free, MO::release);
+                    }
+                }
+            }
+        }
 
         ProducerAccessor & operator=(const ProducerAccessor &) = delete;
         ProducerAccessor & operator=(ProducerAccessor &&) = delete;
 
         [[nodiscard, maybe_unused]]
-        T * operator->() noexcept {
-            return &m_slot->m_payload;
+        Interface * operator->() noexcept {
+            return std::addressof(m_slot->m_payload);
         }
 
         [[nodiscard, maybe_unused]]
-        T & operator*() noexcept {
+        Interface & operator*() noexcept {
             return m_slot->m_payload;
         }
 
         [[nodiscard, maybe_unused]]
         explicit operator bool() noexcept {
-            return m_slot && m_slot->m_state.load(MO::acquire) == State::ProdLocked;
+            return m_slot && m_slot->m_state.load(MO::acquire) == SlotState::ProdLocked;
         }
     };
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    Queue<T, S, L, C, A, G>::ProducerAccessor::~ProducerAccessor() {
-        if (m_slot) {
-            if constexpr (SlotCompletion::c_autoComplete) {
-                m_slot->m_state.store(State::Ready, MO::release);
-            } else {
-                if (SlotCompletion::m_complete) {
-                    m_slot->m_state.store(State::Ready, MO::release);
-                } else {
-                    m_queue.m_free.fetch_add(1, MO::acq_rel);
-                    m_slot->m_state.store(State::Free, MO::release);
-                }
-            }
-        }
-    }
-
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    class Queue<T, S, L, C, A, G>::ConsumerAccessor : public SlotCompletion {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    class Queue<T, U, S, C, A, G>::ConsumerAccessor : public SlotCompletion {
     protected:
         Queue & m_queue;
         Slot * const m_slot;
@@ -307,57 +295,61 @@ namespace MtHelp {
         ConsumerAccessor(Queue & queue, Slot * slot) noexcept
         : SlotCompletion {}, m_queue { queue }, m_slot { slot } {}
 
-        ~ConsumerAccessor();
+        ~ConsumerAccessor() {
+            if (m_slot) {
+                if constexpr (SlotCompletion::c_autoComplete) {
+                    m_queue.m_free.fetch_add(1, MO::acq_rel);
+                    m_slot->m_state.store(SlotState::Free, MO::release);
+                } else {
+                    if (SlotCompletion::m_complete) {
+                        m_queue.m_free.fetch_add(1, MO::acq_rel);
+                        m_slot->m_state.store(SlotState::Free, MO::release);
+                    } else {
+                        m_slot->m_state.store(SlotState::Ready, MO::release);
+                    }
+                }
+            }
+        }
 
         ConsumerAccessor & operator=(const ConsumerAccessor &) = delete;
         ConsumerAccessor & operator=(ConsumerAccessor &&) = delete;
 
         [[nodiscard, maybe_unused]]
-        const T * operator->() noexcept {
-            return &m_slot->m_payload;
+        const Interface * operator->() noexcept {
+            return std::addressof(m_slot->m_payload);
         }
 
         [[nodiscard, maybe_unused]]
-        const T & operator*() noexcept {
+        const Interface & operator*() noexcept {
             return m_slot->m_payload;
         }
 
         [[nodiscard, maybe_unused]]
         explicit operator bool() noexcept {
-            return m_slot && m_slot->m_state.load(MO::acquire) == State::ConsLocked;
+            return m_slot && m_slot->m_state.load(MO::acquire) == SlotState::ConsLocked;
         }
     };
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    Queue<T, S, L, C, A, G>::ConsumerAccessor::~ConsumerAccessor() {
-        if (m_slot) {
-            if constexpr (SlotCompletion::c_autoComplete) {
-                m_queue.m_free.fetch_add(1, MO::acq_rel);
-                m_slot->m_state.store(State::Free, MO::release);
-            } else {
-                if (SlotCompletion::m_complete) {
-                    m_queue.m_free.fetch_add(1, MO::acq_rel);
-                    m_slot->m_state.store(State::Free, MO::release);
-                } else {
-                    m_slot->m_state.store(State::Ready, MO::release);
-                }
-            }
-        }
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    Queue<T, U, S, C, A, G>::Queue(const int blocksNumberLimit) noexcept(c_ntdct)
+    : m_firstBlock { new Block }, m_lastBlock { m_firstBlock },
+      m_blocksNumberLimit { blocksNumberLimit - 1 } {
+        assert(m_blocksNumberLimit >= 0);
+        Slot * firstSlot { m_firstBlock->firstSlot() };
+        m_producerCursor.store(firstSlot, MO::relaxed);
+        m_consumerCursor.store(firstSlot, MO::relaxed);
     }
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    Queue<T, S, L, C, A, G>::Queue() noexcept(c_ntdct)
-    : m_firstBlock { new Block }, m_lastBlock { m_firstBlock } {
-        Slot * first_slot { m_firstBlock->first_slot() };
-        m_producerCursor.store(first_slot, MO::relaxed);
-        m_consumerCursor.store(first_slot, MO::relaxed);
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    Queue<T, U, S, C, A, G>::~Queue() {
+        delete m_firstBlock;
     }
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    auto Queue<T, S, L, C, A, G>::producerSlot(unsigned acquireAttempts) noexcept -> ProducerAccessor {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    auto Queue<T, U, S, C, A, G>::producerSlot(unsigned acquireAttempts) noexcept -> ProducerAccessor {
         if (!m_free.load(MO::acquire) && !grow()) {
             return { *this, nullptr };
         }
@@ -370,8 +362,8 @@ namespace MtHelp {
         const Slot * sentinel { current };
 
         while (m_producing.load(MO::relaxed)) {
-            auto slotState { State::Free };
-            if (current->m_state.compare_exchange_strong(slotState, State::ProdLocked, MO::acq_rel, MO::acquire)) {
+            auto slotState { SlotState::Free };
+            if (current->m_state.compare_exchange_strong(slotState, SlotState::ProdLocked, MO::acq_rel, MO::acquire)) {
                 return { *this, current };
             }
             current = m_producerCursor.exchange(m_producerCursor.load(MO::acquire)->m_next, MO::acq_rel);
@@ -396,9 +388,9 @@ namespace MtHelp {
         return { *this, nullptr };
     }
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    auto Queue<T, S, L, C, A, G>::consumerSlot(unsigned acquireAttempts) noexcept -> ConsumerAccessor {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    auto Queue<T, U, S, C, A, G>::consumerSlot(unsigned acquireAttempts) noexcept -> ConsumerAccessor {
         if (acquireAttempts > 0) {
             --acquireAttempts;
         }
@@ -407,8 +399,8 @@ namespace MtHelp {
         const Slot * sentinel { current };
 
         while (m_consuming.load(MO::relaxed) && m_free.load(MO::acquire) != m_capacity.load(MO::acquire)) {
-            auto slotState { State::Ready };
-            if (current->m_state.compare_exchange_strong(slotState, State::ConsLocked, MO::acq_rel, MO::acquire)) {
+            auto slotState { SlotState::Ready };
+            if (current->m_state.compare_exchange_strong(slotState, SlotState::ConsLocked, MO::acq_rel, MO::acquire)) {
                 return { *this, current };
             }
             current = m_consumerCursor.exchange(m_consumerCursor.load(MO::acquire)->m_next, MO::acq_rel);
@@ -424,19 +416,17 @@ namespace MtHelp {
         return { *this, nullptr };
     }
 
-    template<std::default_initializable T, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-    requires ((S >= 4) && (L <= c_queueMaxCapacityLimit) && (S <= L) && (A > 0) && (A <= c_queueMaxAttempts))
-    bool Queue<T, S, L, C, A, G>::grow() noexcept {
+    template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
+    requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
+    bool Queue<T, U, S, C, A, G>::grow() noexcept {
         ScopedLock lock { m_spinlock };
 
         if (m_free.load(MO::acquire)) {
             return true;
         }
-        if (m_capacity.load(MO::acquire) + S > L) {
+        if (!m_blocksNumberLimit) {
             return false;
         }
-
-        /** This object will not be modified if an exception is thrown. **/
 
         if constexpr (c_ntdct) {
             auto newBlock = new(std::nothrow) Block { m_lastBlock };
@@ -458,13 +448,13 @@ namespace MtHelp {
 
         m_capacity.fetch_add(S, MO::release);
         m_free.fetch_add(S, MO::acq_rel);
+        --m_blocksNumberLimit;
 
         return true;
     }
 
     template<class T>
     concept MpmcQueue = requires(T t) {
-        [] <std::default_initializable U, int32_t S, int32_t L, bool C, unsigned A, QueueGrowthPolicy G>
-        (Queue<U, S, L, C, A, G> &) {} (t);
+        []<std::default_initializable U, class V, int S, bool C, unsigned A, QueueGrowthPolicy G>(Queue<U, V, S, C, A, G> &){}(t);
     };
 }

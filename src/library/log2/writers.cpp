@@ -1,41 +1,22 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-#include "core.h"
+#include "writers.h"
+#include "state.h"
 #include "strings.h"
-#include <lib/meta.h>
 #include <lib/winapi.h>
-#include <lib/datetime.h>
-#include <lib/text.h>
 #include <cassert>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
 
 namespace Log {
-    static bool isForegroundProcess { true };
-
     namespace Console {
-        [[nodiscard, maybe_unused]]
-        bool ready(const Level level) noexcept {
-            return isForegroundProcess && Meta::toUnderlying(level) >= s_level;
-        }
-
         [[maybe_unused]]
         void write(const Level level, const std::wstring_view message) noexcept try {
-            assert(Wcs::c_levelLabels.contains(level));
-            assert(ready(level));
             std::wostream & output { level >= Level::Warning ? std::wcerr : std::wcout };
-            if (s_outputTimestamp) {
-                output << DateTime::iso << L": ";
-            }
-            if (s_outputLevel) {
-                output << Wcs::c_levelLabels.at(level) << L": ";
-            }
             output << message << std::endl;
-        } catch (...) {
-            fallbackLog();
-        }
+        } catch (...) {}
     }
 
     namespace File {
@@ -52,22 +33,18 @@ namespace Log {
                 }
                 s_file.close();
             }
-            if (s_directory.empty()) {
-                return false;
-            }
             std::filesystem::path filePath { s_directory };
             if (!std::filesystem::is_directory(filePath)) {
                 std::filesystem::create_directories(filePath);
                 if (!std::filesystem::is_directory(filePath)) {
-                    fallbackLog();
                     return false;
                 }
             }
             s_currentMonth = localTime.wMonth;
 #ifdef EXTERNAL_LOG_VARIABLES
-            filePath /= std::vformat(c_logFileFormat, std::make_wformat_args(localTime.wYear, localTime.wMonth));
+            filePath /= std::vformat(c_filenameFormat, std::make_wformat_args(localTime.wYear, localTime.wMonth));
 #else
-            filePath /= std::format(c_logFileFormat, localTime.wYear, localTime.wMonth);
+            filePath /= std::format(c_filenameFormat, localTime.wYear, localTime.wMonth);
 #endif
             s_file.open(filePath, std::ios::out | std::ios::app);
             s_file.imbue(std::locale(".utf-8"));
@@ -76,7 +53,6 @@ namespace Log {
             }
             return s_file.is_open() && s_file.good();
         } catch (...) {
-            fallbackLog();
             return false;
         }
 
@@ -85,25 +61,13 @@ namespace Log {
             if (s_file.is_open()) {
                 s_file.close();
             }
-        } catch (...) {
-            fallbackLog();
-        }
-
-        [[nodiscard, maybe_unused]]
-        bool ready(const Level level) noexcept {
-            if (Meta::toUnderlying(level) < (isForegroundProcess ? s_fgLevel : s_bgLevel)) {
-                return false;
-            }
-            return open();
-        }
+        } catch (...) {}
 
         [[maybe_unused]]
-        void write(const Level level, const std::wstring_view message) noexcept try {
-            assert(Wcs::c_levelLabels.contains(level));
-            assert(ready(level));
-            s_file << DateTime::iso << L": " << Wcs::c_levelLabels.at(level) << L": " << message << std::endl;
+        void write(const std::wstring_view message) noexcept try {
+            s_file << message << std::endl;
         } catch (...) {
-            fallbackLog();
+            close();
         }
     }
 
@@ -133,22 +97,13 @@ namespace Log {
             }
         }
 
-        [[nodiscard, maybe_unused]]
-        bool ready(const Level level) noexcept {
-            if (Meta::toUnderlying(level) < (isForegroundProcess ? s_fgLevel : s_bgLevel)) {
-                return false;
-            }
-            return open();
-        }
-
         [[maybe_unused]]
-        void write(const Level level, const std::wstring & message) noexcept try {
+        void write(const Level level, const wchar_t * message) noexcept try {
             assert(c_types.contains(level));
-            assert(ready(level));
 
             const wchar_t * strings[2] {
                 c_eventSource,
-                message.c_str()
+                message
             };
 
             ::ReportEventW(
@@ -163,50 +118,48 @@ namespace Log {
                 nullptr             // No binary data
             );
         } catch (...) {
-            fallbackLog();
+            close();
         }
     }
 
-    void fallbackLog() noexcept try {
-        if (isForegroundProcess) {
-            std::wclog << Wcs::c_loggingError << std::endl;
-        }
-    } catch (...) {}
+    static bool s_atExitCloseWriters { false };
 
-    void reconfig() noexcept try {
+    [[maybe_unused]]
+    void initWriters() {
+        if (!s_atExitCloseWriters) {
+            s_atExitCloseWriters = true;
+            std::atexit([] {
+                Console::s_level = c_levelNone;
+                File::s_fgLevel = c_levelNone;
+                File::s_bgLevel = c_levelNone;
+                EventLog::s_fgLevel = c_levelNone;
+                EventLog::s_bgLevel = c_levelNone;
+                File::close();
+                EventLog::close();
+            });
+        }
+    }
+
+    [[maybe_unused]]
+    void reinitWriters() noexcept {
         File::close();
         EventLog::close();
-    } catch (...) {}
-
-    [[maybe_unused]]
-    void asForegroundProcess() noexcept {
-        isForegroundProcess = true;
     }
 
     [[maybe_unused]]
-    void asBackgroundProcess() noexcept {
-        isForegroundProcess = false;
-    }
-
-    [[maybe_unused]]
-    std::wstring levelLabel(LevelUnderlying level) {
-        assert(level >= c_levelDebug && level <= c_levelNone);
-        if (level == c_levelNone) {
-            return L"none";
+    void write(const Record & event) noexcept {
+        if (event.m_toConsole && Console::allowed()) {
+            if (Console::s_terse) {
+                Console::write(event.m_level, event.m_terse);
+            } else {
+                Console::write(event.m_level, event.m_message);
+            }
         }
-        if (Wcs::c_levelLabels.contains(static_cast<Level>(level))) {
-            return Text::lowered(Wcs::c_levelLabels.at(static_cast<Level>(level)));
+        if (event.m_toFile && File::open()) {
+            File::write(event.m_message);
         }
-        return Basic::Wcs::c_fallbackErrorMessage;
-    }
-}
-
-namespace Config {
-    [[maybe_unused]]
-    void initLogger() {
-        std::atexit([] {
-            ::Log::File::close();
-            ::Log::EventLog::close();
-        });
+        if (event.m_toEventLog && EventLog::open()) {
+            EventLog::write(event.m_level, event.m_message.c_str());
+        }
     }
 }

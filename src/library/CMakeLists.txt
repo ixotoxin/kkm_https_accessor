@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.28)
 
-add_library(kkmha_lib OBJECT ${KKMHA_COMMON_SOURCE_FILES})
-
+add_library(mtlib OBJECT ${LIBRARY_SOURCE_FILES})
 if (BUILD_SEPARATED)
-    target_sources(kkmha_lib PRIVATE variables.cpp)
+    target_sources(mtlib PRIVATE variables.cpp)
 endif ()
+target_compile_definitions(mtlib PUBLIC ${MTLIB_PUBLIC_DEFS} PRIVATE ${MTLIB_PRIVATE_DEFS})
+target_link_libraries(mtlib PRIVATE nlohmann_json::nlohmann_json)
 
-target_compile_definitions(kkmha_lib PUBLIC ${KKMHA_PUBLIC_DEFS} PRIVATE ${KKMHA_PRIVATE_DEFS})
-target_link_libraries(kkmha_lib PRIVATE nlohmann_json::nlohmann_json)
+add_library(stlib OBJECT ${LIBRARY_SOURCE_FILES})
+if (BUILD_SEPARATED)
+    target_sources(stlib PRIVATE variables.cpp)
+endif ()
+target_compile_definitions(stlib PUBLIC ${STLIB_PUBLIC_DEFS} PRIVATE ${STLIB_PRIVATE_DEFS})
+target_link_libraries(stlib PRIVATE nlohmann_json::nlohmann_json)
