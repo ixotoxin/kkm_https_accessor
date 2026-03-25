@@ -5,7 +5,7 @@
 
 #include "server_strings.h"
 #include "http_request.h"
-#include <log/write.h>
+#include <log2/core.h>
 #include <cassert>
 
 namespace Server {
@@ -30,9 +30,9 @@ namespace Server {
         ) {
             assert(Meta::toUnderlying(status) >= 400);
             if (Log::s_appendLocation) {
-                LOG_ERROR_TS(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
+                LOG_ERROR(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
             } else {
-                LOG_ERROR_TS(Mbs::c_prefixedText, request.m_id, message);
+                LOG_ERROR(Mbs::c_prefixedText, request.m_id, message);
             }
             request.m_response.m_status = status;
             request.m_response.m_data = message;
@@ -46,9 +46,9 @@ namespace Server {
         ) {
             assert(Meta::toUnderlying(status) >= 400);
             if (Log::s_appendLocation) {
-                LOG_ERROR_TS(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
+                LOG_ERROR(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
             } else {
-                LOG_ERROR_TS(Mbs::c_prefixedText, request.m_id, message);
+                LOG_ERROR(Mbs::c_prefixedText, request.m_id, message);
             }
             request.m_response.m_status = status;
             request.m_response.m_data.emplace<std::string>(std::forward<std::string>(message));
@@ -62,9 +62,9 @@ namespace Server {
         ) {
             assert(Meta::toUnderlying(status) >= 400);
             if (Log::s_appendLocation) {
-                LOG_ERROR_TS(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
+                LOG_ERROR(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
             } else {
-                LOG_ERROR_TS(Mbs::c_prefixedText, request.m_id, message);
+                LOG_ERROR(Mbs::c_prefixedText, request.m_id, message);
             }
             request.m_response.m_status = status;
             request.m_response.m_data.emplace<std::string>(message);
@@ -78,9 +78,9 @@ namespace Server {
         ) {
             assert(Meta::toUnderlying(status) >= 400);
             if (Log::s_appendLocation) {
-                LOG_ERROR_TS(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
+                LOG_ERROR(Mbs::c_prefixedTextWithSource, request.m_id, message, SrcLoc::toMbs(location));
             } else {
-                LOG_ERROR_TS(Mbs::c_prefixedText, request.m_id, message);
+                LOG_ERROR(Mbs::c_prefixedText, request.m_id, message);
             }
             request.m_response.m_status = status;
             request.m_response.m_data.emplace<std::string>(message);

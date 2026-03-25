@@ -1,11 +1,11 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "core.h"
 #include "variables.h"
 #include <lib/winapi.h>
 #include <lib/errexp.h>
-#include <log/defaults.h>
+#include <log2/variables.h>
 
 namespace Config {
     void setBaseVars(wchar_t ** envp) {
@@ -21,20 +21,20 @@ namespace Config {
         }
 
         {
-            std::filesystem::path confDirectory { Config::c_directory };
-            std::filesystem::path logsDirectory { Log::c_directory };
+            std::filesystem::path confDirectory { c_directory };
+            std::filesystem::path logsDirectory { Log::File::c_directoryDef };
             for (; *envp; ++envp) {
                 std::wstring variable, value;
                 Text::splitVariable(*envp, variable, value, true);
-                if (variable == Config::c_directoryEnv) {
+                if (variable == c_directoryEnv) {
                     confDirectory.assign(std::move(value));
-                } else if (variable == Log::c_directoryEnv) {
+                }/* else if (variable == Log::File::c_directoryEnv) {
                     logsDirectory.assign(std::move(value));
-                }
+                }*/
             }
-            Config::s_directory.assign(std::filesystem::absolute(confDirectory.make_preferred()));
-            Config::s_file.assign(s_directory);
-            Config::s_file /= c_file;
+            s_directory.assign(std::filesystem::absolute(confDirectory.make_preferred()));
+            s_file.assign(s_directory);
+            s_file /= c_file;
             Log::File::s_directory.assign(std::filesystem::absolute(logsDirectory.make_preferred()));
         }
     }

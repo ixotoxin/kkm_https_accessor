@@ -4,7 +4,7 @@
 #include "server_cache_core.h"
 #include "server_defaults.h"
 #include "server_strings.h"
-#include <log/write.h>
+#include <log2/core.h>
 #include <utility>
 #include <atomic>
 #include <mutex>
@@ -50,7 +50,7 @@ namespace Server::Cache {
                     s_cache,
                     [] (const auto & item) { return item.second.m_expiredAt < DateTime::Clock::now(); }
                 );
-                LOG_DEBUG_TS(Wcs::c_cacheMaintain, oldSize, s_cache.size());
+                LOG_DEBUG(Wcs::c_cacheMaintain, oldSize, s_cache.size());
             }
             s_counter = 0;
         }

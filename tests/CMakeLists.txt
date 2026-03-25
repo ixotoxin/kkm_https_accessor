@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.28)
 
 find_package(Catch2 CONFIG REQUIRED PATHS "${KKMHA_DEPS_VCPKG}")
 
-add_library(tests_lib OBJECT ${KKMHA_LIBRARY_SOURCE_FILES})
-target_compile_definitions(tests_lib PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
-target_link_libraries(tests_lib PRIVATE nlohmann_json::nlohmann_json)
+file(GLOB_RECURSE TEST_LIBRARY_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/library/lib/*.cpp")
+
+add_library(utlib OBJECT ${TEST_LIBRARY_SOURCE_FILES})
+target_compile_definitions(utlib PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
+target_link_libraries(utlib PRIVATE nlohmann_json::nlohmann_json)
 
 add_executable(test_lib_wconv lib_wconv.cpp)
 target_link_libraries(test_lib_wconv PRIVATE Catch2::Catch2WithMain)
@@ -20,12 +22,12 @@ add_test(NAME test_lib_numeric COMMAND test_lib_numeric)
 
 add_executable(test_lib_datetime lib_datetime.cpp)
 target_link_libraries(test_lib_datetime PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(test_lib_datetime PRIVATE tests_lib)
+target_link_libraries(test_lib_datetime PRIVATE utlib)
 add_test(NAME test_lib_datetime COMMAND test_lib_datetime)
 
 add_executable(test_lib_text lib_text.cpp)
 target_link_libraries(test_lib_text PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(test_lib_text PRIVATE tests_lib)
+target_link_libraries(test_lib_text PRIVATE utlib)
 add_test(NAME test_lib_text COMMAND test_lib_text)
 
 add_executable(test_lib_path lib_path.cpp)
@@ -39,5 +41,5 @@ add_test(NAME test_lib_hexer COMMAND test_lib_hexer)
 add_executable(test_lib_json lib_json.cpp)
 target_compile_definitions(test_lib_json PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
 target_link_libraries(test_lib_json PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(test_lib_json PRIVATE tests_lib)
+target_link_libraries(test_lib_json PRIVATE utlib)
 add_test(NAME test_lib_json COMMAND test_lib_json)

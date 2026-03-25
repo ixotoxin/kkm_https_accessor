@@ -5,7 +5,7 @@
 
 #include "kkmop_strings.h"
 #include <main/shortcut.h>
-#include <log/write.h>
+#include <log2/core.h>
 #include <kkm/variables.h>
 #include <kkm/strings.h>
 #include <kkm/device.h>
@@ -16,7 +16,13 @@
 #include <optional>
 
 #define KKM_LOG(S, F, V) \
-    do { if ((S).m_success) { LOG_INFO_FMT(F, V); } else { LOG_ERROR_FMT(F, Wcs::c_error); } } while (false)
+    do { \
+        if ((S).m_success) { \
+            LOG_INFO_CLI(F, V); \
+        } else { \
+            LOG_ERROR_CLI(F, Wcs::c_error); \
+        } \
+    } while (false)
 
 namespace KkmOperator {
     using namespace Kkm;
@@ -32,12 +38,12 @@ namespace KkmOperator {
                 const auto connParams = Registry::make(connParamItems[i]);
                 NewDevice kkm { connParams, std::format(Wcs::c_commandPrefix, n) };
                 std::wstring serialNumber { kkm.serialNumber() };
-                LOG_DEBUG_NTS(Wcs::c_getKkmInfo, n, serialNumber);
+                LOG_DEBUG(Wcs::c_getKkmInfo, n, serialNumber);
                 Registry::save(connParams, kkm);
                 kkm.printHello();
-                LOG_INFO_NTS(Wcs::c_connParamsSaved, n, serialNumber);
+                LOG_INFO(Wcs::c_connParamsSaved, n, serialNumber);
             } catch (const Failure & e) {
-                LOG_WARNING_NTS(std::format(Wcs::c_prefixedText, n, e.explain(Log::s_appendLocation)));
+                LOG_WARNING(std::format(Wcs::c_prefixedText, n, e.explain(Log::s_appendLocation)));
             }
         }
 
@@ -138,12 +144,12 @@ namespace KkmOperator {
 
                 if (exchange.m_success) {
                     LOG_INFO_CLI(Wcs::c_ofdExchangeStatus);
-                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit0, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0001));
-                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit1, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0010));
-                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit2, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0100));
-                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit3, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'1000));
-                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit4, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0001'0000));
-                    LOG_INFO_FMT(Wcs::c_fmtOfdExSBit5, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0010'0000));
+                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit0, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0001));
+                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit1, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0010));
+                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit2, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0100));
+                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit3, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'1000));
+                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit4, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0001'0000));
+                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit5, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0010'0000));
                 } else {
                     LOG_ERROR_CLI(Wcs::c_ofdExchangeError);
                 }

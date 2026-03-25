@@ -4,6 +4,7 @@
 #pragma once
 
 #include "macro.h"
+#include "strings.h"
 #include "except.h"
 #include "numeric.h"
 #include "datetime.h"
@@ -24,17 +25,6 @@ inline std::wostream & operator<<(std::wostream & stream, const Nln::Json & json
 }
 
 namespace Json {
-    namespace Wcs {
-        LIB_WSTR(c_jsonObjectWasExpected, L"Ожидался JSON-объект");
-        LIB_WCSTR(c_successKey, L"!success");
-        LIB_WCSTR(c_messageKey, L"!message");
-    }
-
-    namespace Mbs {
-        LIB_CSTR(c_successKey, "!success");
-        LIB_CSTR(c_messageKey, "!message");
-    }
-
     using Basic::Failure;
     using Basic::DataError;
     using Handler = std::function<bool(const Nln::Json &, const std::wstring &)>;

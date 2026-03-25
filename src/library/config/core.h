@@ -8,7 +8,7 @@
 #include "strings.h"
 #include <lib/except.h>
 #include <lib/json.h>
-#include <log/write.h>
+#include <log2/core.h>
 #include <main/variables.h>
 #include <concepts>
 #include <fstream>
@@ -34,11 +34,11 @@ namespace Config {
             std::filesystem::current_path(Main::s_directory);
             return; /** Не удаляй, смотри дальше. **/
         } catch (const Failure & e) {
-            LOG_WARNING_NTS(e);
+            LOG_WARNING(e);
         } catch (const std::exception & e) {
-            LOG_WARNING_NTS(e);
+            LOG_WARNING(e);
         } catch (...) {
-            LOG_WARNING_NTS(Basic::Wcs::c_somethingWrong);
+            LOG_WARNING(Basic::Wcs::c_somethingWrong);
         }
         throw Failure(Wcs::c_invalidConfig); // NOLINT(*-exception-baseclass)
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "server_default_handler.h"
@@ -23,7 +23,7 @@ namespace Server::Default {
             if (Static::s_enable && request.m_hint.size() < 2) {
                 request.m_response.m_status = Http::Status::MovedTemporarily;
                 request.m_response.m_data = std::make_shared<Http::SolidResponse>(Mbs::c_redirectToStaticResponse);
-                LOG_DEBUG_TS(Wcs::c_redirectToStatic, request.m_id);
+                LOG_DEBUG(Wcs::c_redirectToStatic, request.m_id);
             } else if (request.m_hint.size() == 2 && request.m_hint[1] == "favicon.ico") {
                 request.m_response.m_data
                     = std::make_shared<Http::BinaryResponse<Http::Regular>>(

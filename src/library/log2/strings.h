@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -8,7 +8,9 @@
 #include <unordered_map>
 
 namespace Log::Wcs {
-    constexpr const wchar_t * c_loggingError { L"[ logging error ]" };
+    // constexpr const wchar_t * c_loggingError { L"[ logging error ]" };
+    LOG_WSTRI(c_enableAsync, L"Включено асинхронное логирование");
+    LOG_WSTRI(c_disableAsync, L"Выключено асинхронное логирование");
 
     inline const std::unordered_map<Level, std::wstring_view> c_levelLabels {
         { Level::Debug, L"DBG" },

@@ -6,8 +6,7 @@ if (WITH_SNTZ)
     target_sntzr_link_options(kkmop)
 endif()
 
-target_compile_definitions(kkmop PUBLIC ${KKMHA_PUBLIC_DEFS} PRIVATE ${KKMHA_PRIVATE_DEFS})
-target_link_libraries(kkmop PRIVATE kkmha_lib)
+target_link_libraries(kkmop PRIVATE stlib)
 target_link_libraries(kkmop PRIVATE nlohmann_json::nlohmann_json)
 
 install(

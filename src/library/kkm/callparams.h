@@ -308,7 +308,7 @@ namespace Kkm {
             if (m_commodityName.empty()) {
                 throw DataError(Wcs::c_invalidData, L"commodityName"); // NOLINT(*-exception-baseclass)
             }
-            if (m_price < c_minMaxPrice || m_price > s_maxPrice) {
+            if (m_price < c_minPrice || m_price > s_maxPrice) {
                 throw DataError(Wcs::c_invalidData, L"price"); // NOLINT(*-exception-baseclass)
             }
             if (m_quantity < c_minQuantity || m_quantity > s_maxQuantity) {

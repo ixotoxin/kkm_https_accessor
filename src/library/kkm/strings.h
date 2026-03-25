@@ -11,89 +11,89 @@
 
 namespace Kkm {
     namespace Wcs {
-        KKM_WSTR(c_requiresProperty, L"Требуется корректное свойство '{}'");
-        KKM_WSTR(c_unsupportedValue, L"В данный момент значение '{}' свойства '{}' не поддерживается");
-        KKM_WSTR(c_requiresProperty2, L"Требуется корректное свойство '{}.{}'");
-        KKM_WSTR(c_unsupportedValue2, L"В данный момент значение '{}' свойства '{}.{}' не поддерживается");
+        KKM_WSTRI(c_requiresProperty, L"Требуется корректное свойство '{}'");
+        KKM_WSTRI(c_unsupportedValue, L"В данный момент значение '{}' свойства '{}' не поддерживается");
+        KKM_WSTRI(c_requiresProperty2, L"Требуется корректное свойство '{}.{}'");
+        KKM_WSTRI(c_unsupportedValue2, L"В данный момент значение '{}' свойства '{}.{}' не поддерживается");
 
-        KKM_WSTR(c_invalidSerialNumber, L"Недопустимый серийный номер");
-        KKM_WSTR(c_invalidConnParams, L"Недопустимые параметры подключения");
-        KKM_WSTR(c_notImplemented, L"Не реализовано");
-        KKM_WSTR(c_notAvailable, L"Недоступна");
-        KKM_WSTR(c_invalidData, L"Ошибка данных");
-        KKM_WSTR(c_exchangeError, L"Ошибка обмена с ККМ");
-        KKM_WSTR(c_serialNumberMismatch, L"Ошибка подключения (ожидаемый СН: {}, фактический СН: {})");
+        KKM_WSTRI(c_invalidSerialNumber, L"Недопустимый серийный номер");
+        KKM_WSTRI(c_invalidConnParams, L"Недопустимые параметры подключения");
+        KKM_WSTRI(c_notImplemented, L"Не реализовано");
+        KKM_WSTRI(c_notAvailable, L"Недоступна");
+        KKM_WSTRI(c_invalidData, L"Ошибка данных");
+        KKM_WSTRI(c_exchangeError, L"Ошибка обмена с ККМ");
+        KKM_WSTRI(c_serialNumberMismatch, L"Ошибка подключения (ожидаемый СН: {}, фактический СН: {})");
 
-        KKM_WSTR(c_registryError, L"Ошибка доступа к реестру ККМ");
-        KKM_WSTR(c_saved, L"Параметры подключения ККМ [{}] успешно сохранены");
-        KKM_WSTR(c_savingError, L"Не удалось сохранить параметры подключения ККМ [{}]");
-        KKM_WSTR(c_loaded, L"Параметры подключения ККМ [{}] успешно загружены");
-        KKM_WSTR(c_loadingError, L"Не удалось загрузить параметры подключения ККМ [{}]");
+        KKM_WSTRI(c_registryError, L"Ошибка доступа к реестру ККМ");
+        KKM_WSTRI(c_saved, L"Параметры подключения ККМ [{}] успешно сохранены");
+        KKM_WSTRI(c_savingError, L"Не удалось сохранить параметры подключения ККМ [{}]");
+        KKM_WSTRI(c_loaded, L"Параметры подключения ККМ [{}] успешно загружены");
+        KKM_WSTRI(c_loadingError, L"Не удалось загрузить параметры подключения ККМ [{}]");
 
-        KKM_WSTR(c_fault, L"{}ККМ [{}]: Ошибка: {}");
-        KKM_WSTR(c_wrongLength, L"{}ККМ [{}]: Не удалось получить ширину ленты, будет использовано значение по-умолчанию");
+        KKM_WSTRI(c_fault, L"{}ККМ [{}]: Ошибка: {}");
+        KKM_WSTRI(c_wrongLength, L"{}ККМ [{}]: Не удалось получить ширину ленты, будет использовано значение по-умолчанию");
 
-        KKM_WSTR(c_cancelingError, L"{}ККМ [{}]: Ошибка отмены чека: {}");
-        KKM_WSTR(c_closingError, L"{}ККМ [{}]: Ошибка закрытия документа: {}");
-        KKM_WSTR(c_printingError, L"{}ККМ [{}]: Ошибка печати документа: {}");
-        KKM_WSTR(c_shiftMismatch, L"{}ККМ [{}]: Номер смены в ККМ не совпадает с номером смены в ФН");
+        KKM_WSTRI(c_cancelingError, L"{}ККМ [{}]: Ошибка отмены чека: {}");
+        KKM_WSTRI(c_closingError, L"{}ККМ [{}]: Ошибка закрытия документа: {}");
+        KKM_WSTRI(c_printingError, L"{}ККМ [{}]: Ошибка печати документа: {}");
+        KKM_WSTRI(c_shiftMismatch, L"{}ККМ [{}]: Номер смены в ККМ не совпадает с номером смены в ФН");
 
-        KKM_WSTR(c_checkingError, L"Не удалось проверить закрытие документа");
-        KKM_WSTR(c_requiresItems, L"Не предоставлено ни одной позиции");
-        KKM_WSTR(c_badOperator, L"Данные оператора некорректны");
-        KKM_WSTR(c_badCustomer, L"Данные покупателя некорректны");
+        KKM_WSTRI(c_checkingError, L"Не удалось проверить закрытие документа");
+        KKM_WSTRI(c_requiresItems, L"Не предоставлено ни одной позиции");
+        KKM_WSTRI(c_badOperator, L"Данные оператора некорректны");
+        KKM_WSTRI(c_badCustomer, L"Данные покупателя некорректны");
 
-        KKM_WSTR(c_typeSell, L"ПРИХОД");
-        KKM_WSTR(c_typeSellReturn, L"ВОЗВРАТ ПРИХОДА");
+        KKM_WSTRI(c_typeSell, L"ПРИХОД");
+        KKM_WSTRI(c_typeSellReturn, L"ВОЗВРАТ ПРИХОДА");
 
-        KKM_WSTR(c_subSetOperator, L"{}ККМ [{}]: Операция: Регистрация оператора");
-        KKM_WSTR(c_subSetCustomer, L"{}ККМ [{}]: Операция: Регистрация покупателя");
-        KKM_WSTR(c_subSetSeller, L"{}ККМ [{}]: Операция: Регистрация продавца");
-        KKM_WSTR(c_subRegisterCashInAndPrint, L"{}ККМ [{}]: Операция: Регистрация внесения и печать");
-        KKM_WSTR(c_subCashOut, L"{}ККМ [{}]: Операция: Выплата");
-        KKM_WSTR(c_subCashOutNoNeed, L"{}ККМ [{}]: Операция: Выплата: Не требуется");
-        KKM_WSTR(c_subRegisterCashOutAndPrint, L"{}ККМ [{}]: Операция: Регистрация выплаты и печать");
-        KKM_WSTR(c_subRegisterItems, L"{}ККМ [{}]: Операция: Регистрация позиций (товаров/услуг)");
-        KKM_WSTR(c_subRegisterPayment, L"{}ККМ [{}]: Операция: Регистрация оплаты");
-        KKM_WSTR(c_subRegisterReceiptAndPrint, L"{}ККМ [{}]: Операция: Регистрация чека и печать");
-        KKM_WSTR(c_subCloseShift, L"{}ККМ [{}]: Операция: Закрытие смены");
-        KKM_WSTR(c_subCloseShiftNoNeed, L"{}ККМ [{}]: Операция: Закрытие смены: Не требуется");
-        KKM_WSTR(c_subCancelReceipt, L"{}ККМ [{}]: Операция: Отмена открытого чека");
-        KKM_WSTR(c_subCancelReceiptNoNeed, L"{}ККМ [{}]: Операция: Отмена открытого чека: Не требуется");
-        KKM_WSTR(c_subPrint, L"{}ККМ [{}]: Операция: Печать");
+        KKM_WSTRI(c_subSetOperator, L"{}ККМ [{}]: Операция: Регистрация оператора");
+        KKM_WSTRI(c_subSetCustomer, L"{}ККМ [{}]: Операция: Регистрация покупателя");
+        KKM_WSTRI(c_subSetSeller, L"{}ККМ [{}]: Операция: Регистрация продавца");
+        KKM_WSTRI(c_subRegisterCashInAndPrint, L"{}ККМ [{}]: Операция: Регистрация внесения и печать");
+        KKM_WSTRI(c_subCashOut, L"{}ККМ [{}]: Операция: Выплата");
+        KKM_WSTRI(c_subCashOutNoNeed, L"{}ККМ [{}]: Операция: Выплата: Не требуется");
+        KKM_WSTRI(c_subRegisterCashOutAndPrint, L"{}ККМ [{}]: Операция: Регистрация выплаты и печать");
+        KKM_WSTRI(c_subRegisterItems, L"{}ККМ [{}]: Операция: Регистрация позиций (товаров/услуг)");
+        KKM_WSTRI(c_subRegisterPayment, L"{}ККМ [{}]: Операция: Регистрация оплаты");
+        KKM_WSTRI(c_subRegisterReceiptAndPrint, L"{}ККМ [{}]: Операция: Регистрация чека и печать");
+        KKM_WSTRI(c_subCloseShift, L"{}ККМ [{}]: Операция: Закрытие смены");
+        KKM_WSTRI(c_subCloseShiftNoNeed, L"{}ККМ [{}]: Операция: Закрытие смены: Не требуется");
+        KKM_WSTRI(c_subCancelReceipt, L"{}ККМ [{}]: Операция: Отмена открытого чека");
+        KKM_WSTRI(c_subCancelReceiptNoNeed, L"{}ККМ [{}]: Операция: Отмена открытого чека: Не требуется");
+        KKM_WSTRI(c_subPrint, L"{}ККМ [{}]: Операция: Печать");
 
-        KKM_WSTR(c_statusMethod, L"{}ККМ [{}]: Запрос общей информации и статуса");
-        KKM_WSTR(c_shiftStateMethod, L"{}ККМ [{}]: Запрос состояния смены");
-        KKM_WSTR(c_receiptStateMethod, L"{}ККМ [{}]: Запрос состояния чека");
-        KKM_WSTR(c_cashStatMethod, L"{}ККМ [{}]: Запрос статистики по наличным");
-        KKM_WSTR(c_ofdExchangeStatusMethod, L"{}ККМ [{}]: Запрос статуса информационного обмена с ОФД");
-        KKM_WSTR(c_fnInfoMethod, L"{}ККМ [{}]: Запрос информации и статуса ФН");
-        KKM_WSTR(c_registrationInfoMethod, L"{}ККМ [{}]: Запрос информации о регистрации");
-        KKM_WSTR(c_lastRegistrationMethod, L"{}ККМ [{}]: Запрос информации о последней (пере)регистрации");
-        KKM_WSTR(c_lastReceiptMethod, L"{}ККМ [{}]: Запрос информации о последнем чеке");
-        KKM_WSTR(c_lastDocumentMethod, L"{}ККМ [{}]: Запрос информации о последнем фискальном документе");
-        KKM_WSTR(c_errorsMethod, L"{}ККМ [{}]: Запрос информации об ошибках обмена с ОФД");
-        KKM_WSTR(c_ffdVersionMethod, L"{}ККМ [{}]: Запрос версий ФФД");
-        KKM_WSTR(c_fwVersionMethod, L"{}ККМ [{}]: Запрос версий ПО");
-        KKM_WSTR(c_printDemoMethod, L"{}ККМ [{}]: Демо-печать");
-        KKM_WSTR(c_printHelloMethod, L"{}ККМ [{}]: Печать приветствия");
-        KKM_WSTR(c_printNfDocumentMethod, L"{}ККМ [{}]: Печать не фискального документа");
-        KKM_WSTR(c_printInfoMethod, L"{}ККМ [{}]: Печать информации о ККТ");
-        KKM_WSTR(c_printFnRegistrationsMethod, L"{}ККМ [{}]: Печать итогов регистрации / перерегистрации");
-        KKM_WSTR(c_printOfdExchangeStatusMethod, L"{}ККМ [{}]: Печать отчета о состоянии расчетов");
-        KKM_WSTR(c_printOfdTestMethod, L"{}ККМ [{}]: Тестирование подключения к ОФД");
-        KKM_WSTR(c_printShiftReportsMethod, L"{}ККМ [{}]: Печать нераспечатанных отчетов о закрытии смены");
-        KKM_WSTR(c_printLastDocumentMethod, L"{}ККМ [{}]: Печать копии последнего документа");
-        KKM_WSTR(c_cashInMethod, L"{}ККМ [{}]: Регистрация внесения");
-        KKM_WSTR(c_cashOutMethod, L"{}ККМ [{}]: Регистрация выплаты");
-        KKM_WSTR(c_sellMethod, L"{}ККМ [{}]: Регистрация чека прихода (продажи)");
-        KKM_WSTR(c_sellReturnMethod, L"{}ККМ [{}]: Регистрация чека возврата прихода (продажи)");
-        KKM_WSTR(c_reportXMethod, L"{}ККМ [{}]: Печать X-отчета");
-        KKM_WSTR(c_closeShiftMethod, L"{}ККМ [{}]: Закрытие смены");
-        KKM_WSTR(c_resetStateMethod, L"{}ККМ [{}]: Возврат к исходному состоянию");
+        KKM_WSTRI(c_statusMethod, L"{}ККМ [{}]: Запрос общей информации и статуса");
+        KKM_WSTRI(c_shiftStateMethod, L"{}ККМ [{}]: Запрос состояния смены");
+        KKM_WSTRI(c_receiptStateMethod, L"{}ККМ [{}]: Запрос состояния чека");
+        KKM_WSTRI(c_cashStatMethod, L"{}ККМ [{}]: Запрос статистики по наличным");
+        KKM_WSTRI(c_ofdExchangeStatusMethod, L"{}ККМ [{}]: Запрос статуса информационного обмена с ОФД");
+        KKM_WSTRI(c_fnInfoMethod, L"{}ККМ [{}]: Запрос информации и статуса ФН");
+        KKM_WSTRI(c_registrationInfoMethod, L"{}ККМ [{}]: Запрос информации о регистрации");
+        KKM_WSTRI(c_lastRegistrationMethod, L"{}ККМ [{}]: Запрос информации о последней (пере)регистрации");
+        KKM_WSTRI(c_lastReceiptMethod, L"{}ККМ [{}]: Запрос информации о последнем чеке");
+        KKM_WSTRI(c_lastDocumentMethod, L"{}ККМ [{}]: Запрос информации о последнем фискальном документе");
+        KKM_WSTRI(c_errorsMethod, L"{}ККМ [{}]: Запрос информации об ошибках обмена с ОФД");
+        KKM_WSTRI(c_ffdVersionMethod, L"{}ККМ [{}]: Запрос версий ФФД");
+        KKM_WSTRI(c_fwVersionMethod, L"{}ККМ [{}]: Запрос версий ПО");
+        KKM_WSTRI(c_printDemoMethod, L"{}ККМ [{}]: Демо-печать");
+        KKM_WSTRI(c_printHelloMethod, L"{}ККМ [{}]: Печать приветствия");
+        KKM_WSTRI(c_printNfDocumentMethod, L"{}ККМ [{}]: Печать не фискального документа");
+        KKM_WSTRI(c_printInfoMethod, L"{}ККМ [{}]: Печать информации о ККТ");
+        KKM_WSTRI(c_printFnRegistrationsMethod, L"{}ККМ [{}]: Печать итогов регистрации / перерегистрации");
+        KKM_WSTRI(c_printOfdExchangeStatusMethod, L"{}ККМ [{}]: Печать отчета о состоянии расчетов");
+        KKM_WSTRI(c_printOfdTestMethod, L"{}ККМ [{}]: Тестирование подключения к ОФД");
+        KKM_WSTRI(c_printShiftReportsMethod, L"{}ККМ [{}]: Печать нераспечатанных отчетов о закрытии смены");
+        KKM_WSTRI(c_printLastDocumentMethod, L"{}ККМ [{}]: Печать копии последнего документа");
+        KKM_WSTRI(c_cashInMethod, L"{}ККМ [{}]: Регистрация внесения");
+        KKM_WSTRI(c_cashOutMethod, L"{}ККМ [{}]: Регистрация выплаты");
+        KKM_WSTRI(c_sellMethod, L"{}ККМ [{}]: Регистрация чека прихода (продажи)");
+        KKM_WSTRI(c_sellReturnMethod, L"{}ККМ [{}]: Регистрация чека возврата прихода (продажи)");
+        KKM_WSTRI(c_reportXMethod, L"{}ККМ [{}]: Печать X-отчета");
+        KKM_WSTRI(c_closeShiftMethod, L"{}ККМ [{}]: Закрытие смены");
+        KKM_WSTRI(c_resetStateMethod, L"{}ККМ [{}]: Возврат к исходному состоянию");
 
-        KKM_WSTR(c_helloTitle, L"Привет!");
-        KKM_WSTR(c_helloText, L"\nЯ трудолюбивая касса.\n\nЯ очень рада работать в компании таких замечательных людей.");
+        KKM_WSTRI(c_helloTitle, L"Привет!");
+        KKM_WSTRI(c_helloText, L"\nЯ трудолюбивая касса.\n\nЯ очень рада работать в компании таких замечательных людей.");
 
         inline const std::array c_allowedBaudRate {
             std::to_wstring(Atol::LIBFPTR_PORT_BR_1200),
@@ -111,29 +111,29 @@ namespace Kkm {
     }
 
     namespace Mbs {
-        KKM_STR(c_requiresProperty, "Требуется корректное свойство '{}'");
-        KKM_STR(c_requiresProperty2, "Требуется корректное свойство '{}.{}'");
+        KKM_STRI(c_requiresProperty, "Требуется корректное свойство '{}'");
+        KKM_STRI(c_requiresProperty2, "Требуется корректное свойство '{}.{}'");
 
-        KKM_STR(c_closedShift, "Сессия закрыта");
-        KKM_STR(c_openedShift, "Сессия открыта");
-        KKM_STR(c_expiredShift, "Сессия истекла");
-        KKM_STR(c_closedReceipt, "Чек закрыт");
-        KKM_STR(c_sellReceipt, "Чек прихода");
-        KKM_STR(c_sellReturnReceipt, "Чек возврата прихода");
-        KKM_STR(c_sellCorrectionReceipt, "Чек коррекции прихода");
-        KKM_STR(c_sellReturnCorrectionReceipt, "Чек коррекции возврата прихода");
-        KKM_STR(c_buyReceipt, "Чек расхода");
-        KKM_STR(c_buyReturnReceipt, "Чек возврата расхода");
-        KKM_STR(c_buyCorrectionReceipt, "Чек коррекции расхода");
-        KKM_STR(c_buyReturnCorrectionReceipt, "Чек коррекции возврата расхода");
-        KKM_STR(c_closedDocument, "Документ закрыт");
-        KKM_STR(c_openShiftDocument, "Документ открытия смены");
-        KKM_STR(c_closeShiftDocument, "Документ закрытия смены");
-        KKM_STR(c_registrationDocument, "Документ пере/регистрации");
-        KKM_STR(c_closeArchiveDocument, "Документ закрытия архива ФН");
-        KKM_STR(c_ofdExchangeStatusDocument, "Отчёт о состоянии расчётов");
-        KKM_STR(c_serviceDocument, "Сервисный документ");
-        KKM_STR(c_documentCopy, "Копия документа");
+        KKM_STRI(c_closedShift, "Сессия закрыта");
+        KKM_STRI(c_openedShift, "Сессия открыта");
+        KKM_STRI(c_expiredShift, "Сессия истекла");
+        KKM_STRI(c_closedReceipt, "Чек закрыт");
+        KKM_STRI(c_sellReceipt, "Чек прихода");
+        KKM_STRI(c_sellReturnReceipt, "Чек возврата прихода");
+        KKM_STRI(c_sellCorrectionReceipt, "Чек коррекции прихода");
+        KKM_STRI(c_sellReturnCorrectionReceipt, "Чек коррекции возврата прихода");
+        KKM_STRI(c_buyReceipt, "Чек расхода");
+        KKM_STRI(c_buyReturnReceipt, "Чек возврата расхода");
+        KKM_STRI(c_buyCorrectionReceipt, "Чек коррекции расхода");
+        KKM_STRI(c_buyReturnCorrectionReceipt, "Чек коррекции возврата расхода");
+        KKM_STRI(c_closedDocument, "Документ закрыт");
+        KKM_STRI(c_openShiftDocument, "Документ открытия смены");
+        KKM_STRI(c_closeShiftDocument, "Документ закрытия смены");
+        KKM_STRI(c_registrationDocument, "Документ пере/регистрации");
+        KKM_STRI(c_closeArchiveDocument, "Документ закрытия архива ФН");
+        KKM_STRI(c_ofdExchangeStatusDocument, "Отчёт о состоянии расчётов");
+        KKM_STRI(c_serviceDocument, "Сервисный документ");
+        KKM_STRI(c_documentCopy, "Копия документа");
 
         inline const std::unordered_map<unsigned int, std::string_view> c_models {
             { Atol::LIBFPTR_MODEL_ALLIANCE_20F, "АЛЬЯНС 20Ф" },

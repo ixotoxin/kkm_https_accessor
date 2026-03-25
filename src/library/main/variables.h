@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -7,6 +7,6 @@
 #include <filesystem>
 
 namespace Main {
-    MAIN_VAR(std::filesystem::path, s_file, );
-    MAIN_VAR(std::filesystem::path, s_directory, );
+    MAIN_MVARI(std::filesystem::path, s_file, );
+    MAIN_MVARI(std::filesystem::path, s_directory, );
 }

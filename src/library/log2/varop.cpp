@@ -1,4 +1,4 @@
-// Copyright (c) 2025-2026 Vitaly Anasenko
+// Copyright (c) 2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "varop.h"
@@ -9,6 +9,7 @@
 #include <lib/numeric.h>
 #include <lib/text.h>
 #include <lib/path.h>
+#include <lib/json.h>
 #include <main/variables.h>
 
 namespace Log {
@@ -32,8 +33,7 @@ namespace Log {
                                 },
                                 path3
                             );
-                            Json::handleKey(json3, "outputTimestamp", Console::s_outputTimestamp, path3);
-                            Json::handleKey(json3, "outputLevel", Console::s_outputLevel, path3);
+                            Json::handleKey(json3, "terse", Console::s_terse, path3);
                             return true;
                         },
                         path2
@@ -102,27 +102,38 @@ namespace Log {
                         path2
                     );
                     Json::handleKey(json2, "appendLocation", s_appendLocation, path2);
+                    Json::handleKey(
+                        json2, "lineSize", s_lineSize,
+                        Numeric::between(c_lineSizeMin, c_lineSizeMax), path2
+                    );
+                    Json::handleKey(
+                        json2, "maxQueueBlocks", s_blocksNumber,
+                        Numeric::between(c_blocksNumberMin, c_blocksNumberMax), path2
+                    );
+                    Json::handleKey(json2, "enableAsync", s_enableAsync, path2);
                     return true;
                 }
             )
         };
         if (found) {
-            reconfig();
+            Config::reinitLogger();
         }
     }
 
     std::wostream & vars(std::wostream & stream) {
         stream
             << L"CFG: log.console.level.foreground = " << levelLabel(Console::s_level) << L"\n"
-            L"CFG: log.console.outputTimestamp = " << Text::Wcs::yesNo(Console::s_outputTimestamp) << L"\n"
-            L"CFG: log.console.outputLevel = " << Text::Wcs::yesNo(Console::s_outputLevel) << L"\n"
+            L"CFG: log.console.terse = " << Text::Wcs::yesNo(Console::s_terse) << L"\n"
             L"CFG: log.file.level.foreground = " << levelLabel(File::s_fgLevel) << L"\n"
             L"CFG: log.file.level.background = " << levelLabel(File::s_bgLevel) << L"\n"
             L"CFG: log.file.directory = \"" << File::s_directory.wstring() << L"\"\n"
             L"CFG: log.eventLog.level.foreground = " << levelLabel(EventLog::s_fgLevel) << L"\n"
             L"CFG: log.eventLog.level.background = " << levelLabel(EventLog::s_bgLevel) << L"\n"
-            L"DEF: log.eventLog.source = \"" << c_eventSource << L"\"\n"
-            L"CFG: log.appendLocation = " << Text::Wcs::yesNo(s_appendLocation) << L"\n";
+            L"DEF: log.eventLog.source = \"" << EventLog::c_eventSource << L"\"\n"
+            L"CFG: log.appendLocation = " << Text::Wcs::yesNo(s_appendLocation) << L"\n"
+            L"CFG: log.lineSize = " << s_lineSize << L"\n"
+            L"CFG: log.maxQueueBlocks = " << s_blocksNumber << L"\n"
+            L"CFG: log.enableAsync = " << Text::Wcs::yesNo(s_enableAsync) << L"\n";
 
         return stream;
     }

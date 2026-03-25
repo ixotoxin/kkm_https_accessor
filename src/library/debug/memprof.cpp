@@ -4,7 +4,7 @@
 #include "memprof.h"
 
 #if WITH_CRTD || WITH_SNTZ
-#   include <log/core.h>
+#   include <log2/core.h>
 #endif
 
 #if WITH_CRTD
@@ -27,10 +27,10 @@ namespace Config {
         ::_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
         ::_CrtSetReportMode(_CRT_ERROR, reportMode);
         ::_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-        Log::Console::write(Log::Level::Warning, L"Memory profiling enabled (CRT Debug)");
+        LOG_WARNING(L"Memory profiling enabled (CRT Debug)");
 #elif WITH_SNTZ
-        Log::Console::write(Log::Level::Warning, L"AddressSanitizer enabled");
-        Log::Console::write(Log::Level::Warning, L"UndefinedBehaviorSanitizer enabled");
+        LOG_WARNING(L"AddressSanitizer enabled");
+        LOG_WARNING(L"UndefinedBehaviorSanitizer enabled");
 #endif
     }
 }
@@ -40,19 +40,14 @@ namespace Debug {
     void forceMemoryLeak() {
 #if WITH_CRTD || WITH_SNTZ
         auto memoryLeak = new unsigned short[32] { 0xadde, 0xefbe };
-        if (Log::Console::ready(Log::Level::Warning)) {
-            Log::Console::write(
-                Log::Level::Warning,
-                std::format(
-                    L"I'll put {:x}{:x} {:x}{:x} here (test message indicating that a leak has taken place)",
-                    memoryLeak[0] & 0xff, memoryLeak[0] >> 8, memoryLeak[1] & 0xff, memoryLeak[1] >> 8
-                )
-            );
-            Log::Console::write(
-                Log::Level::Warning,
-                std::format(L"Address of leaked memory block: 0x{:016X}", reinterpret_cast<uintptr_t>(memoryLeak))
-            );
-        }
+        LOG_WARNING(
+            L"I'll put {:x}{:x} {:x}{:x} here (test message indicating that a leak has taken place)",
+            memoryLeak[0] & 0xff, memoryLeak[0] >> 8, memoryLeak[1] & 0xff, memoryLeak[1] >> 8
+        );
+        LOG_WARNING(
+            std::format(L"Address of leaked memory block: 0x{:016X}",
+            reinterpret_cast<uintptr_t>(memoryLeak))
+        );
 #endif
     }
 }

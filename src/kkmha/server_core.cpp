@@ -47,20 +47,20 @@ namespace Server {
     void emergencyBrake(const auto & e, const State state) noexcept {
         assert(state >= State::Shutdown);
 
-        LOG_ERROR_TS(e);
+        LOG_ERROR(e);
 
         switch (s_state.load()) {
             case State::Initial:
             case State::Starting:
-                LOG_ERROR_TS(Wcs::c_startingFailed);
+                LOG_ERROR(Wcs::c_startingFailed);
                 break;
             case State::Shutdown:
             case State::Stopping:
             case State::Stopped:
-                LOG_ERROR_TS(Wcs::c_stoppingFailed);
+                LOG_ERROR(Wcs::c_stoppingFailed);
                 break;
             default:
-                LOG_ERROR_TS(Wcs::c_servicingFailed);
+                LOG_ERROR(Wcs::c_servicingFailed);
         }
 
         s_state.store(state);
@@ -70,7 +70,6 @@ namespace Server {
         emergencyBrake(e, State::Stopping);
 
         {
-            /** Do the job **/
             std::scoped_lock lock { s_hitmanJobMutex };
             std::invoke(s_hitmanJob);
             s_hitmanJob = c_dummyJob;
@@ -81,7 +80,6 @@ namespace Server {
 
     void cancelHitmanJob(const auto & e) noexcept {
         {
-            /** Call off a hit **/
             std::scoped_lock lock { s_hitmanJobMutex };
             s_hitmanJob = c_dummyJob;
         }
@@ -138,7 +136,7 @@ namespace Server {
         Asio::CancellationSignal signal {};
         volatile bool canceled { false };
 
-        LOG_DEBUG_TS(
+        LOG_DEBUG(
             [& request] {
                 std::string message { std::format(Mbs::c_connectionWith, request.m_remote.to_string()) };
                 return std::format(Mbs::c_prefixedText, request.m_id, message);
@@ -211,7 +209,7 @@ namespace Server {
 
             if (!canceled) {
                 if (request.m_response.m_status == Http::Status::Ok) {
-                    LOG_INFO_TS(
+                    LOG_INFO(
                         [& request] {
                             std::string message {
                                 std::format(
@@ -234,7 +232,7 @@ namespace Server {
                     if (it == request.m_header.end() || it->second.empty() || it->second != s_secret) {
                         request.m_response.m_status = Http::Status::Forbidden;
                         request.m_response.m_data.emplace<std::string>(Mbs::c_forbidden);
-                        LOG_ERROR_TS(Wcs::c_forbidden, request.m_id);
+                        LOG_ERROR(Wcs::c_forbidden, request.m_id);
                     }
                 }
 
@@ -266,17 +264,17 @@ namespace Server {
         } catch (const Basic::Failure & e) {
             if (!canceled) {
                 request.m_response.m_status = Http::Status::InternalServerError;
-                LOG_ERROR_TS(e);
+                LOG_ERROR(e);
             }
         } catch (const std::exception & e) {
             if (!canceled) {
                 request.m_response.m_status = Http::Status::InternalServerError;
-                LOG_ERROR_TS(e);
+                LOG_ERROR(e);
             }
         } catch (...) {
             if (!canceled) {
                 request.m_response.m_status = Http::Status::InternalServerError;
-                LOG_ERROR_TS(Basic::Wcs::c_somethingWrong);
+                LOG_ERROR(Basic::Wcs::c_somethingWrong);
             }
         }
 
@@ -304,12 +302,12 @@ namespace Server {
                         && error != asio::error::not_connected
                     ) {
                         if (Log::s_appendLocation) {
-                            LOG_ERROR_TS(
+                            LOG_ERROR(
                                 Mbs::c_prefixedOperationWithSource, request.m_id, Mbs::c_sslShutdownOperation,
                                 error.message(), SrcLoc::toMbs(SrcLoc::Point::current())
                             );
                         } else {
-                            LOG_ERROR_TS(
+                            LOG_ERROR(
                                 Mbs::c_prefixedOperation, request.m_id, Mbs::c_sslShutdownOperation, error.message()
                             );
                         }
@@ -322,12 +320,12 @@ namespace Server {
                 streamLowestLayer.close(error); // NOLINT(*-unused-return-value)
                 if (error) {
                     if (Log::s_appendLocation) {
-                        LOG_ERROR_TS(
+                        LOG_ERROR(
                             Mbs::c_prefixedOperationWithSource, request.m_id, Mbs::c_socketCloseOperation,
                             error.message(), SrcLoc::toMbs(SrcLoc::Point::current())
                         );
                     } else {
-                        LOG_ERROR_TS(
+                        LOG_ERROR(
                             Mbs::c_prefixedOperation, request.m_id, Mbs::c_socketCloseOperation, error.message()
                         );
                     }
@@ -336,18 +334,18 @@ namespace Server {
         }
 
         if (canceled) {
-            LOG_WARNING_TS(Wcs::c_prefixedText, request.m_id, Wcs::c_timeoutExpired);
+            LOG_WARNING(Wcs::c_prefixedText, request.m_id, Wcs::c_timeoutExpired);
         } else if (request.m_response.m_status < Http::Status::BadRequest) {
-            LOG_INFO_TS(Wcs::c_prefixedText, request.m_id, Wcs::c_processingSuccess);
+            LOG_INFO(Wcs::c_prefixedText, request.m_id, Wcs::c_processingSuccess);
         } else {
-            LOG_WARNING_TS(Wcs::c_prefixedText, request.m_id, Wcs::c_processingFailed);
+            LOG_WARNING(Wcs::c_prefixedText, request.m_id, Wcs::c_processingFailed);
         }
     } catch (const Basic::Failure & e) {
-        LOG_ERROR_TS(e);
+        LOG_ERROR(e);
     } catch (const std::exception & e) {
-        LOG_ERROR_TS(e);
+        LOG_ERROR(e);
     } catch (...) {
-        LOG_ERROR_TS(Basic::Wcs::c_somethingWrong);
+        LOG_ERROR(Basic::Wcs::c_somethingWrong);
     }
 
     asio::awaitable<void> close(Asio::TcpSocket && socket0) noexcept try {
@@ -369,24 +367,24 @@ namespace Server {
             auto executor = co_await asio::this_coro::executor;
             Asio::Acceptor acceptor { executor, config.m_endpoint };
 
-            LOG_INFO_TS(Wcs::c_started);
+            LOG_INFO(Wcs::c_started);
             s_state.store(State::Running);
 
             do {
                 auto [error, socket] = co_await acceptor.async_accept();
                 if (error) {
-                    LOG_ERROR_TS(Mbs::c_connectionAcceptStatus, error.message());
-                    LOG_ERROR_TS(Wcs::c_servicingFailed);
+                    LOG_ERROR(Mbs::c_connectionAcceptStatus, error.message());
+                    LOG_ERROR(Wcs::c_servicingFailed);
                 } else if (!socket.is_open()) {
-                    LOG_ERROR_TS(Wcs::c_socketOpeningError);
-                    LOG_ERROR_TS(Wcs::c_servicingFailed);
+                    LOG_ERROR(Wcs::c_socketOpeningError);
+                    LOG_ERROR(Wcs::c_servicingFailed);
                 } else if (s_concurrentRequestsCounter >= s_concurrencyLimit) {
                     if (s_delayedSocketsCounter >= c_delayedSockets) {
                         socket.cancel();
                         socket.shutdown(Asio::TcpSocket::shutdown_both);
                         socket.close();
                     } else {
-                        LOG_ERROR_TS(Wcs::c_maximumIsExceeded);
+                        LOG_ERROR(Wcs::c_maximumIsExceeded);
                         asio::co_spawn(executor, close(std::move(socket)), asio::detached);
                     }
                 } else {
@@ -399,13 +397,13 @@ namespace Server {
 
                 acceptor.cancel(error); // NOLINT(*-unused-return-value)
                 if (error) {
-                    LOG_WARNING_TS(Mbs::c_acceptorCancelStatus, error.message());
+                    LOG_WARNING(Mbs::c_acceptorCancelStatus, error.message());
                 }
 
                 error.clear();
                 acceptor.close(error); // NOLINT(*-unused-return-value)
                 if (error) {
-                    LOG_WARNING_TS(Mbs::c_acceptorCloseStatus, error.message());
+                    LOG_WARNING(Mbs::c_acceptorCloseStatus, error.message());
                 }
             }
         }
@@ -442,7 +440,8 @@ namespace Server {
             }
         }
 
-        LOG_DEBUG_TS(Wcs::c_stopping);
+        Log::disableAsync();
+        LOG_DEBUG(Wcs::c_stopping);
 
         auto counter = c_controlTimeout / c_sleepQuantum;
         while (counter > 0 && s_concurrentRequestsCounter > 0) {
@@ -453,7 +452,6 @@ namespace Server {
         std::this_thread::sleep_for(c_controlOvertime1);
 
         if (counter > 0) {
-            /** Do the job **/
             std::scoped_lock lock { s_hitmanJobMutex };
             std::invoke(s_hitmanJob);
         }
@@ -470,7 +468,6 @@ namespace Server {
         signals.async_wait([] (auto, auto) noexcept { s_state.store(State::Shutdown); });
 
         {
-            /** Hire a hitman **/
             std::scoped_lock lock { s_hitmanJobMutex };
             s_hitmanJob = [& ioContext] { ioContext.stop(); };
         }
@@ -480,12 +477,11 @@ namespace Server {
         ioContext.run();
 
         {
-            /** Call off a hit **/
             std::scoped_lock lock { s_hitmanJobMutex };
             s_hitmanJob = c_dummyJob;
         }
 
-        LOG_INFO_TS(Wcs::c_stopped);
+        LOG_INFO(Wcs::c_stopped);
         s_shutdownSync.arrive_and_wait();
     } catch (const Basic::Failure & e) {
         cancelHitmanJob(e);
@@ -498,7 +494,8 @@ namespace Server {
     Asio::SslStreamConfig init() {
         assert(s_state.load() == State::Initial);
 
-        LOG_DEBUG_TS(Wcs::c_starting);
+        Log::enableAsync();
+        LOG_DEBUG(Wcs::c_starting);
         s_state.store(State::Starting);
 
         Asio::SslStreamConfig config {
@@ -557,7 +554,6 @@ namespace Server {
         }
 
         {
-            /** Do the job **/
             std::scoped_lock lock { s_hitmanJobMutex };
             std::invoke(s_hitmanJob);
         }

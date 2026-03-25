@@ -24,7 +24,7 @@ namespace Kkm {
                 Json::handleKey(json2, "defaultBaudRate", s_defaultBaudRate, Wcs::c_allowedBaudRate, path2);
                 Json::handleKey(
                     json2, "defaultLineLength", s_defaultLineLength,
-                    Numeric::between(c_minLineLength, c_maxLineLength), path2
+                    Numeric::between(c_defaultLineLengthMin, c_defaultLineLengthMax), path2
                 );
 #if VERSION_LIMIT >= VERSION_10107
                 Json::handleKey(
@@ -36,7 +36,7 @@ namespace Kkm {
                 Json::handleKey(json2, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path2);
                 Json::handleKey(
                     json2, "documentClosingTimeout", s_documentClosingTimeout,
-                    DateTime::between(c_minDocumentClosingTimeout, c_maxDocumentClosingTimeout), path2
+                    DateTime::between(c_documentClosingTimeoutMin, c_documentClosingTimeoutMax), path2
                 );
                 Json::handleKey(
                     json2, "cliOperator",
@@ -50,15 +50,15 @@ namespace Kkm {
                 Json::handleKey(json2, "customerAccountField", s_customerAccountField, path2);
                 Json::handleKey(
                     json2, "maxCashInOut", s_maxCashInOut,
-                    Numeric::between(c_minMaxCashInOut, c_maxMaxCashInOut), path2
+                    Numeric::between(c_maxCashInOutMin, c_maxCashInOutMax), path2
                 );
                 Json::handleKey(
                     json2, "maxPrice", s_maxPrice,
-                    Numeric::between(c_minMaxPrice, c_maxMaxPrice), path2
+                    Numeric::between(c_maxPriceMin, c_maxPriceMax), path2
                 );
                 Json::handleKey(
                     json2, "maxQuantity", s_maxQuantity,
-                    Numeric::between(c_minMaxQuantity, c_maxMaxQuantity), path2
+                    Numeric::between(c_maxQuantityMin, c_maxQuantityMax), path2
                 );
                 return true;
             }

@@ -5,8 +5,8 @@
 #include <lib/setcli.h>
 #include <main/varop.h>
 #include <main/shortcut.h>
-#include <log/varop.h>
-#include <log/write.h>
+#include <log2/varop.h>
+#include <log2/core.h>
 #include <debug/memprof.h>
 #include <kkm/varop.h>
 #include <config/varop.h>
@@ -68,11 +68,11 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
         usage(std::wcerr, argv[0]);
 
     } catch (const Basic::Failure & e) {
-        LOG_ERROR_NTS(e);
+        LOG_ERROR(e);
     } catch (const std::exception & e) {
-        LOG_ERROR_NTS(e);
+        LOG_ERROR(e);
     } catch (...) {
-        LOG_ERROR_NTS(Basic::Wcs::c_somethingWrong);
+        LOG_ERROR(Basic::Wcs::c_somethingWrong);
     }
 
     return EXIT_FAILURE;

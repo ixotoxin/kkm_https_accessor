@@ -5,7 +5,7 @@
 #include "variables.h"
 #include "strings.h"
 #include <lib/numeric.h>
-#include <log/write.h>
+#include <log2/core.h>
 #include <cassert>
 
 namespace Kkm {
@@ -35,7 +35,7 @@ namespace Kkm {
 
     Device::~Device() {
         if (m_needToCancelReceipt && m_kkm.cancelReceipt() < 0) {
-            LOG_WARNING_TS(Wcs::c_cancelingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
+            LOG_WARNING(Wcs::c_cancelingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
         }
         m_kkm.close();
     }
@@ -77,7 +77,7 @@ namespace Kkm {
         m_lineLength = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_RECEIPT_LINE_LENGTH);
         if (m_lineLength < 1) {
             m_lineLength = s_defaultLineLength;
-            LOG_WARNING_TS(Wcs::c_wrongLength, m_logPrefix, m_serialNumber);
+            LOG_WARNING(Wcs::c_wrongLength, m_logPrefix, m_serialNumber);
         }
     }
 
@@ -86,18 +86,18 @@ namespace Kkm {
         std::wstring message { m_kkm.errorDescription() };
         m_kkm.resetError();
         if (Log::s_appendLocation) {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
         } else {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
         }
         return message;
     }
 
     void Device::fail(Result & result, const std::wstring_view message, const SrcLoc::Point & location) {
         if (Log::s_appendLocation) {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
         } else {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
         }
         if (result.m_success) {
             result.m_success = false;
@@ -107,9 +107,9 @@ namespace Kkm {
 
     void Device::fail(Result & result, const std::wstring & message, const SrcLoc::Point & location) {
         if (Log::s_appendLocation) {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
         } else {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
         }
         if (result.m_success) {
             result.m_success = false;
@@ -119,9 +119,9 @@ namespace Kkm {
 
     void Device::fail(Result & result, std::wstring && message, const SrcLoc::Point & location) {
         if (Log::s_appendLocation) {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
         } else {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
         }
         if (result.m_success) {
             result.m_success = false;
@@ -133,9 +133,9 @@ namespace Kkm {
         std::wstring message { m_kkm.errorDescription() };
         m_kkm.resetError();
         if (Log::s_appendLocation) {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message) + location);
         } else {
-            LOG_WARNING_TS(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
+            LOG_WARNING(KKM_WFMT(Wcs::c_fault, m_logPrefix, m_serialNumber, message));
         }
         if (result.m_success) {
             result.m_success = false;
@@ -158,7 +158,7 @@ namespace Kkm {
             return;
         }
 
-        LOG_DEBUG_TS(Wcs::c_ffdVersionMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_ffdVersionMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос версий ФФД **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_FFD_VERSIONS);
@@ -318,18 +318,18 @@ namespace Kkm {
         //  В нашем случае интерактивность невозможна. Будем ждать чуда. Если чуда не произойдет, отменяем чек.
         DateTime::SleepUnit::rep i;
         for (i = s_documentClosingTimeout / c_sleepQuantum; m_kkm.checkDocumentClosed() < 0 && i; --i) {
-            LOG_WARNING_TS(Wcs::c_closingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
+            LOG_WARNING(Wcs::c_closingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
             std::this_thread::sleep_for(c_sleepQuantum);
         }
         if (!i || !m_kkm.getParamBool(Atol::LIBFPTR_PARAM_DOCUMENT_CLOSED)) {
             if (m_kkm.cancelReceipt() < 0) {
-                LOG_WARNING_TS(Wcs::c_cancelingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
+                LOG_WARNING(Wcs::c_cancelingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
             }
             return fail(result, Wcs::c_checkingError);
         }
         if (!m_kkm.getParamBool(Atol::LIBFPTR_PARAM_DOCUMENT_PRINTED)) {
             for (i = s_documentClosingTimeout / c_sleepQuantum; m_kkm.continuePrint() < 0 && i; --i) {
-                LOG_WARNING_TS(Wcs::c_printingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
+                LOG_WARNING(Wcs::c_printingError, m_logPrefix, m_serialNumber, m_kkm.errorDescription());
                 std::this_thread::sleep_for(c_sleepQuantum);
             }
             if (!i) {
@@ -339,7 +339,7 @@ namespace Kkm {
     }
 
     void Device::getStatus(StatusResult & result) {
-        LOG_DEBUG_TS(Wcs::c_statusMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_statusMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос информации о ККТ **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_STATUS);
@@ -380,7 +380,7 @@ namespace Kkm {
     }
 
     void Device::getShiftState(ShiftStateResult & result) {
-        LOG_DEBUG_TS(Wcs::c_shiftStateMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_shiftStateMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос состояния смены **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_SHIFT_STATE);
@@ -401,7 +401,7 @@ namespace Kkm {
         // ISSUE: Проверка дублирующейся информации. Не факт, что она должна совпадать.
         if (shiftNumber != result.m_shiftNumber) {
             // throw Failure(Wcs::c_invalidData); // NOLINT(*-exception-baseclass)
-            LOG_WARNING_TS(Wcs::c_shiftMismatch, m_logPrefix, m_serialNumber);
+            LOG_WARNING(Wcs::c_shiftMismatch, m_logPrefix, m_serialNumber);
         }
 
         /** Запрос количества ФД за смену **/
@@ -413,7 +413,7 @@ namespace Kkm {
     }
 
     void Device::getReceiptState(ReceiptStateResult & result) {
-        LOG_DEBUG_TS(Wcs::c_receiptStateMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_receiptStateMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос состояния чека **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_RECEIPT_STATE);
@@ -429,7 +429,7 @@ namespace Kkm {
     }
 
     void Device::getCashStat(CashStatResult & result) {
-        LOG_DEBUG_TS(Wcs::c_cashStatMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_cashStatMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос суммы наличных платежей в чеках прихода (продажи) **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_PAYMENT_SUM);
@@ -486,7 +486,7 @@ namespace Kkm {
     }
 
     void Device::getFndtLastReceipt(FndtLastReceiptResult & result) {
-        LOG_DEBUG_TS(Wcs::c_lastReceiptMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_lastReceiptMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос информации о последнем чеке **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_RECEIPT);
@@ -500,7 +500,7 @@ namespace Kkm {
     }
 
     void Device::getFndtLastDocument(FndtLastDocumentResult & result) {
-        LOG_DEBUG_TS(Wcs::c_lastDocumentMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_lastDocumentMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос информации о последнем фискальном документе **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_DOCUMENT);
@@ -513,7 +513,7 @@ namespace Kkm {
     }
 
     void Device::getFndtFnInfo(FndtFnInfoResult & result) {
-        LOG_DEBUG_TS(Wcs::c_fnInfoMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_fnInfoMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос информации и статуса ФН **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_FN_INFO);
@@ -537,7 +537,7 @@ namespace Kkm {
     }
 
     void Device::getFndtRegistrationInfo(FndtRegistrationInfoResult & result) {
-        LOG_DEBUG_TS(Wcs::c_registrationInfoMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_registrationInfoMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос реквизитов регистрации ККТ **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_REG_INFO);
@@ -577,7 +577,7 @@ namespace Kkm {
     }
 
     void Device::getFndtLastRegistration(FndtLastRegistrationResult & result) {
-        LOG_DEBUG_TS(Wcs::c_lastRegistrationMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_lastRegistrationMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос информации о последней регистрации / перерегистрации **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_LAST_REGISTRATION);
@@ -590,7 +590,7 @@ namespace Kkm {
     }
 
     void Device::getFndtOfdExchangeStatus(FndtOfdExchangeStatusResult & result) {
-        LOG_DEBUG_TS(Wcs::c_ofdExchangeStatusMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_ofdExchangeStatusMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос статуса информационного обмена с ОФД **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_OFD_EXCHANGE_STATUS);
@@ -613,7 +613,7 @@ namespace Kkm {
     }
 
     void Device::getFndtErrors(FndtErrorsResult & result) {
-        LOG_DEBUG_TS(Wcs::c_errorsMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_errorsMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос ошибок обмена с ОФД **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_FN_DATA_TYPE, Atol::LIBFPTR_FNDT_ERRORS);
@@ -638,7 +638,7 @@ namespace Kkm {
     }
 
     void Device::getFwVersions(FwVersionsResult & result) {
-        LOG_DEBUG_TS(Wcs::c_fwVersionMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_fwVersionMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос версии прошивки **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_UNIT_VERSION);
@@ -683,7 +683,7 @@ namespace Kkm {
     }
 
     void Device::printHello() {
-        LOG_DEBUG_TS(Wcs::c_printHelloMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printHelloMethod, m_logPrefix, m_serialNumber);
 
         /** Открытие нефискального документа **/
         if (m_kkm.beginNonfiscalDocument() < 0) {
@@ -695,7 +695,7 @@ namespace Kkm {
         subPrintText(Wcs::c_helloText, true);
         subPrintSeparator(1, 0);
 
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Закрытие нефискального документа без печати подвала **/
         if (m_kkm.endNonfiscalDocument() < 0) {
@@ -704,8 +704,8 @@ namespace Kkm {
     }
 
     void Device::printDemo(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printDemoMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printDemoMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Демо-печать **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_KKT_DEMO);
@@ -716,7 +716,7 @@ namespace Kkm {
     }
 
     void Device::printNonFiscalDocument(const PrintDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printNfDocumentMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printNfDocumentMethod, m_logPrefix, m_serialNumber);
 
         /** Открытие нефискального документа **/
         if (m_kkm.beginNonfiscalDocument() < 0) {
@@ -730,7 +730,7 @@ namespace Kkm {
             subPrintText(block);
         }
 
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Закрытие нефискального документа **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_PRINT_FOOTER, details.m_footer);
@@ -740,8 +740,8 @@ namespace Kkm {
     }
 
     void Device::printInfo(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printInfoMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printInfoMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Печать информации о ККТ **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_KKT_INFO);
@@ -751,8 +751,8 @@ namespace Kkm {
     }
 
     void Device::printFnRegistrations(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printFnRegistrationsMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printFnRegistrationsMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Печать итогов регистрации / перерегистрации **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_FN_REGISTRATIONS);
@@ -762,8 +762,8 @@ namespace Kkm {
     }
 
     void Device::printOfdTest(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printOfdTestMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printOfdTestMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Диагностика соединения с ОФД **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_OFD_TEST);
@@ -773,8 +773,8 @@ namespace Kkm {
     }
 
     void Device::printOfdExchangeStatus(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printOfdExchangeStatusMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printOfdExchangeStatusMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Отчет о состоянии расчетов **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_OFD_EXCHANGE_STATUS);
@@ -785,8 +785,8 @@ namespace Kkm {
     }
 
     void Device::printCloseShiftReports(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printShiftReportsMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printShiftReportsMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Печать нераспечатанных отчетов о закрытии смены **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_CLOSE_SHIFT_REPORTS);
@@ -796,8 +796,8 @@ namespace Kkm {
     }
 
     void Device::printLastDocument(Result & result) {
-        LOG_DEBUG_TS(Wcs::c_printLastDocumentMethod, m_logPrefix, m_serialNumber);
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_printLastDocumentMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Копия последнего документа **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_LAST_DOCUMENT);
@@ -807,7 +807,7 @@ namespace Kkm {
     }
 
     void Device::subSetOperator(const OperatorDetails & details) {
-        LOG_DEBUG_TS(Wcs::c_subSetOperator, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subSetOperator, m_logPrefix, m_serialNumber);
 
         /** Регистрация оператора **/
         m_kkm.setParam(1021, details.m_operatorName);
@@ -820,11 +820,11 @@ namespace Kkm {
     }
 
     void Device::registerCashIn(const CashDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_cashInMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_cashInMethod, m_logPrefix, m_serialNumber);
 
         subSetOperator(details);
 
-        LOG_DEBUG_TS(Wcs::c_subRegisterCashInAndPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subRegisterCashInAndPrint, m_logPrefix, m_serialNumber);
 
         /** Внесение **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_SUM, details.m_cashSum);
@@ -835,11 +835,11 @@ namespace Kkm {
     }
 
     void Device::registerCashOut(const CashDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_cashOutMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_cashOutMethod, m_logPrefix, m_serialNumber);
 
         subSetOperator(details);
 
-        LOG_DEBUG_TS(Wcs::c_subRegisterCashOutAndPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subRegisterCashOutAndPrint, m_logPrefix, m_serialNumber);
 
         /** Выплата **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_SUM, details.m_cashSum);
@@ -852,7 +852,7 @@ namespace Kkm {
     void Device::subSetCustomer(const ReceiptDetails & details) {
         const bool legacyFfd { ffdVersion() != FfdVersion::V_1_2 };
 
-        LOG_DEBUG_TS(Wcs::c_subSetCustomer, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subSetCustomer, m_logPrefix, m_serialNumber);
 
         if (legacyFfd) {
             /** Регистрация информации о покупателе / клиенте для ФФД < 1.2 **/
@@ -922,7 +922,7 @@ namespace Kkm {
     }
 
     void Device::subSetSeller(const ReceiptDetails & details) {
-        LOG_DEBUG_TS(Wcs::c_subSetSeller, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subSetSeller, m_logPrefix, m_serialNumber);
 
         /** Регистрация информации о продавце / поставщике **/
         if (!details.m_sellerEmail.empty()) {
@@ -984,7 +984,7 @@ namespace Kkm {
             subPrintText(details.m_footerText, TextPosition::Post);
         }
 
-        LOG_DEBUG_TS(Wcs::c_subRegisterItems, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subRegisterItems, m_logPrefix, m_serialNumber);
 
         /** Регистрация позиций **/
         for (const auto & item : details.m_items) {
@@ -998,7 +998,7 @@ namespace Kkm {
             }
         }
 
-        LOG_DEBUG_TS(Wcs::c_subRegisterPayment, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subRegisterPayment, m_logPrefix, m_serialNumber);
 
         /** Оплата чека **/
         if (details.m_paymentSum > 0) {
@@ -1032,7 +1032,7 @@ namespace Kkm {
 #endif
         }
 
-        LOG_DEBUG_TS(Wcs::c_subRegisterReceiptAndPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subRegisterReceiptAndPrint, m_logPrefix, m_serialNumber);
 
         /** Закрытие чека **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_PAYMENT_TYPE, Meta::toUnderlying(details.m_paymentType));
@@ -1045,12 +1045,12 @@ namespace Kkm {
     }
 
     void Device::registerSell(const ReceiptDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_sellMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_sellMethod, m_logPrefix, m_serialNumber);
         subRegisterReceipt(ReceiptType::Sell, details, result);
     }
 
     void Device::registerSellReturn(const ReceiptDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_sellReturnMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_sellReturnMethod, m_logPrefix, m_serialNumber);
         subRegisterReceipt(ReceiptType::SellReturn, details, result);
     }
 
@@ -1063,7 +1063,7 @@ namespace Kkm {
         const double cashSum { m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_SUM) };
         if (cashSum > 0) {
             subSetOperator(details);
-            LOG_DEBUG_TS(Wcs::c_subCashOut, m_logPrefix, m_serialNumber);
+            LOG_DEBUG(Wcs::c_subCashOut, m_logPrefix, m_serialNumber);
             /** Выплата **/
             m_kkm.setParam(Atol::LIBFPTR_PARAM_SUM, cashSum);
             m_kkm.setParam(Atol::LIBFPTR_PARAM_DOCUMENT_ELECTRONICALLY, details.m_electronically);
@@ -1071,7 +1071,7 @@ namespace Kkm {
                 return fail(result);
             }
         } else {
-            LOG_DEBUG_TS(Wcs::c_subCashOutNoNeed, m_logPrefix, m_serialNumber);
+            LOG_DEBUG(Wcs::c_subCashOutNoNeed, m_logPrefix, m_serialNumber);
         }
     }
 
@@ -1082,11 +1082,11 @@ namespace Kkm {
             return fail(result);
         }
         if (static_cast<ShiftState>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_STATE)) == ShiftState::Closed) {
-            LOG_DEBUG_TS(Wcs::c_subCloseShiftNoNeed, m_logPrefix, m_serialNumber);
+            LOG_DEBUG(Wcs::c_subCloseShiftNoNeed, m_logPrefix, m_serialNumber);
         } else {
             subSetOperator(details);
-            LOG_DEBUG_TS(Wcs::c_subCloseShift, m_logPrefix, m_serialNumber);
-            // LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+            LOG_DEBUG(Wcs::c_subCloseShift, m_logPrefix, m_serialNumber);
+            // LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
             /** Закрытие смены **/
             m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_CLOSE_SHIFT);
             if (m_kkm.report() < 0) {
@@ -1097,7 +1097,7 @@ namespace Kkm {
     }
 
     void Device::closeShift(const CloseDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_closeShiftMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_closeShiftMethod, m_logPrefix, m_serialNumber);
 
         if (details.m_cashOut) {
             subCashOut(details, result);
@@ -1107,7 +1107,7 @@ namespace Kkm {
     }
 
     void Device::reportX(const CloseDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_reportXMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_reportXMethod, m_logPrefix, m_serialNumber);
 
         if (details.m_cashOut) {
             subCashOut(details, result);
@@ -1116,7 +1116,7 @@ namespace Kkm {
             subCloseShift(details, result);
         }
 
-        LOG_DEBUG_TS(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_subPrint, m_logPrefix, m_serialNumber);
 
         /** Печать X-отчета **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_X);
@@ -1126,7 +1126,7 @@ namespace Kkm {
     }
 
     void Device::resetState(const CloseDetails & details, Result & result) {
-        LOG_DEBUG_TS(Wcs::c_resetStateMethod, m_logPrefix, m_serialNumber);
+        LOG_DEBUG(Wcs::c_resetStateMethod, m_logPrefix, m_serialNumber);
 
         /** Запрос состояния чека **/
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_RECEIPT_STATE);
@@ -1134,9 +1134,9 @@ namespace Kkm {
             return fail(result);
         }
         if (static_cast<ReceiptType>(m_kkm.getParamInt(Atol::LIBFPTR_PARAM_RECEIPT_TYPE)) == ReceiptType::Closed) {
-            LOG_DEBUG_TS(Wcs::c_subCancelReceiptNoNeed, m_logPrefix, m_serialNumber);
+            LOG_DEBUG(Wcs::c_subCancelReceiptNoNeed, m_logPrefix, m_serialNumber);
         } else {
-            LOG_DEBUG_TS(Wcs::c_subCancelReceipt, m_logPrefix, m_serialNumber);
+            LOG_DEBUG(Wcs::c_subCancelReceipt, m_logPrefix, m_serialNumber);
             /** Отмена чека **/
             if (m_kkm.cancelReceipt() < 0) {
                 return fail(result);
