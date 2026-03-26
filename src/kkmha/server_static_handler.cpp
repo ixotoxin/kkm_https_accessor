@@ -79,7 +79,6 @@ namespace Server::Static {
             }
         }
 
-        // Cache::maintain(); // CLEANUP
         Cache::Key cacheKey { "static::::" };
         cacheKey.append(Text::convert(path.wstring()));
 

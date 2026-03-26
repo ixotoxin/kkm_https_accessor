@@ -43,7 +43,7 @@ namespace Service {
                 setStatus(SERVICE_START_PENDING);
                 if (Server::start()) {
                     setStatus(SERVICE_RUNNING);
-                    return; /** Не удаляй, смотри дальше. **/
+                    return;
                 }
             } catch (const Failure & e) {
                 LOG_ERROR(e);
@@ -63,7 +63,7 @@ namespace Service {
                 setStatus(SERVICE_STOP_PENDING);
                 if (Server::stop()) {
                     setStatus(SERVICE_STOPPED);
-                    return; /** Не удаляй, смотри дальше. **/
+                    return;
                 }
             } catch (const Failure & e) {
                 LOG_ERROR(e);

@@ -400,7 +400,6 @@ namespace Kkm {
         const auto shiftNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_NUMBER);
         // ISSUE: Проверка дублирующейся информации. Не факт, что она должна совпадать.
         if (shiftNumber != result.m_shiftNumber) {
-            // throw Failure(Wcs::c_invalidData); // NOLINT(*-exception-baseclass)
             LOG_WARNING(Wcs::c_shiftMismatch, m_logPrefix, m_serialNumber);
         }
 
@@ -1151,7 +1150,7 @@ namespace Kkm {
         }
     }
 
-    unsigned long Device::versionStrToInt(std::string version) noexcept {
+    unsigned long Device::versionStrToInt(const std::string & version) noexcept {
         unsigned long result {};
         if (version.length() < 7 || version.length() > 15) {
             return FALLBACK_VERSION;

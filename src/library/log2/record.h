@@ -17,7 +17,10 @@ namespace Log {
         bool m_toFile { false };
         bool m_toEventLog { false };
 
-        Record() noexcept { m_message.reserve(s_lineSize); }
+        Record() noexcept {
+            m_message.reserve(s_lineSize);
+        }
+
         Record(const Record &) = delete;
         Record(Record &&) = delete;
         virtual ~Record() = default;

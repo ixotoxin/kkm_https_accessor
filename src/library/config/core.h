@@ -32,7 +32,7 @@ namespace Config {
             Nln::Json json(Nln::Json::parse(std::ifstream(file)));
             (setters(json), ...);
             std::filesystem::current_path(Main::s_directory);
-            return; /** Не удаляй, смотри дальше. **/
+            return;
         } catch (const Failure & e) {
             LOG_WARNING(e);
         } catch (const std::exception & e) {

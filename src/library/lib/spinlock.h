@@ -14,10 +14,10 @@ namespace MtHelp {
         std::atomic_flag m_flag {};
 
     public:
-        SpinLock() = default;
+        SpinLock() noexcept = default;
         SpinLock(const SpinLock &) = delete;
         SpinLock(SpinLock &&) = delete;
-        ~SpinLock() noexcept = default;
+        ~SpinLock() = default;
 
         SpinLock & operator=(const SpinLock &) = delete;
         SpinLock & operator=(SpinLock &&) = delete;
@@ -52,8 +52,15 @@ namespace MtHelp {
         ScopedLock() = delete;
         ScopedLock(const ScopedLock &) = delete;
         ScopedLock(ScopedLock &&) = delete;
-        explicit ScopedLock(SpinLock<P> & spinLock) noexcept : m_spinLock { spinLock } { m_spinLock.lock(); }
-        ~ScopedLock() noexcept { m_spinLock.unlock(); }
+
+        explicit ScopedLock(SpinLock<P> & spinLock) noexcept
+        : m_spinLock { spinLock } {
+            m_spinLock.lock();
+        }
+
+        ~ScopedLock() {
+            m_spinLock.unlock();
+        }
 
         ScopedLock & operator=(const ScopedLock &) = delete;
         ScopedLock & operator=(ScopedLock &&) = delete;

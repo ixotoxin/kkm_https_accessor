@@ -14,8 +14,16 @@ namespace Server {
         Counter() = delete;
         Counter(const Counter &) = delete;
         Counter(Counter &&) = delete;
-        explicit Counter(Type & counter) : s_value { counter } { ++s_value; }
-        ~Counter() { --s_value; assert(s_value >= 0); }
+
+        explicit Counter(Type & counter)
+        : s_value { counter } {
+            ++s_value;
+        }
+
+        ~Counter() {
+            --s_value;
+            assert(s_value >= 0);
+        }
 
         Counter & operator=(const Counter &) = delete;
         Counter & operator=(Counter &&) = delete;

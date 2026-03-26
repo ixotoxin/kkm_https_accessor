@@ -2,7 +2,6 @@
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "text_traits.h"
-// #include <cctype> // CLEANUP
 #include <cwctype>
 
 [[nodiscard, maybe_unused]]
@@ -24,11 +23,13 @@ wchar_t Meta::Wcs::toLower(const wchar_t c) {
 }
 
 template<>
+[[nodiscard, maybe_unused]]
 signed long Meta::Wcs::toNumeric<signed long>(const Char *str, Char **end) {
     return std::wcstol(str, end, 10);
 }
 
 template<>
+[[nodiscard, maybe_unused]]
 unsigned long Meta::Wcs::toNumeric<unsigned long>(const Char *str, Char **end) {
     return std::wcstoul(str, end, 10);
 }

@@ -25,15 +25,18 @@ namespace Log {
         RecordAccessor & operator=(const RecordAccessor &) = delete;
         RecordAccessor & operator=(RecordAccessor &&) = delete;
 
-        /*[[nodiscard, maybe_unused]] Record * operator->() const noexcept {
-            return std::addressof(m_record);
-        }*/
+        // [[nodiscard, maybe_unused]]
+        // Record * operator->() const noexcept {
+        //     return std::addressof(m_record);
+        // }
 
-        [[nodiscard, maybe_unused]] Record & operator*() const noexcept {
+        [[nodiscard, maybe_unused]]
+        Record & operator*() const noexcept {
             return m_record;
         }
 
-        [[nodiscard, maybe_unused]] explicit operator bool() const noexcept {
+        [[nodiscard, maybe_unused]]
+        explicit operator bool() const noexcept {
             return true;
         }
 

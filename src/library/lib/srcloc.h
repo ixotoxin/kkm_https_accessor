@@ -58,8 +58,15 @@ namespace SrcLoc {
             return result;
         }
 
-        [[nodiscard, maybe_unused]] constexpr size_t line() const noexcept { return m_line; }
-        [[nodiscard, maybe_unused]] constexpr const char * file_name() const noexcept { return &m_file[0]; }
+        [[nodiscard, maybe_unused]]
+        constexpr size_t line() const noexcept {
+            return m_line;
+        }
+
+        [[nodiscard, maybe_unused]]
+        constexpr const char * file_name() const noexcept {
+            return &m_file[0];
+        }
     };
 #else
     using Point = std::source_location;
