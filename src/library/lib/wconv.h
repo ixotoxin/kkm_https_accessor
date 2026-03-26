@@ -6,11 +6,14 @@
 #include "winstrapi.h"
 #include "strings.h"
 #include <cmake/options.h>
+#include <cassert>
 #include <memory>
 #include <string>
 
 namespace Text {
-    constexpr int c_convertBufferReserve { 1 };
+    constexpr std::string::size_type c_minimalCapacity {
+        std::max(sizeof(std::string), sizeof(std::wstring) / sizeof(wchar_t)) + 2
+    };
 
     [[maybe_unused]]
     inline bool convert(std::wstring & result, const std::string_view text) noexcept try {
@@ -18,23 +21,28 @@ namespace Text {
             result.clear();
             return result.empty();
         }
-        auto length = WIN_MB2WC_ESTIMATED(&text[0], static_cast<int>(text.size()));
-        if (length <= 0) {
+        using st = std::wstring::size_type;
+        const st estimatedSize = WIN_MB2WC_ESTIMATED(text.data(), text.size());
+        if (estimatedSize <= 0) {
             return false;
         }
 #if WITH_SBIAC
-        result.resize(length + c_convertBufferReserve);
-        length = WIN_MB2WC(&text[0], static_cast<int>(text.size()), &result[0], static_cast<int>(result.size()));
-        result.resize(length);
-        return length > 0;
+        const st requiredCapacity = std::max(estimatedSize, c_minimalCapacity);
+        if (requiredCapacity > result.capacity()) {
+            result.reserve(requiredCapacity);
+        }
+        result.resize(estimatedSize);
+        const st estimatedSize2 = WIN_MB2WC(text.data(), text.size(), result.data(), result.capacity());
+        assert(estimatedSize == estimatedSize2);
+        return estimatedSize == estimatedSize2;
 #else
-        const int size { length + c_convertBufferReserve };
-        const auto buffer = std::make_unique_for_overwrite<wchar_t[]>(static_cast<std::size_t>(size));
-        length = WIN_MB2WC(&text[0], static_cast<int>(text.size()), buffer.get(), size);
-        if (length <= 0) {
+        const auto buffer = std::make_unique_for_overwrite<wchar_t[]>(estimatedSize);
+        const st size = WIN_MB2WC(text.data(), text.size(), buffer.get(), estimatedSize);
+        assert(estimatedSize == size);
+        if (size <= 0) {
             return false;
         }
-        result.assign(buffer.get(), length);
+        result.assign(buffer.get(), size);
         return !result.empty();
 #endif
     } catch (...) {
@@ -47,23 +55,28 @@ namespace Text {
             result.clear();
             return result.empty();
         }
-        auto length = WIN_WC2MB_ESTIMATED(&text[0], static_cast<int>(text.size()));
-        if (length <= 0) {
+        using st = std::wstring::size_type;
+        const st estimatedSize = WIN_WC2MB_ESTIMATED(text.data(), text.size());
+        if (estimatedSize <= 0) {
             return false;
         }
 #if WITH_SBIAC
-        result.resize(length + c_convertBufferReserve);
-        length = WIN_WC2MB(&text[0], static_cast<int>(text.size()), &result[0], static_cast<int>(result.size()));
-        result.resize(length);
-        return length > 0;
+        const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
+        if (requiredCapacity > result.capacity()) {
+            result.reserve(requiredCapacity);
+        }
+        result.resize(estimatedSize);
+        const st estimatedSize2 = WIN_WC2MB(text.data(), text.size(), result.data(), result.capacity());
+        assert(estimatedSize == estimatedSize2);
+        return estimatedSize == estimatedSize2;
 #else
-        const int size { length + c_convertBufferReserve };
-        const auto buffer = std::make_unique_for_overwrite<char[]>(static_cast<std::size_t>(size));
-        length = WIN_WC2MB(&text[0], static_cast<int>(text.size()), buffer.get(), size);
-        if (length <= 0) {
+        const auto buffer = std::make_unique_for_overwrite<char[]>(estimatedSize);
+        const st size = WIN_WC2MB(text.data(), text.size(), buffer.get(), estimatedSize);
+        assert(estimatedSize == size);
+        if (size <= 0) {
             return false;
         }
-        result.assign(buffer.get(), length);
+        result.assign(buffer.get(), size);
         return !result.empty();
 #endif
     } catch (...) {
@@ -101,49 +114,45 @@ namespace Text {
         if (text.empty()) {
             return false;
         }
-        auto size = WIN_MB2WC_ESTIMATED(text.data(), static_cast<int>(text.size()));
-        if (size <= 0) {
+        using st = std::wstring::size_type;
+        const st additionalSize = WIN_MB2WC_ESTIMATED(text.data(), text.size());
+        if (additionalSize <= 0) {
             return false;
         }
-        const auto initialSize = result.size();
-        if (initialSize + size >= result.capacity()) {
-            result.reserve(initialSize + size + c_convertBufferReserve);
+        const st initialSize = result.size();
+        const st estimatedSize = initialSize + additionalSize;
+        const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
+        if (requiredCapacity > result.capacity()) {
+            result.reserve(requiredCapacity);
         }
-        result.resize(result.capacity(), L'\0');
-        size = WIN_MB2WC(
-            text.data(),
-            static_cast<int>(text.size()),
-            result.data() + initialSize,
-            static_cast<int>(result.capacity() - initialSize - 1)
-        );
-        result.resize(initialSize + size);
-        return true;
+        result.resize(estimatedSize);
+        const st additionalSize2 = WIN_MB2WC(text.data(), text.size(), result.data() + initialSize, requiredCapacity);
+        assert(additionalSize == additionalSize2);
+        return additionalSize == additionalSize2;
     } catch (...) {
         return false;
     }
 
     [[maybe_unused]]
     inline bool appendConverted(std::string & result, const std::wstring_view text) noexcept try {
+        using st = std::string::size_type;
         if (text.empty()) {
             return false;
         }
-        auto size = WIN_WC2MB_ESTIMATED(text.data(), static_cast<int>(text.size()));
-        if (size <= 0) {
+        const st additionalSize = WIN_WC2MB_ESTIMATED(text.data(), text.size());
+        if (additionalSize <= 0) {
             return false;
         }
-        const auto initialSize = result.size();
-        if (initialSize + size >= result.capacity()) {
-            result.reserve(initialSize + size + c_convertBufferReserve);
+        const st initialSize = result.size();
+        const st estimatedSize = initialSize + additionalSize;
+        const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
+        if (requiredCapacity > result.capacity()) {
+            result.reserve(requiredCapacity);
         }
-        result.resize(result.capacity(), '\0');
-        size = WIN_WC2MB(
-            text.data(),
-            static_cast<int>(text.size()),
-            result.data() + initialSize,
-            static_cast<int>(result.capacity() - initialSize - 1)
-        );
-        result.resize(initialSize + size);
-        return true;
+        result.resize(estimatedSize);
+        const st additionalSize2 = WIN_WC2MB(text.data(), text.size(), result.data() + initialSize, requiredCapacity);
+        assert(additionalSize == additionalSize2);
+        return additionalSize == additionalSize2;
     } catch (...) {
         return false;
     }

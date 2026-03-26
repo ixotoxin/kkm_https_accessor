@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -58,7 +58,14 @@ namespace Meta {
           && requires (T t, typename T::value_type u) { t.emplace_back(u); t.push_back(u); };
 
     template<typename T, typename U>
-    concept Filter = std::is_invocable_r_v<U, T, std::conditional_t<std::is_scalar_v<U>, const U, const U &>>;
+    concept Filter
+        = std::is_invocable_r_v<
+            U, T, std::conditional_t<
+                std::is_scalar_v<U>,
+                std::conditional_t<std::is_volatile_v<U>, const volatile U, const U>,
+                std::conditional_t<std::is_volatile_v<U>, const volatile U &, const U &>
+            >
+        >;
 
     template<typename T, typename U, typename V>
     concept EnumCastStrictMap
@@ -83,10 +90,10 @@ namespace Meta {
                 typename T::mapped_type;
                 typename T::iterator;
              }
-          && std::is_same_v<U, typename T::mapped_type>
+          && std::is_same_v<std::remove_cvref_t<U>, typename T::mapped_type>
           && requires (T r, typename T::key_type k) {
                 { r.find(k) } -> std::same_as<typename T::iterator>;
-                { r.find(k)->second } -> std::same_as<U &>;
+                { r.find(k)->second } -> std::same_as<std::remove_cvref_t<U> &>;
              };
 
     template<typename T, typename U>
@@ -96,10 +103,10 @@ namespace Meta {
                 typename T::value_type;
                 typename T::iterator;
              }
-          && std::is_same_v<U, typename T::value_type>
+          && std::is_same_v<std::remove_cvref_t<U>, typename T::value_type>
           && requires (T r, U k) {
                 { std::ranges::find(r, k) } -> std::same_as<typename T::iterator>;
-                { *std::ranges::find(r, k) } -> std::same_as<U &>;
+                { *std::ranges::find(r, k) } -> std::same_as<std::remove_cvref_t<U> &>;
              };
 
     template<typename T>

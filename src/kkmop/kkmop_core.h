@@ -18,9 +18,9 @@
 #define KKM_LOG(S, F, V) \
     do { \
         if ((S).m_success) { \
-            LOG_INFO_CLI(F, V); \
+            LOG_INFO(F, V); \
         } else { \
-            LOG_ERROR_CLI(F, Wcs::c_error); \
+            LOG_ERROR(F, Wcs::c_error); \
         } \
     } while (false)
 
@@ -30,8 +30,8 @@ namespace KkmOperator {
     [[nodiscard]]
     inline int learn(const int connParamCount, wchar_t ** connParamItems) {
         assert(connParamCount > 0);
-        // TODO: Убедиться, что строка ниже не будет оптимизирована
-        [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+        Log::Console::ScopeSolo solo {};
+        Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
 
         for (int i = 0, n = 1; i < connParamCount; ++i, ++n) {
             try {
@@ -54,12 +54,12 @@ namespace KkmOperator {
     requires std::derived_from<std::remove_cvref_t<K>, Device>
     [[maybe_unused]]
     void callMethod(K && kkm, UndetailedMethod<R> method) {
-        // TODO: Убедиться, что строка ниже не будет оптимизирована
-        [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+        Log::Console::ScopeSolo solo {};
+        Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
         R result {};
         (kkm.*method)(result);
         if (result.m_success) {
-            LOG_INFO_CLI(L"Done");
+            LOG_INFO(L"Done");
         } else {
             throw Basic::Failure(result.m_message); // NOLINT(*-exception-baseclass)
         }
@@ -69,12 +69,12 @@ namespace KkmOperator {
     requires std::derived_from<std::remove_cvref_t<K>, Device>
     [[maybe_unused]]
     void callMethod(K && kkm, DetailedMethod<R, D> method, D && details) {
-        // TODO: Убедиться, что строка ниже не будет оптимизирована
-        [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+        Log::Console::ScopeSolo solo {};
+        Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
         R result {};
         (kkm.*method)(details, result);
         if (result.m_success) {
-            LOG_INFO_CLI(L"Done");
+            LOG_INFO(L"Done");
         } else {
             throw Basic::Failure(result.m_message); // NOLINT(*-exception-baseclass)
         }
@@ -109,8 +109,9 @@ namespace KkmOperator {
             kkm.getFwVersions(fwVers);
 
             {
-                // TODO: Убедиться, что строка ниже не будет оптимизирована
-                [[maybe_unused]] Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+                Log::Console::ScopeSolo solo {};
+                Log::Console::ScopeLevelDown scopeLevel { Log::Level::Info };
+
                 // KKM_LOG(status, Wcs::c_fmtModel, wcsSafeGet(Mbs::c_models, status.m_model));
                 KKM_LOG(status, Wcs::c_fmtModel, status.m_modelName);
                 KKM_LOG(status, Wcs::c_fmtSerialNumber, status.m_serialNumber);
@@ -143,15 +144,15 @@ namespace KkmOperator {
                 KKM_LOG(cash, Wcs::c_fmtCashSum, cash.m_cashSum);
 
                 if (exchange.m_success) {
-                    LOG_INFO_CLI(Wcs::c_ofdExchangeStatus);
-                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit0, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0001));
-                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit1, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0010));
-                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit2, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0100));
-                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit3, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'1000));
-                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit4, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0001'0000));
-                    LOG_INFO_CLI(Wcs::c_fmtOfdExSBit5, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0010'0000));
+                    LOG_INFO(Wcs::c_ofdExchangeStatus);
+                    LOG_INFO(Wcs::c_fmtOfdExSBit0, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0001));
+                    LOG_INFO(Wcs::c_fmtOfdExSBit1, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0010));
+                    LOG_INFO(Wcs::c_fmtOfdExSBit2, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'0100));
+                    LOG_INFO(Wcs::c_fmtOfdExSBit3, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0000'1000));
+                    LOG_INFO(Wcs::c_fmtOfdExSBit4, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0001'0000));
+                    LOG_INFO(Wcs::c_fmtOfdExSBit5, Text::Wcs::daNet(exchange.m_exchangeStatus & 0b0010'0000));
                 } else {
-                    LOG_ERROR_CLI(Wcs::c_ofdExchangeError);
+                    LOG_ERROR(Wcs::c_ofdExchangeError);
                 }
                 KKM_LOG(exchange, Wcs::c_fmtUnsentCount, exchange.m_unsentCount);
                 KKM_LOG(exchange, Wcs::c_fmtFirstUnsentNumber, exchange.m_firstUnsentNumber);

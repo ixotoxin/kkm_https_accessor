@@ -135,12 +135,13 @@ namespace Service {
             const ::DWORD value,
             const std::wstring_view message
         ) {
+            Log::Console::ScopeSolo solo {};
             const auto initialTicks = ::GetTickCount();
             auto ticks = initialTicks;
             auto checkPoint = status.dwCheckPoint;
 
             do {
-                LOG_DEBUG_CLI(message);
+                LOG_DEBUG(message);
                 ::Sleep(c_sleepQuantum);
                 queryStatus(service, status);
                 const auto currTicks = ::GetTickCount();
@@ -172,6 +173,7 @@ namespace Service {
         }
 
         void start() {
+            Log::Console::ScopeSolo solo {};
             ::SC_HANDLE manager { nullptr };
             ::SC_HANDLE service { nullptr };
 
@@ -203,7 +205,7 @@ namespace Service {
                 throw Failure(Wcs::c_stoppingTimeout); // NOLINT(*-exception-baseclass)
             }
             if (state != SERVICE_STOPPED) {
-                LOG_WARNING_CLI(Wcs::c_alreadyStarted);
+                LOG_WARNING(Wcs::c_alreadyStarted);
                 return;
             }
 
@@ -216,17 +218,18 @@ namespace Service {
                 throw Failure(Wcs::c_startingFailed); // NOLINT(*-exception-baseclass)
             }
 
-            LOG_INFO_CLI(Wcs::c_started);
+            LOG_INFO(Wcs::c_started);
         }
 
         void stop(::SC_HANDLE & service, const bool logAlreadyStopped = true) {
+            Log::Console::ScopeSolo solo {};
             ::SERVICE_STATUS_PROCESS status {};
 
             queryStatus(service, status);
 
             if (status.dwCurrentState == SERVICE_STOPPED) {
                 if (logAlreadyStopped) {
-                    LOG_WARNING_CLI(Wcs::c_alreadyStopped);
+                    LOG_WARNING(Wcs::c_alreadyStopped);
                 }
                 return;
             }
@@ -245,7 +248,7 @@ namespace Service {
                 throw Failure(Wcs::c_stoppingTimeout); // NOLINT(*-exception-baseclass)
             }
 
-            LOG_INFO_CLI(Wcs::c_stopped);
+            LOG_INFO(Wcs::c_stopped);
         }
 
         void stop() {
@@ -279,6 +282,7 @@ namespace Service {
         }
 
         void install(const std::wstring & command) {
+            Log::Console::ScopeSolo solo {};
             ::SC_HANDLE manager { nullptr };
             ::SC_HANDLE service { nullptr };
 
@@ -320,10 +324,11 @@ namespace Service {
                 throw Failure(System::explainError(L"CreateServiceW(...)")); // NOLINT(*-exception-baseclass)
             }
 
-            LOG_INFO_CLI(Wcs::c_installed);
+            LOG_INFO(Wcs::c_installed);
         }
 
         void uninstall() {
+            Log::Console::ScopeSolo solo {};
             ::SC_HANDLE manager { nullptr };
             ::SC_HANDLE service { nullptr };
 
@@ -356,7 +361,7 @@ namespace Service {
                 throw Failure(System::explainError(L"DeleteService(...)")); // NOLINT(*-exception-baseclass)
             }
 
-            LOG_INFO_CLI(Wcs::c_uninstalled);
+            LOG_INFO(Wcs::c_uninstalled);
         }
     }
 }

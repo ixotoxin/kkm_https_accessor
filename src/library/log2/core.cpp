@@ -3,26 +3,28 @@
 
 #include "core.h"
 #include "strings.h"
-#include "rec_mt.h"
-#include "rec_st.h"
-// #include <cassert>
-#include <functional>
+#include <atomic>
 #include <barrier>
 
 namespace Log {
-    using Recorder = std::function<std::shared_ptr<RecordAccessor>()>;
+    static Record s_record {};
 
-    static Record s_stRecord {};
+    RecordVariant syncRecordAccessor() {
+        return RecordVariant { std::in_place_type<RecordAccessor>, s_record };
+    }
 
-    static Recorder s_recorder { [] () -> std::shared_ptr<RecordAccessor> {
-        return std::make_shared<RecordAccessorSt>(s_stRecord);
-    } };
+    using RecordAccessorFunc = RecordVariant (*)();
+    static std::atomic s_recordAccessor { syncRecordAccessor };
 
 #ifndef SINGLE_THREAD
     static std::shared_ptr<LoggerQueue> s_queue { nullptr };
     static std::thread s_bgWriter {};
     static std::barrier s_barrier { 2 };
     static bool s_atExitDisableAsync { false };
+
+    RecordVariant asyncRecordAccessor() {
+        return RecordVariant { std::in_place_type<LoggerQueue::ProducerAccessor>, s_queue->producerSlot() };
+    }
 
     [[maybe_unused]]
     void enableAsync() noexcept {
@@ -46,9 +48,7 @@ namespace Log {
             }
             s_barrier.arrive_and_wait();
         } };
-        s_recorder = [] () -> std::shared_ptr<RecordAccessor> {
-            return std::make_shared<RecordAccessorMt>(*s_queue);
-        };
+        s_recordAccessor = asyncRecordAccessor;
         if (!s_atExitDisableAsync) {
             s_atExitDisableAsync = true;
             std::atexit([] {
@@ -63,9 +63,7 @@ namespace Log {
         if (!s_queue) {
             return;
         }
-        s_recorder = [] () -> std::shared_ptr<RecordAccessor> {
-            return std::make_shared<RecordAccessorSt>(s_stRecord);
-        };
+        s_recordAccessor = syncRecordAccessor;
         if (s_queue) {
             s_queue->stop();
             s_barrier.arrive_and_wait();
@@ -79,8 +77,8 @@ namespace Log {
 #endif
 
     [[nodiscard, maybe_unused]]
-    std::shared_ptr<RecordAccessor> getFreeRecord() {
-        return s_recorder();
+    RecordVariant getFreeRecord() {
+        return s_recordAccessor.load(std::memory_order_relaxed)();
     }
 
     [[nodiscard, maybe_unused]]
@@ -104,7 +102,7 @@ namespace Config {
 
     [[maybe_unused]]
     void reinitLogger() {
-        ::Log::s_stRecord.m_message.reserve(::Log::s_lineSize);
+        ::Log::s_record.m_message.reserve(::Log::s_lineSize);
         ::Log::reinitWriters();
     }
 }

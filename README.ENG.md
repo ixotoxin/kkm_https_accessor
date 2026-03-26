@@ -64,14 +64,13 @@ CMake options:
 | `BUILD_TESTS`     | Build with unit-tests.                                  |
 | `WITH_SHORTCUTS`  | Build with command shortcuts enabled.                   |
 | `WITH_RELSL`      | Use relative paths for source files in the application. |
+| `WITH_SBIAC`      | Allow invasive access to the std::string buffer.        |
 | `WITH_CRTD`       | Enable CRT Debug for memory profiling.                  |
 | `WITH_SNTZ`       | Enable AddressSanitizer and UndefinedBehaviorSanitizer. |
 | `WITH_LEAKS`      | Artificial memory leak generation.                      |
 | `WITH_10106`      | Restrict functionality to driver version 10.10.6        |
 | `WITH_10107`      | Restrict functionality to driver version 10.10.7        |
 | `WITH_10108`      | Restrict functionality to driver version 10.10.8        |
-
-<!-- | `WITH_SBIAC` | Allow invasive access to the std::string buffer (heresy). | -->
 
 When building the project with the option `-D BUILD_STATIC=ON`, the dependencies must be installed using the
 `install_static_deps.cmd` script. Otherwise, you need to run `install_dynamic_deps.cmd`. After building with one of the

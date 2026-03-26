@@ -6,11 +6,9 @@
 #include "types.h"
 #include "variables.h"
 #include "strings.h"
-#include "state.h"
-#include "record.h"
+#include "accessor.h"
 #include <lib/wconv.h>
 #include <lib/text.h>
-#include <memory>
 #include <string>
 #include <format>
 
@@ -18,30 +16,6 @@
 #define LOG_INFO(x, ...) Log::write(Log::Level::Info, x __VA_OPT__(,) __VA_ARGS__)
 #define LOG_WARNING(x, ...) Log::write(Log::Level::Warning, x __VA_OPT__(,) __VA_ARGS__)
 #define LOG_ERROR(x, ...) Log::write(Log::Level::Error, x __VA_OPT__(,) __VA_ARGS__)
-
-#define LOG_DEBUG_CLI(x, ...) \
-    do { \
-        Log::Console::ScopeSolo solo {}; \
-        Log::write(Log::Level::Debug, x __VA_OPT__(,) __VA_ARGS__); \
-    } while (false)
-
-#define LOG_INFO_CLI(x, ...) \
-    do { \
-        Log::Console::ScopeSolo solo {}; \
-        Log::write(Log::Level::Info, x __VA_OPT__(,) __VA_ARGS__); \
-    } while (false)
-
-#define LOG_WARNING_CLI(x, ...) \
-    do { \
-        Log::Console::ScopeSolo solo {}; \
-        Log::write(Log::Level::Warning, x __VA_OPT__(,) __VA_ARGS__); \
-    } while (false)
-
-#define LOG_ERROR_CLI(x, ...) \
-    do { \
-        Log::Console::ScopeSolo solo {}; \
-        Log::write(Log::Level::Error, x __VA_OPT__(,) __VA_ARGS__); \
-    } while (false)
 
 namespace Log {
     namespace Wcs {
@@ -57,7 +31,7 @@ namespace Log {
     [[maybe_unused]] void disableAsync() noexcept;
 #endif
 
-    [[nodiscard, maybe_unused]] std::shared_ptr<RecordAccessor> getFreeRecord();
+    [[nodiscard, maybe_unused]] RecordVariant getFreeRecord();
 
     [[maybe_unused]]
     inline bool writePrefix(std::wstring & result, const Level level) noexcept try {
@@ -86,33 +60,32 @@ namespace Log {
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
-            if (const auto recordPtr = getFreeRecord(); recordPtr) {
-                if (auto & record = *recordPtr; record) {
-                    auto & buffer = record->m_message;
-                    if (writePrefix(buffer, level)) {
-                        if constexpr (Meta::isWide<T>) {
-                            if constexpr (sizeof...(Args) > 0) {
-                                std::vformat_to(std::back_inserter(buffer), message, std::make_wformat_args(args...));
-                            } else {
-                                buffer.append(message);
-                            }
+            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+                auto & record = std::visit(RecordRef, recordVariant);
+                auto & buffer = record.m_message;
+                if (writePrefix(buffer, level)) {
+                    if constexpr (Meta::isWide<T>) {
+                        if constexpr (sizeof...(Args) > 0) {
+                            std::vformat_to(std::back_inserter(buffer), message, std::make_wformat_args(args...));
                         } else {
-                            if constexpr (sizeof...(Args) > 0) {
-                                std::string mbMessage {};
-                                mbMessage.reserve(s_lineSize);
-                                std::vformat_to(std::back_inserter(mbMessage), message, std::make_format_args(args...));
-                                Text::appendConverted(buffer, mbMessage);
-                            } else {
-                                Text::appendConverted(buffer, message);
-                            }
+                            buffer.append(message);
                         }
-                        record->m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                        record->m_level = level;
-                        record->m_toConsole = writeToConsole;
-                        record->m_toFile = writeToFile;
-                        record->m_toEventLog = writeToEventLog;
-                        recordPtr->write();
+                    } else {
+                        if constexpr (sizeof...(Args) > 0) {
+                            std::string mbMessage {};
+                            mbMessage.reserve(s_lineSize);
+                            std::vformat_to(std::back_inserter(mbMessage), message, std::make_format_args(args...));
+                            Text::appendConverted(buffer, mbMessage);
+                        } else {
+                            Text::appendConverted(buffer, message);
+                        }
                     }
+                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_level = level;
+                    record.m_toConsole = writeToConsole;
+                    record.m_toFile = writeToFile;
+                    record.m_toEventLog = writeToEventLog;
+                    std::visit(RecordWrite, recordVariant);
                 }
             }
         }
@@ -136,18 +109,17 @@ namespace Log {
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
-            if (const auto recordPtr = getFreeRecord(); recordPtr) {
-                if (auto & record = *recordPtr; record) {
-                    auto & buffer = record->m_message;
-                    if (writePrefix(buffer, level)) {
-                        e.appendExplanation(buffer, s_appendLocation);
-                        record->m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                        record->m_level = level;
-                        record->m_toConsole = writeToConsole;
-                        record->m_toFile = writeToFile;
-                        record->m_toEventLog = writeToEventLog;
-                        recordPtr->write();
-                    }
+            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+                auto & record = std::visit(RecordRef, recordVariant);
+                auto & buffer = record.m_message;
+                if (writePrefix(buffer, level)) {
+                    e.appendExplanation(buffer, s_appendLocation);
+                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_level = level;
+                    record.m_toConsole = writeToConsole;
+                    record.m_toFile = writeToFile;
+                    record.m_toEventLog = writeToEventLog;
+                    std::visit(RecordWrite, recordVariant);
                 }
             }
         }
@@ -159,18 +131,17 @@ namespace Log {
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
-            if (const auto recordPtr = getFreeRecord(); recordPtr) {
-                if (auto & record = *recordPtr; record) {
-                    auto & buffer = record->m_message;
-                    if (writePrefix(buffer, level)) {
-                        Text::appendConverted(buffer, e.what());
-                        record->m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                        record->m_level = level;
-                        record->m_toConsole = writeToConsole;
-                        record->m_toFile = writeToFile;
-                        record->m_toEventLog = writeToEventLog;
-                        recordPtr->write();
-                    }
+            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+                auto & record = std::visit(RecordRef, recordVariant);
+                auto & buffer = record.m_message;
+                if (writePrefix(buffer, level)) {
+                    Text::appendConverted(buffer, e.what());
+                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_level = level;
+                    record.m_toConsole = writeToConsole;
+                    record.m_toFile = writeToFile;
+                    record.m_toEventLog = writeToEventLog;
+                    std::visit(RecordWrite, recordVariant);
                 }
             }
         }
@@ -182,18 +153,17 @@ namespace Log {
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
-            if (const auto recordPtr = getFreeRecord(); recordPtr) {
-                if (auto & record = *recordPtr; record) {
-                    auto & buffer = record->m_message;
-                    if (writePrefix(buffer, level)) {
-                        Text::appendConverted(buffer, e.message());
-                        record->m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                        record->m_level = level;
-                        record->m_toConsole = writeToConsole;
-                        record->m_toFile = writeToFile;
-                        record->m_toEventLog = writeToEventLog;
-                        recordPtr->write();
-                    }
+            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+                auto & record = std::visit(RecordRef, recordVariant);
+                auto & buffer = record.m_message;
+                if (writePrefix(buffer, level)) {
+                    Text::appendConverted(buffer, e.message());
+                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_level = level;
+                    record.m_toConsole = writeToConsole;
+                    record.m_toFile = writeToFile;
+                    record.m_toEventLog = writeToEventLog;
+                    std::visit(RecordWrite, recordVariant);
                 }
             }
         }
@@ -207,23 +177,22 @@ namespace Log {
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
-            if (const auto recordPtr = getFreeRecord(); recordPtr) {
-                if (auto & record = *recordPtr; record) {
-                    auto & buffer = record->m_message;
-                    if (writePrefix(buffer, level)) {
-                        if constexpr (Meta::isWide<std::remove_cvref_t<decltype(func())>>) {
-                            buffer.append(func());
-                        } else {
-                            const auto & temp = func();
-                            Text::appendConverted(buffer, temp);
-                        }
-                        record->m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                        record->m_level = level;
-                        record->m_toConsole = writeToConsole;
-                        record->m_toFile = writeToFile;
-                        record->m_toEventLog = writeToEventLog;
-                        recordPtr->write();
+            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+                auto & record = std::visit(RecordRef, recordVariant);
+                auto & buffer = record.m_message;
+                if (writePrefix(buffer, level)) {
+                    if constexpr (Meta::isWide<std::remove_cvref_t<decltype(func())>>) {
+                        buffer.append(func());
+                    } else {
+                        const auto & temp = func();
+                        Text::appendConverted(buffer, temp);
                     }
+                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_level = level;
+                    record.m_toConsole = writeToConsole;
+                    record.m_toFile = writeToFile;
+                    record.m_toEventLog = writeToEventLog;
+                    std::visit(RecordWrite, recordVariant);
                 }
             }
         }
