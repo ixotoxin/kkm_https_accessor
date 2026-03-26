@@ -5,10 +5,11 @@
 
 #include "types.h"
 #include "variables.h"
+#include <lib/queue.h>
 #include <string>
 
 namespace Log {
-    struct Record {
+    struct alignas(MtHelp::c_queueAlignment) Record {
         std::wstring m_message {};
         std::wstring_view m_terse {};
         Level m_level { Level::Debug };
@@ -23,22 +24,5 @@ namespace Log {
 
         Record & operator=(const Record &) = delete;
         Record & operator=(Record &&) = delete;
-    };
-
-    class RecordAccessor {
-    public:
-        RecordAccessor() = default;
-        RecordAccessor(const RecordAccessor &) = delete;
-        RecordAccessor(RecordAccessor &&) = delete;
-        virtual ~RecordAccessor() = default;
-
-        RecordAccessor & operator=(const RecordAccessor &) = delete;
-        RecordAccessor & operator=(RecordAccessor &&) = delete;
-
-        [[nodiscard]] virtual Record * operator->() noexcept = 0;
-        [[nodiscard]] virtual Record & operator*() noexcept = 0;
-        [[nodiscard]] virtual explicit operator bool() noexcept = 0;
-
-        virtual void write() noexcept = 0;
     };
 }

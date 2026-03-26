@@ -31,9 +31,9 @@ namespace MtHelp {
         static constexpr bool c_autoComplete { true };
 
         QueueSlotAutoCompletion() noexcept = default;
-        QueueSlotAutoCompletion(const QueueSlotAutoCompletion &) = delete;
-        QueueSlotAutoCompletion(QueueSlotAutoCompletion &&) = delete;
-        ~QueueSlotAutoCompletion() noexcept = default;
+        QueueSlotAutoCompletion(const QueueSlotAutoCompletion &) noexcept = default;
+        QueueSlotAutoCompletion(QueueSlotAutoCompletion &&) noexcept = default;
+        ~QueueSlotAutoCompletion() = default;
 
         QueueSlotAutoCompletion & operator=(const QueueSlotAutoCompletion &) = delete;
         QueueSlotAutoCompletion & operator=(QueueSlotAutoCompletion &&) = delete;
@@ -50,8 +50,8 @@ namespace MtHelp {
         static constexpr bool c_autoComplete { false };
 
         QueueSlotManualCompletion() noexcept = default;
-        QueueSlotManualCompletion(const QueueSlotManualCompletion &) = delete;
-        QueueSlotManualCompletion(QueueSlotManualCompletion &&) = delete;
+        QueueSlotManualCompletion(const QueueSlotManualCompletion & other) noexcept = default;
+        QueueSlotManualCompletion(QueueSlotManualCompletion &&) noexcept = default;
         ~QueueSlotManualCompletion() = default;
 
         QueueSlotManualCompletion & operator=(const QueueSlotManualCompletion &) = delete;
@@ -185,12 +185,12 @@ namespace MtHelp {
         Block & operator=(Block &&) = delete;
 
         [[nodiscard]]
-        Slot * firstSlot() noexcept {
+        Slot * firstSlot() const noexcept {
             return &m_slots[0];
         }
 
         [[nodiscard]]
-        Slot * lastSlot() noexcept {
+        Slot * lastSlot() const noexcept {
             return &m_slots[S - 1];
         }
     };
@@ -232,12 +232,16 @@ namespace MtHelp {
     class Queue<T, U, S, C, A, G>::ProducerAccessor : public SlotCompletion {
     protected:
         Queue & m_queue;
-        Slot * const m_slot;
+        Slot * m_slot;
 
     public:
         ProducerAccessor() = delete;
         ProducerAccessor(const ProducerAccessor &) = delete;
-        ProducerAccessor(ProducerAccessor &&) = delete;
+
+        ProducerAccessor(ProducerAccessor && other) noexcept
+        : SlotCompletion { other }, m_queue { other.m_queue }, m_slot { other.m_slot } {
+            other.m_slot = nullptr;
+        }
 
         ProducerAccessor(Queue & queue, Slot * slot) noexcept
         : SlotCompletion {}, m_queue { queue }, m_slot { slot } {
@@ -265,17 +269,17 @@ namespace MtHelp {
         ProducerAccessor & operator=(ProducerAccessor &&) = delete;
 
         [[nodiscard, maybe_unused]]
-        Interface * operator->() noexcept {
+        Interface * operator->() const noexcept {
             return std::addressof(m_slot->m_payload);
         }
 
         [[nodiscard, maybe_unused]]
-        Interface & operator*() noexcept {
+        Interface & operator*() const noexcept {
             return m_slot->m_payload;
         }
 
         [[nodiscard, maybe_unused]]
-        explicit operator bool() noexcept {
+        explicit operator bool() const noexcept {
             return m_slot && m_slot->m_state.load(MO::acquire) == SlotState::ProdLocked;
         }
     };
@@ -285,12 +289,16 @@ namespace MtHelp {
     class Queue<T, U, S, C, A, G>::ConsumerAccessor : public SlotCompletion {
     protected:
         Queue & m_queue;
-        Slot * const m_slot;
+        Slot * m_slot;
 
     public:
         ConsumerAccessor() = delete;
         ConsumerAccessor(const ConsumerAccessor &) = delete;
-        ConsumerAccessor(ConsumerAccessor &&) = delete;
+
+        ConsumerAccessor(ConsumerAccessor && other) noexcept
+        : SlotCompletion { other }, m_queue { other.m_queue }, m_slot { other.m_slot } {
+            other.m_slot = nullptr;
+        }
 
         ConsumerAccessor(Queue & queue, Slot * slot) noexcept
         : SlotCompletion {}, m_queue { queue }, m_slot { slot } {}
@@ -315,17 +323,17 @@ namespace MtHelp {
         ConsumerAccessor & operator=(ConsumerAccessor &&) = delete;
 
         [[nodiscard, maybe_unused]]
-        const Interface * operator->() noexcept {
+        const Interface * operator->() const noexcept {
             return std::addressof(m_slot->m_payload);
         }
 
         [[nodiscard, maybe_unused]]
-        const Interface & operator*() noexcept {
+        const Interface & operator*() const noexcept {
             return m_slot->m_payload;
         }
 
         [[nodiscard, maybe_unused]]
-        explicit operator bool() noexcept {
+        explicit operator bool() const noexcept {
             return m_slot && m_slot->m_state.load(MO::acquire) == SlotState::ConsLocked;
         }
     };
