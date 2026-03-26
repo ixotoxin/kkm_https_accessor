@@ -179,18 +179,21 @@ namespace MtHelp {
         Block(const Block &) = delete;
         Block(Block &&) = delete;
         explicit Block(Block * &) noexcept(c_ntdct);
-        ~Block() { delete m_next; }
+
+        ~Block() {
+            delete m_next;
+        }
 
         Block & operator=(const Block &) = delete;
         Block & operator=(Block &&) = delete;
 
         [[nodiscard]]
-        Slot * firstSlot() const noexcept {
+        Slot * firstSlot() noexcept {
             return &m_slots[0];
         }
 
         [[nodiscard]]
-        Slot * lastSlot() const noexcept {
+        Slot * lastSlot() noexcept {
             return &m_slots[S - 1];
         }
     };
@@ -463,6 +466,10 @@ namespace MtHelp {
 
     template<class T>
     concept MpmcQueue = requires(T t) {
-        []<std::default_initializable U, class V, int S, bool C, unsigned A, QueueGrowthPolicy G>(Queue<U, V, S, C, A, G> &){}(t);
+        []
+        <std::default_initializable U, class V, int S, bool C, unsigned A, QueueGrowthPolicy G>
+        (Queue<U, V, S, C, A, G> &)
+        {}
+        (t);
     };
 }

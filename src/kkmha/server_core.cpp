@@ -18,6 +18,7 @@
 #include <utility>
 #include <memory>
 #include <atomic>
+#include <mutex>
 #include <latch>
 #include <thread>
 #include <chrono>

@@ -12,18 +12,39 @@ namespace Deferred {
     template<std::invocable T>
     class Exec {
         T m_func;
+        std::exception_ptr * m_exception { nullptr };
         bool m_permitted { true };
 
     public:
         Exec() = delete;
         Exec(const Exec &) = delete;
         Exec(Exec &&) = delete;
-        [[maybe_unused]] explicit Exec(const T & func) noexcept : m_func(func) {}
-        [[maybe_unused]] explicit Exec(T && func) noexcept : m_func(std::forward<T>(func)) {}
 
-        ~Exec() noexcept {
+        [[maybe_unused]]
+        explicit Exec(const T & func) noexcept
+        : m_func { func } {}
+
+        [[maybe_unused]]
+        explicit Exec(T && func) noexcept
+        : m_func { std::forward<T>(func) } {}
+
+        [[maybe_unused]]
+        explicit Exec(const T & func, std::exception_ptr & exception) noexcept
+        : m_func { func }, m_exception { &exception } {}
+
+        [[maybe_unused]]
+        explicit Exec(T && func, std::exception_ptr & exception) noexcept
+        : m_func { std::forward<T>(func) }, m_exception { &exception } {}
+
+        ~Exec() {
             if (m_permitted) {
-                std::invoke(m_func);
+                try {
+                    std::invoke(m_func);
+                } catch (...) {
+                    if (m_exception) {
+                        *m_exception = std::current_exception();
+                    }
+                }
             }
         }
 
@@ -33,7 +54,13 @@ namespace Deferred {
         [[maybe_unused]]
         void perform(const bool repeatable = false) noexcept {
             if (m_permitted) {
-                std::invoke(m_func);
+                try {
+                    std::invoke(m_func);
+                } catch (...) {
+                    if (m_exception) {
+                        *m_exception = std::current_exception();
+                    }
+                }
                 m_permitted = repeatable;
             }
         }
@@ -52,9 +79,12 @@ namespace Deferred {
         LocalFree() = delete;
         LocalFree(const LocalFree &) = delete;
         LocalFree(LocalFree &&) = delete;
-        [[maybe_unused]] explicit LocalFree(auto & memory) noexcept : m_memory(reinterpret_cast<HLOCAL &>(memory)) {}
 
-        ~LocalFree() noexcept {
+        [[maybe_unused]]
+        explicit LocalFree(auto & memory) noexcept
+        : m_memory(reinterpret_cast<HLOCAL &>(memory)) {}
+
+        ~LocalFree() {
             perform();
         }
 

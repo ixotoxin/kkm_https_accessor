@@ -17,6 +17,7 @@
 #include <cassert>
 #include <utility>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 
 namespace Server::KkmOp {
@@ -76,7 +77,6 @@ namespace Server::KkmOp {
         }
     };
 
-    [[maybe_unused]]
     ConnParams resolveConnParams(Payload & payload) {
         if (payload.m_serialNumber.empty()) {
             payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
@@ -361,7 +361,6 @@ namespace Server::KkmOp {
             return fail(request, Http::Status::MethodNotAllowed, Server::Mbs::c_methodNotAllowed);
         }
 
-        // Cache::maintain(); // CLEANUP
         Cache::Key cacheKey;
 
         if (!idempotencyKey.empty()) {

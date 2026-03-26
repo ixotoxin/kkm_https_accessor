@@ -96,7 +96,7 @@ namespace Kkm {
         void subCashOut(const OperatorDetails &, Result &);
         void subCloseShift(const OperatorDetails &, Result &);
 
-        static unsigned long versionStrToInt(std::string) noexcept;
+        static unsigned long versionStrToInt(const std::string &) noexcept;
     };
 
     class NewDevice : public Device {

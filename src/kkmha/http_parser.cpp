@@ -102,7 +102,7 @@ namespace Http {
             while (input.good()) {
                 (this->*m_reader)(input);
             }
-            return; /** Не удаляй, смотри дальше. **/
+            return;
         } catch (const Failure & e) {
             LOG_ERROR(e);
         } catch (const std::exception & e) {
