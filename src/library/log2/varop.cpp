@@ -2,7 +2,6 @@
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "varop.h"
-#include "defaults.h"
 #include "variables.h"
 #include "strings.h"
 #include "core.h"
@@ -34,6 +33,8 @@ namespace Log {
                                 path3
                             );
                             Json::handleKey(json3, "terse", Console::s_terse, path3);
+                            Json::handleKey(json3, "output", Console::s_output, Wcs::c_outputCastMap, path3);
+                            Json::handleKey(json3, "flushEveryWrite", Console::s_flushEveryWrite, path3);
                             return true;
                         },
                         path2
@@ -62,6 +63,7 @@ namespace Log {
                                 json3, "directory", File::s_directory,
                                 Path::touchDir(Path::absolute(Main::s_directory, Path::noEmpty())), path3
                             );
+                            Json::handleKey(json3, "flushEveryWrite", File::s_flushEveryWrite, path3);
                             return true;
                         },
                         path2
@@ -124,16 +126,20 @@ namespace Log {
         stream
             << L"CFG: log.console.level.foreground = " << levelLabel(Console::s_level) << L"\n"
             L"CFG: log.console.terse = " << Text::Wcs::yesNo(Console::s_terse) << L"\n"
+            L"CFG: log.console.output = " << Wcs::c_outputLabels.at(Console::s_output) << L"\n"
+            L"CFG: log.console.flushEveryWrite = " << Text::Wcs::yesNo(Console::s_flushEveryWrite) << L"\n"
             L"CFG: log.file.level.foreground = " << levelLabel(File::s_fgLevel) << L"\n"
             L"CFG: log.file.level.background = " << levelLabel(File::s_bgLevel) << L"\n"
             L"CFG: log.file.directory = \"" << File::s_directory.wstring() << L"\"\n"
+            L"CFG: log.file.flushEveryWrite = " << Text::Wcs::yesNo(File::s_flushEveryWrite) << L"\n"
             L"CFG: log.eventLog.level.foreground = " << levelLabel(EventLog::s_fgLevel) << L"\n"
             L"CFG: log.eventLog.level.background = " << levelLabel(EventLog::s_bgLevel) << L"\n"
             L"DEF: log.eventLog.source = \"" << EventLog::c_eventSource << L"\"\n"
             L"CFG: log.appendLocation = " << Text::Wcs::yesNo(s_appendLocation) << L"\n"
             L"CFG: log.lineSize = " << s_lineSize << L"\n"
-            L"CFG: log.maxQueueBlocks = " << s_blocksNumber << L"\n"
-            L"CFG: log.enableAsync = " << Text::Wcs::yesNo(s_enableAsync) << L"\n";
+            L"CFG: log.enableAsync = " << Text::Wcs::yesNo(s_enableAsync) << L"\n"
+            L"DEF: log.queueBlockSize = " << c_blockSize << L"\n"
+            L"CFG: log.maxQueueBlocks = " << s_blocksNumber << L"\n";
 
         return stream;
     }

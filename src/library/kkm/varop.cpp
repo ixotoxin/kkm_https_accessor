@@ -2,7 +2,6 @@
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "varop.h"
-#include "defaults.h"
 #include "variables.h"
 #include "strings.h"
 #include "connparams.h"
@@ -75,7 +74,7 @@ namespace Kkm {
 #endif
             L"CFG: kkm.fallbackFfdVersion = \"" << wcsSafeGet(Mbs::c_ffdVersions, s_fallbackFfdVersion) << L"\"\n"
             L"CFG: kkm.ffdVersionDetect = \"" << wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect) << L"\"\n"
-            L"CFG: kkm.documentClosingTimeout = " << s_documentClosingTimeout << L"\n"
+            L"CFG: kkm.documentClosingTimeout = " << s_documentClosingTimeout.count() << L"ms\n"
             L"CFG: kkm.cliOperator.name = \"" << s_cliOperatorName << L"\"\n"
             L"CFG: kkm.cliOperator.inn = \"" << s_cliOperatorInn << L"\"\n"
             L"CFG: kkm.customerAccountField = \"" << s_customerAccountField << L"\"\n"

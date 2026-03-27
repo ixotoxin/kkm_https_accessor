@@ -54,7 +54,7 @@ namespace Server {
         stream
             << L"CFG: server.ipv4Only = " << Text::Wcs::yesNo(s_ipv4Only) << L"\n"
             L"CFG: server.port = " << s_port << L"\n"
-            L"CFG: server.requestTimeout = " << s_requestTimeout << L"\n"
+            L"CFG: server.requestTimeout = " << s_requestTimeout << L"s\n"
             L"CFG: server.concurrencyLimit = " << s_concurrencyLimit << L"\n"
             L"CFG: server.enableLegacyTls = " << Text::Wcs::yesNo(s_enableLegacyTls) << L"\n"
             L"CFG: server.securityLevel = " << securityLevel << L"\n"

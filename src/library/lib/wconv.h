@@ -135,10 +135,10 @@ namespace Text {
 
     [[maybe_unused]]
     inline bool appendConverted(std::string & result, const std::wstring_view text) noexcept try {
-        using st = std::string::size_type;
         if (text.empty()) {
             return false;
         }
+        using st = std::string::size_type;
         const st additionalSize = WIN_WC2MB_ESTIMATED(text.data(), text.size());
         if (additionalSize <= 0) {
             return false;

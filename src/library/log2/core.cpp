@@ -97,12 +97,12 @@ namespace Log {
 namespace Config {
     [[maybe_unused]]
     void initLogger() {
-        ::Log::initWriters();
+        Log::initWriters();
     }
 
     [[maybe_unused]]
     void reinitLogger() {
-        ::Log::s_record.m_message.reserve(::Log::s_lineSize);
-        ::Log::reinitWriters();
+        Log::s_record.m_message.reserve(Log::s_lineSize);
+        Log::reinitWriters();
     }
 }

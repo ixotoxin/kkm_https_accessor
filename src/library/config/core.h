@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "defaults.h"
 #include "variables.h"
 #include "strings.h"
 #include <lib/except.h>

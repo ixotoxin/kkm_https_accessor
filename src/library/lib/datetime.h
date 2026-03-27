@@ -1,14 +1,14 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
 
 #include "meta.h"
 #include "except.h"
+#include <ctime>
 #include <algorithm>
 #include <chrono>
 #include <format>
-#include <ctime>
 
 namespace Meta {
     template<class T>

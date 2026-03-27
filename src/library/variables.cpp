@@ -32,18 +32,21 @@ namespace Log {
 
     namespace Console {
         LOG_MVARE(bool, s_terse, c_terseDef);
-        LOG_MVARE(LevelUnderlying, s_level, c_levelDebug);
+        LOG_MVARE(Output, s_output, c_outputDef);
+        LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWrite);
+        LOG_MVARE(LevelUnderlying, s_level, c_level);
     }
 
     namespace File {
         LOG_MVARE(std::filesystem::path, s_directory, );
-        LOG_MVARE(LevelUnderlying, s_fgLevel, c_levelNone);
-        LOG_MVARE(LevelUnderlying, s_bgLevel, c_levelInfo);
+        LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWrite);
+        LOG_MVARE(LevelUnderlying, s_fgLevel, c_fgLevel);
+        LOG_MVARE(LevelUnderlying, s_bgLevel, c_bgLevel);
     }
 
     namespace EventLog {
-        LOG_MVARE(LevelUnderlying, s_fgLevel, c_levelNone);
-        LOG_MVARE(LevelUnderlying, s_bgLevel, c_levelInfo);
+        LOG_MVARE(LevelUnderlying, s_fgLevel, c_fgLevel);
+        LOG_MVARE(LevelUnderlying, s_bgLevel, c_bgLevel);
     }
 }
 

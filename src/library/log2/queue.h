@@ -4,7 +4,6 @@
 #pragma once
 
 #include "record.h"
-#include "defaults.h"
 #include "variables.h"
 #include <lib/queue.h>
 

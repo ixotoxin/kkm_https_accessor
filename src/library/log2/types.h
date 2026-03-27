@@ -15,4 +15,8 @@ namespace Log {
     constexpr LevelUnderlying c_levelWarning [[maybe_unused]] { Meta::toUnderlying(Level::Warning) };
     constexpr LevelUnderlying c_levelError [[maybe_unused]] { Meta::toUnderlying(Level::Error) };
     constexpr LevelUnderlying c_levelNone [[maybe_unused]] { c_levelError + 1 };
+
+    namespace Console {
+        enum class Output { Separated, StdOut, StdErr };
+    }
 }

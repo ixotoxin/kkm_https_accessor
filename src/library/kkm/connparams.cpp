@@ -2,7 +2,6 @@
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "connparams.h"
-#include "defaults.h"
 #include "variables.h"
 #include "strings.h"
 

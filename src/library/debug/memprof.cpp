@@ -62,15 +62,14 @@ namespace Debug {
         // void __coe_win_RawWrite(const char*) {}
         const char * __asan_default_options() {
             return
-                "suppressions=sntz.suppressions.lst"
-                ":halt_on_error=0"
-                ":verbosity=2"
+                "halt_on_error=0"
+                ":verbosity=0"
                 ":log_path=stdout";
         }
         const char * __ubsan_default_options() {
             return
                 "halt_on_error=0"
-                ":verbosity=2"
+                ":verbosity=0"
                 ":log_path=stdout";
         }
     }

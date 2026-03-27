@@ -11,7 +11,8 @@
     "log": {
         "console": {
             "level": "debug",
-            "terse": true
+            "terse": true,
+            "output": "separated"
         },
         "file": {
             "level": {
@@ -68,47 +69,50 @@
 }
 ```
 
-| ОПЦИЯ                           | ОПИСАНИЕ                                                                                                              |
-|---------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| `log.console.level`             | Уровень логирования в консоль.                                                                                        |
-| `log.console.terse`             | Включить/выключить вывод даты и времени в консоль.                                                                    |
-| `log.file.level.foreground`     | Уровень логирования в файл для foreground-процесса.                                                                   |
-| `log.file.level.background`     | Уровень логирования в файл для background-процесса.                                                                   |
-| `log.file.directory`            | Директория, в которую будет происходить логирование.                                                                  |
-| `log.eventLog.level.foreground` | Уровень логирования в журнал событий Windows для foreground-процесса.                                                 |
-| `log.eventLog.level.background` | Уровень логирования в журнал событий Windows для background-процесса.                                                 |
-| `log.appendLocation`            | Включить/выключить вывод точки происхождения сообщения в исходных файлах.                                             |
-| `log.lineSize`                  | Первичное резезервирование памяти для строки.                                                                         |
-| `log.enableAsync`               | Включить/выключить асинхронное логирование.                                                                           |
-| `log.maxQueueBlocks`            | Максимально количество блоков допустимое для очереди в режиме асинхронного логирования (размер блока 1024 записи).    |
-| `server.ipv4Only`               | Включить/выключить поддержку IPv6.                                                                                    |
-| `server.port`                   | Порт, который будет слушать сервер.                                                                                   |
-| `server.requestTimeout`         | Таймаут (в секундах).                                                                                                 |
-| `server.concurrencyLimit`       | Ограничение максимального количества одновременных соединений.                                                        |
-| `server.enableLegacyTls`        | Разрешить/запретить поддержку TLS 1.0 и TLS 1.1.                                                                      |
-| `server.securityLevel`          | Уровень безопасности устанавливаемый в библиотеке OpenSSL (0 - 5). Только для `"enableLegacyTls": false`.             |
-| `server.certificateChainFile`   | Путь к файлу сертификата.                                                                                             |
-| `server.privateKeyFile`         | Путь к файлу ключа.                                                                                                   |
-| `server.privateKeyPassword`     | Пароль от ключа.                                                                                                      |
-| `server.secret`                 | Access-токен.                                                                                                         |
-| `server.loopbackWithoutSecret`  | Разрешить/запретить локальные запросы без access-токена.                                                              | 
-| `server.enableStatic`           | Разрешить/запретить обработку запросов `https://127.0.0.1:5757/static/{file-path}`.                                   |
-| `server.staticDirectory`        | Путь к директории, содержимое которой будет отдаваться для запросов `/static/{file-path}`.                            |
-| `server.indexFile`              | Имя индексного файла. На этот файл происходит перенаправление, если запрашиваемый путь является директорией.          |
-| `server.mimeMap`                | Путь к файлу с описанием типа содержимого.                                                                            |
-| `server.enableUnknownType`      | Разрешить/запретить отдавать файлы с расширениями не представленными в файле `mime.json` заданном опцией `"mimeMap"`. |
-| `kkm.dbDirectory`               | Путь к директории, в которой будет формироваться БД известных ККМ.                                                    |
-| `kkm.defaultBaudRate`           | Скорость COM-порта по-умолчанию.                                                                                      |
-| `kkm.defaultLineLength`         | Ширина чековой ленты по-умолчанию. Используется, если данное свойство не удается получить опросом ККМ.                |
-| `kkm.timeZone`                  | Временная зона передаваемая ОФД при регистрации чека.                                                                 |
-| `kkm.fallbackFfdVersion`        | Предполагаемая версия ФФД, если не удалось получить информацию о версии от ККМ.                                       |
-| `kkm.ffdVersionDetect`          | Момент определения версии ФФД.                                                                                        |
-| `kkm.documentClosingTimeout`    | Таймаут проверки корректности закрытия документа (в миллисекундах).                                                   |
-| `kkm.cliOperator.name`          | Имя оператора для консольных команд требующих логина оператора ККМ.                                                   |
-| `kkm.customerAccountField`      | Заголовок поля с номером лицевого счета клиента.                                                                      |
-| `kkm.maxCashInOut`              | Максимальная сумма для внесения или выплаты.                                                                          |
-| `kkm.maxPrice`                  | Максимальная цена товара/услуги в чеке.                                                                               |
-| `kkm.maxQuantity`               | Максимальное количество товара/услуги в чеке.                                                                         |
+| ОПЦИЯ                           | ТИП                                                                                  | ОПИСАНИЕ                                                                                                              |
+|---------------------------------|--------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `log.console.level`             | Enum: "debug", "info", "warning", "error", "none"                                    | Уровень логирования в консоль.                                                                                        |
+| `log.console.terse`             | Bool: true, false, "yes", "no"                                                       | Включить/выключить вывод даты и времени в консоль.                                                                    |
+| `log.console.output`            | Enum: "separated", "stdout", "stderr"                                                | Вывод. При значении "separated" уровень выше или равно "warning" выводится в stderr, иначе в stdout.                  |
+| `log.console.flushEveryWrite`   | Bool: true, false, "yes", "no"                                                       | Включить/выключить flush каждой записи.                                                                               |
+| `log.file.level.foreground`     | Enum: "debug", "info", "warning", "error", "none"                                    | Уровень логирования в файл для foreground-процесса.                                                                   |
+| `log.file.level.background`     | Enum: "debug", "info", "warning", "error", "none"                                    | Уровень логирования в файл для background-процесса.                                                                   |
+| `log.file.directory`            | Path (string)                                                                        | Директория, в которую будет происходить логирование.                                                                  |
+| `log.file.flushEveryWrite`      | Bool: true, false, "yes", "no"                                                       | Включить/выключить flush каждой записи.                                                                               |
+| `log.eventLog.level.foreground` | Enum: "debug", "info", "warning", "error", "none"                                    | Уровень логирования в журнал событий Windows для foreground-процесса.                                                 |
+| `log.eventLog.level.background` | Enum: "debug", "info", "warning", "error", "none"                                    | Уровень логирования в журнал событий Windows для background-процесса.                                                 |
+| `log.appendLocation`            | Bool: true, false, "yes", "no"                                                       | Включить/выключить вывод точки происхождения сообщения в исходных файлах.                                             |
+| `log.lineSize`                  | Integer: 64 - 1'024                                                                  | Первичное резезервирование памяти для строки.                                                                         |
+| `log.enableAsync`               | Bool: true, false, "yes", "no"                                                       | Включить/выключить асинхронное логирование.                                                                           |
+| `log.maxQueueBlocks`            | Integer: 1 - 64                                                                      | Максимально количество блоков допустимое для очереди в режиме асинхронного логирования (размер блока 1024 записи).    |
+| `server.ipv4Only`               | Bool: true, false, "yes", "no"                                                       | Включить/выключить поддержку IPv6.                                                                                    |
+| `server.port`                   | Interger: 1 - 65'535                                                                 | Порт, который будет слушать сервер.                                                                                   |
+| `server.requestTimeout`         | Seconds (integer): 6 - 1'800                                                         | Таймаут (в секундах).                                                                                                 |
+| `server.concurrencyLimit`       | Interger: 2 - 100                                                                    | Ограничение максимального количества одновременных соединений.                                                        |
+| `server.enableLegacyTls`        | Bool: true, false, "yes", "no"                                                       | Разрешить/запретить поддержку TLS 1.0 и TLS 1.1.                                                                      |
+| `server.securityLevel`          | Interger: 0 - 5                                                                      | Уровень безопасности устанавливаемый в библиотеке OpenSSL (0 - 5). Только для `"enableLegacyTls": false`.             |
+| `server.certificateChainFile`   | Path (string)                                                                        | Путь к файлу сертификата.                                                                                             |
+| `server.privateKeyFile`         | Path (string)                                                                        | Путь к файлу ключа.                                                                                                   |
+| `server.privateKeyPassword`     | String                                                                               | Пароль от ключа.                                                                                                      |
+| `server.secret`                 | String                                                                               | Access-токен.                                                                                                         |
+| `server.loopbackWithoutSecret`  | Bool: true, false, "yes", "no"                                                       | Разрешить/запретить локальные запросы без access-токена.                                                              | 
+| `server.enableStatic`           | Bool: true, false, "yes", "no"                                                       | Разрешить/запретить обработку запросов `https://127.0.0.1:5757/static/{file-path}`.                                   |
+| `server.staticDirectory`        | Path (string)                                                                        | Путь к директории, содержимое которой будет отдаваться для запросов `/static/{file-path}`.                            |
+| `server.indexFile`              | Path (string)                                                                        | Имя индексного файла. На этот файл происходит перенаправление, если запрашиваемый путь является директорией.          |
+| `server.mimeMap`                | Path (string)                                                                        | Путь к файлу с описанием типа содержимого.                                                                            |
+| `server.enableUnknownType`      | Bool: true, false, "yes", "no"                                                       | Разрешить/запретить отдавать файлы с расширениями не представленными в файле `mime.json` заданном опцией `"mimeMap"`. |
+| `kkm.dbDirectory`               | Path (string)                                                                        | Путь к директории, в которой будет формироваться БД известных ККМ.                                                    |
+| `kkm.defaultBaudRate`           | Integer: 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 | Скорость COM-порта по-умолчанию.                                                                                      |
+| `kkm.defaultLineLength`         | Integer: 24 - 192                                                                    | Ширина чековой ленты по-умолчанию. Используется, если данное свойство не удается получить опросом ККМ.                |
+| `kkm.timeZone`                  | Enum                                                                                 | Временная зона передаваемая ОФД при регистрации чека.                                                                 |
+| `kkm.fallbackFfdVersion`        | Enum: "1.0.5", "1.1", "1.2"                                                          | Предполагаемая версия ФФД, если не удалось получить информацию о версии от ККМ.                                       |
+| `kkm.ffdVersionDetect`          | Enum: "never", "once", "always"                                                      | Момент определения версии ФФД.                                                                                        |
+| `kkm.documentClosingTimeout`    | Milliseconds (integer): 200 - 10'000                                                 | Таймаут проверки корректности закрытия документа (в миллисекундах).                                                   |
+| `kkm.cliOperator.name`          | String                                                                               | Имя оператора для консольных команд требующих логина оператора ККМ.                                                   |
+| `kkm.customerAccountField`      | String                                                                               | Заголовок поля с номером лицевого счета клиента.                                                                      |
+| `kkm.maxCashInOut`              | Float: 1 - 1'000'000'000                                                             | Максимальная сумма для внесения или выплаты.                                                                          |
+| `kkm.maxPrice`                  | Float: 1 - 1'000'000'000                                                             | Максимальная цена товара/услуги в чеке.                                                                               |
+| `kkm.maxQuantity`               | Float: 1 - 1'000'000'000                                                             | Максимальное количество товара/услуги в чеке.                                                                         |
 
 ***Сертификат и ключ никак не проверяются***, поэтому можно использовать самоподписанный сертификат.
 <!-- Создать его можно например так:
@@ -118,14 +122,19 @@ openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout kkmha.test.
 -->
 Так же можно изменить параметры по-умолчанию и недоступные для конфигурирования в следующих файлах:
 - `.\src\library\log2\defaults.h`;
+- `.\src\library\log2\variables.h`;
 - `.\src\library\kkm\defaults.h`;
+- `.\src\library\kkm\variables.h`;
 - `.\src\library\config\defaults.h`;
+- `.\src\library\config\variables.h`;
 - `.\src\library\variables.cpp`;
-- `.\src\kkmha\kkmha_variables.cpp`;
 - `.\src\kkmha\http_defaults.h`;
 - `.\src\kkmha\server_defaults.h`;
+- `.\src\kkmha\server_variables.h`;
 - `.\src\kkmha\server_static_defaults.h`;
+- `.\src\kkmha\server_static_variables.h`;
 - `.\src\kkmha\service_defaults.h`;
+- `.\src\kkmha\kkmha_variables.cpp`;
 - `.\src\kkmop\kkmop_variables.cpp`;
 - `.\src\kkmjl\kkmjl_variables.cpp`.
 

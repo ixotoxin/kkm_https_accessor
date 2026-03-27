@@ -8,7 +8,6 @@
 #include <unordered_map>
 
 namespace Log::Wcs {
-    // constexpr const wchar_t * c_loggingError { L"[ logging error ]" };
     LOG_WSTRI(c_enableAsync, L"Включено асинхронное логирование");
     LOG_WSTRI(c_disableAsync, L"Выключено асинхронное логирование");
 
@@ -36,5 +35,17 @@ namespace Log::Wcs {
         { L"non", c_levelNone },
         { L"none", c_levelNone },
         { std::to_wstring(c_levelNone), c_levelNone }
+    };
+
+    inline const std::unordered_map<Console::Output, std::wstring_view> c_outputLabels {
+        { Console::Output::Separated, L"separated" },
+        { Console::Output::StdOut, L"stdout" },
+        { Console::Output::StdErr, L"stderr" }
+    };
+
+    inline const std::unordered_map<std::wstring, Console::Output> c_outputCastMap {
+        { L"separated", Console::Output::Separated },
+        { L"stdout", Console::Output::StdOut },
+        { L"stderr", Console::Output::StdErr }
     };
 }

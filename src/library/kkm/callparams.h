@@ -4,7 +4,6 @@
 #pragma once
 
 #include "types.h"
-#include "defaults.h"
 #include "variables.h"
 #include "strings.h"
 #include <lib/except.h>

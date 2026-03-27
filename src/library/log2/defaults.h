@@ -4,6 +4,7 @@
 #pragma once
 
 #include "macro.h"
+#include "types.h"
 #include <lib/winapi.h>
 #include <string_view>
 
@@ -20,16 +21,24 @@ namespace Log {
 
     namespace Console {
         LOG_CONST(bool, c_terseDef, true);
+        LOG_CONST(Output, c_outputDef, Output::Separated);
+        LOG_CONST(bool, c_flushEveryWrite, true);
+        LOG_CONST(LevelUnderlying, c_level, c_levelInfo);
     }
 
     namespace File {
         LOG_CONST(std::wstring_view, c_directoryDef, L"logs");
         LOG_CONST(std::wstring_view, c_filenameFormatDef, L"kkmha-{:04d}-{:02d}.log");
+        LOG_CONST(bool, c_flushEveryWrite, true);
+        LOG_CONST(LevelUnderlying, c_fgLevel, c_levelNone);
+        LOG_CONST(LevelUnderlying, c_bgLevel, c_levelInfo);
     }
 
     namespace EventLog {
         LOG_CONST(const wchar_t *, c_eventSourceDef, L"KKM HTTPS Accessor");
         LOG_CONST(::DWORD, c_eventId, 0);
         LOG_CONST(::WORD, c_eventCategory, 0);
+        LOG_CONST(LevelUnderlying, c_fgLevel, c_levelNone);
+        LOG_CONST(LevelUnderlying, c_bgLevel, c_levelWarning);
     }
 }

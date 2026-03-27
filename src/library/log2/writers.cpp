@@ -2,8 +2,9 @@
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "writers.h"
-#include "state.h"
+#include "variables.h"
 #include "strings.h"
+#include "state.h"
 #include <lib/winapi.h>
 #include <cassert>
 #include <iostream>
@@ -14,8 +15,15 @@ namespace Log {
     namespace Console {
         [[maybe_unused]]
         void write(const Level level, const std::wstring_view message) noexcept try {
-            std::wostream & output { level >= Level::Warning ? std::wcerr : std::wcout };
-            output << message << std::endl;
+            std::wostream & output {
+                s_output == Output::StdOut ? std::wcout
+                : (s_output == Output::StdErr ? std::wcerr
+                : (level >= Level::Warning ? std::wcerr : std::wcout))
+            };
+            output << message << L'\n';
+            if (s_flushEveryWrite) {
+                output.flush();
+            }
         } catch (...) {}
     }
 
@@ -65,7 +73,10 @@ namespace Log {
 
         [[maybe_unused]]
         void write(const std::wstring_view message) noexcept try {
-            s_file << message << std::endl;
+            s_file << message << L'\n';
+            if (s_flushEveryWrite) {
+                s_file.flush();
+            }
         } catch (...) {
             close();
         }

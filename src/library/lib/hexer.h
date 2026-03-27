@@ -82,7 +82,7 @@ namespace Bin {
 #endif
 
     template<std::integral T>
-    class Int2Hex final : private Hexer<sizeof(T)> {
+    class Int2Hex final : Hexer<sizeof(T)> {
     public:
         Int2Hex() = delete;
         Int2Hex(const Int2Hex &) = default;
