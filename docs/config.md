@@ -12,14 +12,16 @@
         "console": {
             "level": "debug",
             "terse": true,
-            "output": "separated"
+            "output": "separated",
+            "flushEveryWrite": "no"
         },
         "file": {
             "level": {
                 "foreground": "none",
                 "background": "debug"
             },
-            "directory": "logs"
+            "directory": "logs",
+            "flushEveryWrite": true
         },
         "eventLog": {
             "level": {
