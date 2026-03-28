@@ -54,13 +54,14 @@ set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /DNDEBUG")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /OPT:REF /OPT:ICF")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /GL /Gy /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Oy- /RTC1 /Zi /DDEBUG /D_DEBUG")
     add_compile_options(/W4 /WX /EHsc /Zc:preprocessor /utf-8 /await:strict)
-    add_compile_options(/wd4068 /wd4244 /wd4267 /wd4310 /wd4996)
-    add_compile_options(/wd4324) # ??? Compiler Warning (level 4) C4324: structure was padded due to alignment specifier
+    add_compile_options(/wd4068 /wd4244 /wd4267 /wd4310 /wd4996 /wd4324)
     set(WITH_SNTZ OFF)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -Wl,/LTCG -Wl,/OPT:REF -Wl,/OPT:ICF")
     if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG")
@@ -192,6 +193,7 @@ set(
     MTLIB_PUBLIC_DEFS
         JSON_USE_IMPLICIT_CONVERSIONS=0
         ASIO_STANDALONE
+        ASIO_NO_DEPRECATED
         ASIO_NO_WIN32_LEAN_AND_MEAN
         ASIO_NO_NOMINMAX
         ASIO_HAS_THREADS

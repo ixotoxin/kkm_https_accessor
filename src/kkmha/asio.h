@@ -31,13 +31,15 @@ namespace Asio {
 
     [[nodiscard, maybe_unused]]
     inline bool isLoopback(const IpAddress & address) {
-        if (address.is_v4()) {
-            return address.to_v4().is_loopback();
+        if (address.is_loopback()) {
+            return true;
         }
-        const auto v6 = address.to_v6();
-        if (v6.is_v4_mapped() || v6.is_v4_compatible()) {
-            return v6.to_v4().is_loopback();
+        if (address.is_v6()) {
+            const auto v6 = address.to_v6();
+            if (v6.is_v4_mapped()) {
+                return asio::ip::make_address_v4(asio::ip::v4_mapped, v6).is_loopback();
+            }
         }
-        return v6.is_loopback();
+        return false;
     }
 }
