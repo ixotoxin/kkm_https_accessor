@@ -5,11 +5,18 @@
 
 #include <atomic>
 #include <thread>
+#if defined(__clang__)
+#   include <immintrin.h>
+#elif defined(_MSC_VER)
+#   include <intrin.h>
+#else
+#   error Unsupported compiler
+#endif
 
-namespace MtHelp {
-    enum class Spin { Active, YieldThread, WaitFlag };
+namespace Ccy {
+    enum class Spin { Pause, YieldThread, WaitFlag, Active };
 
-    template<Spin P = Spin::Active>
+    template<Spin P = Spin::Pause>
     class SpinLock {
         std::atomic_flag m_flag {};
 
@@ -24,7 +31,9 @@ namespace MtHelp {
 
         void lock() noexcept {
             while (m_flag.test_and_set(std::memory_order_acquire)) {
-                if constexpr (P == Spin::YieldThread) {
+                if constexpr (P == Spin::Pause) {
+                    _mm_pause();
+                } else if constexpr (P == Spin::YieldThread) {
                     std::this_thread::yield();
                 } else if constexpr (P == Spin::WaitFlag) {
                     m_flag.wait(true, std::memory_order_relaxed);
@@ -32,7 +41,9 @@ namespace MtHelp {
             }
         }
 
-        bool tryLock() noexcept {
+        /** Lockable requirements  **/
+        [[maybe_unused]]
+        bool try_lock() noexcept {
             return !m_flag.test_and_set(std::memory_order_acquire);
         }
 
@@ -44,25 +55,8 @@ namespace MtHelp {
         }
     };
 
-    template<Spin P>
-    class ScopedLock {
-        SpinLock<P> & m_spinLock {};
-
-    public:
-        ScopedLock() = delete;
-        ScopedLock(const ScopedLock &) = delete;
-        ScopedLock(ScopedLock &&) = delete;
-
-        explicit ScopedLock(SpinLock<P> & spinLock) noexcept
-        : m_spinLock { spinLock } {
-            m_spinLock.lock();
-        }
-
-        ~ScopedLock() {
-            m_spinLock.unlock();
-        }
-
-        ScopedLock & operator=(const ScopedLock &) = delete;
-        ScopedLock & operator=(ScopedLock &&) = delete;
-    };
+    template class SpinLock<Spin::Pause>;
+    template class SpinLock<Spin::YieldThread>;
+    template class SpinLock<Spin::WaitFlag>;
+    template class SpinLock<Spin::Active>;
 }

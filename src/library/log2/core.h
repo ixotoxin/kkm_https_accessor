@@ -6,9 +6,12 @@
 #include "types.h"
 #include "variables.h"
 #include "strings.h"
+#include "queue.h"
 #include "accessor.h"
+#include "state.h"
 #include <lib/wconv.h>
 #include <lib/text.h>
+#include <variant>
 #include <string>
 #include <format>
 
@@ -30,6 +33,13 @@ namespace Log {
     [[maybe_unused]] void enableAsync() noexcept;
     [[maybe_unused]] void disableAsync() noexcept;
 #endif
+
+    using RmlRecordAccessor = ExclusiveAccessor<std::recursive_mutex>;
+    using RecordVariant = std::variant<RmlRecordAccessor, LoggerQueue::ProducerAccessor>;
+
+    inline auto RecordReady = [] (auto & accessor) -> bool { return static_cast<bool>(accessor); };
+    inline auto RecordRef = [] (auto & accessor) -> Record & { return *accessor; };
+    inline auto RecordWrite = [] (auto & accessor) -> void { accessor.complete(); };
 
     [[nodiscard, maybe_unused]] RecordVariant getFreeRecord();
 

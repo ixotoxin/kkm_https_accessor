@@ -9,9 +9,10 @@
 #include <type_traits>
 #include <concepts>
 #include <atomic>
+#include <mutex>
 #include <array>
 
-namespace MtHelp {
+namespace Ccy {
     enum class QueueGrowthPolicy { Call, Round, Step };
     enum class QueueSlotState { Free, ProdLocked, Ready, ConsLocked };
 
@@ -93,7 +94,7 @@ namespace MtHelp {
         int m_blocksNumberLimit;
         std::atomic_bool m_producing { true };
         std::atomic_bool m_consuming { true };
-        SpinLock<Spin::YieldThread> m_spinlock {};
+        SpinLock<Spin::Pause> m_spinLock {};
 
         bool grow() noexcept;
 
@@ -430,7 +431,7 @@ namespace MtHelp {
     template<std::default_initializable T, class U, int S, bool C, unsigned A, QueueGrowthPolicy G>
     requires ((std::is_same_v<U, void> || std::derived_from<T, U>) && S >= 4 && A > 0)
     bool Queue<T, U, S, C, A, G>::grow() noexcept {
-        ScopedLock lock { m_spinlock };
+        std::scoped_lock lock { m_spinLock };
 
         if (m_free.load(MO::acquire)) {
             return true;

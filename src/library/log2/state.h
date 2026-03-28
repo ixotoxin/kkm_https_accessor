@@ -5,11 +5,8 @@
 
 #include "types.h"
 #include "variables.h"
-#include <mutex>
 
 namespace Log {
-    inline std::recursive_mutex s_mutex {};
-
     namespace Console {
         [[nodiscard, maybe_unused]] bool allowed() noexcept;
         [[nodiscard, maybe_unused]] bool allowed(Level) noexcept;

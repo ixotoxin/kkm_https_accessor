@@ -4,31 +4,27 @@
 #pragma once
 
 #include "record.h"
-#include "queue.h"
-#include "state.h"
 #include "writers.h"
-#include <variant>
+#include <lib/concurrency.h>
 
 namespace Log {
     class RecordAccessor {
-    protected:
         Record & m_record;
-        std::unique_lock<std::recursive_mutex> m_lock;
 
     public:
         RecordAccessor() = delete;
         RecordAccessor(const RecordAccessor &) = delete;
         RecordAccessor(RecordAccessor &&) noexcept = default;
-        explicit RecordAccessor(Record & record) noexcept : m_record { record }, m_lock { s_mutex } {}
+        explicit RecordAccessor(Record & record) noexcept : m_record { record } {}
         ~RecordAccessor() = default;
 
         RecordAccessor & operator=(const RecordAccessor &) = delete;
         RecordAccessor & operator=(RecordAccessor &&) = delete;
 
-        // [[nodiscard, maybe_unused]]
-        // Record * operator->() const noexcept {
-        //     return std::addressof(m_record);
-        // }
+        [[nodiscard, maybe_unused]]
+        Record * operator->() const noexcept {
+            return std::addressof(m_record);
+        }
 
         [[nodiscard, maybe_unused]]
         Record & operator*() const noexcept {
@@ -45,9 +41,18 @@ namespace Log {
         }
     };
 
-    using RecordVariant = std::variant<RecordAccessor, LoggerQueue::ProducerAccessor>;
+    template<Ccy::Locker T>
+    class ExclusiveAccessor : public RecordAccessor {
+        std::unique_lock<T> m_lock;
 
-    inline auto RecordReady = [] (auto & accessor) -> bool { return static_cast<bool>(accessor); };
-    inline auto RecordRef = [] (auto & accessor) -> Record & { return *accessor; };
-    inline auto RecordWrite = [] (auto & accessor) -> void { accessor.complete(); };
+    public:
+        ExclusiveAccessor() = delete;
+        ExclusiveAccessor(const ExclusiveAccessor &) = delete;
+        ExclusiveAccessor(ExclusiveAccessor &&) noexcept = default;
+        ExclusiveAccessor(Record & record, T & mutex) noexcept : RecordAccessor(record), m_lock { mutex } {}
+        ~ExclusiveAccessor() = default;
+
+        ExclusiveAccessor & operator=(const ExclusiveAccessor &) = delete;
+        ExclusiveAccessor & operator=(ExclusiveAccessor &&) = delete;
+    };
 }

@@ -8,7 +8,7 @@
 #include <lib/queue.h>
 
 namespace Log {
-    class LoggerQueue : public MtHelp::Queue<Record, void, c_blockSize, true, c_acquireAttempts> {
+    class LoggerQueue : public Ccy::Queue<Record, void, c_blockSize, true, c_acquireAttempts> {
     public:
         LoggerQueue() : Queue(static_cast<int>(s_blocksNumber)) {}
         LoggerQueue(const LoggerQueue &) = delete;

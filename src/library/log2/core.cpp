@@ -8,9 +8,10 @@
 
 namespace Log {
     static Record s_record {};
+    static std::recursive_mutex s_mutex {};
 
     RecordVariant syncRecordAccessor() {
-        return RecordVariant { std::in_place_type<RecordAccessor>, s_record };
+        return RecordVariant { std::in_place_type<RmlRecordAccessor>, s_record, s_mutex };
     }
 
     using RecordAccessorFunc = RecordVariant (*)();

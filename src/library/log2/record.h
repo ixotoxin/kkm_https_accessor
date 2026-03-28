@@ -9,7 +9,7 @@
 #include <string>
 
 namespace Log {
-    struct alignas(MtHelp::c_queueAlignment) Record {
+    struct alignas(Ccy::c_queueAlignment) Record {
         std::wstring m_message {};
         std::wstring_view m_terse {};
         Level m_level { Level::Debug };
