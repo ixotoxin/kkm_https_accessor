@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 add_executable(kkmjl kkmjl_main.cpp kkmjl_variables.cpp)
+add_dependencies(kkmha regmsg)
 
 if (WITH_SNTZ)
     target_sntzr_link_options(kkmjl)

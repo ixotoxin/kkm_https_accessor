@@ -3,6 +3,10 @@
 
 #pragma once
 
+#ifdef SINGLE_THREAD
+#   error Not required
+#endif
+
 #include <atomic>
 #include <thread>
 #if defined(__clang__)
@@ -41,7 +45,7 @@ namespace Ccy {
             }
         }
 
-        /** Lockable requirements  **/
+        /** Lockable requirements **/
         [[maybe_unused]]
         bool try_lock() noexcept {
             return !m_flag.test_and_set(std::memory_order_acquire);

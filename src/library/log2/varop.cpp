@@ -108,11 +108,13 @@ namespace Log {
                         json2, "lineSize", s_lineSize,
                         Numeric::between(c_lineSizeMin, c_lineSizeMax), path2
                     );
+#ifndef SINGLE_THREAD
                     Json::handleKey(
                         json2, "maxQueueBlocks", s_blocksNumber,
                         Numeric::between(c_blocksNumberMin, c_blocksNumberMax), path2
                     );
                     Json::handleKey(json2, "enableAsync", s_enableAsync, path2);
+#endif
                     return true;
                 }
             )
@@ -137,9 +139,12 @@ namespace Log {
             L"DEF: log.eventLog.source = \"" << EventLog::c_eventSource << L"\"\n"
             L"CFG: log.appendLocation = " << Text::Wcs::yesNo(s_appendLocation) << L"\n"
             L"CFG: log.lineSize = " << s_lineSize << L"\n"
+#ifndef SINGLE_THREAD
             L"CFG: log.enableAsync = " << Text::Wcs::yesNo(s_enableAsync) << L"\n"
             L"DEF: log.queueBlockSize = " << c_blockSize << L"\n"
-            L"CFG: log.maxQueueBlocks = " << s_blocksNumber << L"\n";
+            L"CFG: log.maxQueueBlocks = " << s_blocksNumber << L"\n"
+#endif
+            ;
 
         return stream;
     }

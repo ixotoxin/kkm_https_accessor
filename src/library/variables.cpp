@@ -20,9 +20,11 @@ namespace Config {
 }
 
 namespace Log {
-    LOG_MVARE(bool, s_enableAsync, c_enableAsyncDef);
     LOG_MVARE(size_t, s_lineSize, c_lineSizeDef);
+#ifndef SINGLE_THREAD
+    LOG_MVARE(bool, s_enableAsync, c_enableAsyncDef);
     LOG_MVARE(size_t, s_blocksNumber, c_blocksNumberDef);
+#endif
 
 #ifdef DEBUG
     bool s_appendLocation { true };
@@ -33,20 +35,20 @@ namespace Log {
     namespace Console {
         LOG_MVARE(bool, s_terse, c_terseDef);
         LOG_MVARE(Output, s_output, c_outputDef);
-        LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWrite);
-        LOG_MVARE(LevelUnderlying, s_level, c_level);
+        LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWriteDef);
+        LOG_MVARE(LevelUnderlying, s_level, c_levelDef);
     }
 
     namespace File {
         LOG_MVARE(std::filesystem::path, s_directory, );
-        LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWrite);
-        LOG_MVARE(LevelUnderlying, s_fgLevel, c_fgLevel);
-        LOG_MVARE(LevelUnderlying, s_bgLevel, c_bgLevel);
+        LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWriteDef);
+        LOG_MVARE(LevelUnderlying, s_fgLevel, c_fgLevelDef);
+        LOG_MVARE(LevelUnderlying, s_bgLevel, c_bgLevelDef);
     }
 
     namespace EventLog {
-        LOG_MVARE(LevelUnderlying, s_fgLevel, c_fgLevel);
-        LOG_MVARE(LevelUnderlying, s_bgLevel, c_bgLevel);
+        LOG_MVARE(LevelUnderlying, s_fgLevel, c_fgLevelDef);
+        LOG_MVARE(LevelUnderlying, s_bgLevel, c_bgLevelDef);
     }
 }
 

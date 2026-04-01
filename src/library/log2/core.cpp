@@ -3,10 +3,13 @@
 
 #include "core.h"
 #include "strings.h"
-#include <atomic>
-#include <barrier>
+#ifndef SINGLE_THREAD
+#   include <atomic>
+#   include <barrier>
+#endif
 
 namespace Log {
+#ifndef SINGLE_THREAD
     static Record s_record {};
     static std::recursive_mutex s_mutex {};
 
@@ -14,10 +17,9 @@ namespace Log {
         return RecordVariant { std::in_place_type<RmlRecordAccessor>, s_record, s_mutex };
     }
 
-    using RecordAccessorFunc = RecordVariant (*)();
+    // using RecordAccessorFunc = RecordVariant (*)();
     static std::atomic s_recordAccessor { syncRecordAccessor };
 
-#ifndef SINGLE_THREAD
     static std::shared_ptr<LoggerQueue> s_queue { nullptr };
     static std::thread s_bgWriter {};
     static std::barrier s_barrier { 2 };
@@ -33,7 +35,7 @@ namespace Log {
         if (!s_enableAsync || s_queue) {
             return;
         }
-        write(Level::Debug, Wcs::c_enableAsync);
+        write(Category::Generic, Level::Debug, {}, Wcs::c_enableAsync);
         s_queue = std::make_shared<LoggerQueue>();
         s_bgWriter = std::thread { [] {
             bool notEmpty {};
@@ -73,14 +75,14 @@ namespace Log {
         if (s_bgWriter.joinable()) {
             s_bgWriter.join();
         }
-        write(Level::Debug, Wcs::c_disableAsync);
+        write(Category::Generic, Level::Debug, {}, Wcs::c_disableAsync);
     }
-#endif
 
     [[nodiscard, maybe_unused]]
     RecordVariant getFreeRecord() {
         return s_recordAccessor.load(std::memory_order_relaxed)();
     }
+#endif
 
     [[nodiscard, maybe_unused]]
     std::wstring levelLabel(LevelUnderlying level) {
@@ -103,7 +105,9 @@ namespace Config {
 
     [[maybe_unused]]
     void reinitLogger() {
+#ifndef SINGLE_THREAD
         Log::s_record.m_message.reserve(Log::s_lineSize);
+#endif
         Log::reinitWriters();
     }
 }

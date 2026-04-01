@@ -3,7 +3,7 @@
 
 #include "memprof.h"
 
-#if WITH_CRTD || WITH_SNTZ
+#if (WITH_CRTD || WITH_SNTZ) && !defined(WITHOUT_LOGGING)
 #   include <log2/core.h>
 #endif
 
@@ -27,10 +27,14 @@ namespace Config {
         ::_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
         ::_CrtSetReportMode(_CRT_ERROR, reportMode);
         ::_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-        LOG_WARNING(L"Memory profiling enabled (CRT Debug)");
+#   ifndef WITHOUT_LOGGING
+        Log::write(Log::Category::Generic, Log::Level::Warning, {}, L"Memory profiling enabled (CRT Debug)");
+#   endif
 #elif WITH_SNTZ
-        LOG_WARNING(L"AddressSanitizer enabled");
-        LOG_WARNING(L"UndefinedBehaviorSanitizer enabled");
+#   ifndef WITHOUT_LOGGING
+        Log::write(Log::Category::Generic, Log::Level::Warning, {}, L"AddressSanitizer enabled");
+        Log::write(Log::Category::Generic, Log::Level::Warning, {}, L"UndefinedBehaviorSanitizer enabled");
+#   endif
 #endif
     }
 }
@@ -39,15 +43,19 @@ namespace Debug {
     [[maybe_unused]]
     void forceMemoryLeak() {
 #if WITH_CRTD || WITH_SNTZ
-        auto memoryLeak = new unsigned short[32] { 0xadde, 0xefbe };
-        LOG_WARNING(
+        auto memoryLeak [[maybe_unused]] = new unsigned short[32] { 0xadde, 0xefbe };
+#   ifndef WITHOUT_LOGGING
+        Log::write(
+            Log::Category::Generic, Log::Level::Warning, {},
             L"I'll put {:x}{:x} {:x}{:x} here (test message indicating that a leak has taken place)",
             memoryLeak[0] & 0xff, memoryLeak[0] >> 8, memoryLeak[1] & 0xff, memoryLeak[1] >> 8
         );
-        LOG_WARNING(
+        Log::write(
+            Log::Category::Generic, Log::Level::Warning, {},
             std::format(L"Address of leaked memory block: 0x{:016X}",
             reinterpret_cast<uintptr_t>(memoryLeak))
         );
+#   endif
 #endif
     }
 }

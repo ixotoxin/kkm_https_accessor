@@ -4,6 +4,7 @@
 #include "impex.h"
 #include "variables.h"
 #include "strings.h"
+#include "except.h"
 
 namespace Kkm {
     bool assign(Nln::Json & json, const Result & result) {

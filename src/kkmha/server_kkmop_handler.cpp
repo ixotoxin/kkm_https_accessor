@@ -4,13 +4,15 @@
 #include "server_kkmop_handler.h"
 #include "server_kkmop_defauls.h"
 #include "server_kkmop_strings.h"
+#include "server_strings.h"
 #include "server_cache_strings.h"
 #include "server_cache_core.h"
 #include "http_constant_response.h"
 #include "http_json_response.h"
-#include <lib/meta.h>
+// #include <lib/meta.h>
 #include <debug/memprof.h>
 #include <kkm/strings.h>
+#include <kkm/logger.h>
 #include <kkm/device.h>
 #include <kkm/registry.h>
 #include <kkm/callhelpers.h>
@@ -27,25 +29,25 @@ namespace Server::KkmOp {
     static std::mutex s_registryMutex {};
 
     struct Payload {
-        using Id = decltype(Http::Request::m_id);
+        // using Id = decltype(Http::Request::m_id);
 
         const std::string m_serialNumber;
         const Nln::Json m_details;
         OptionalResult m_result;
+        LoggerPtr m_logger;
         DateTime::Offset m_expiresAfter;
         Http::Status m_status { Http::Status::Ok };
-        const Id m_requestId;
 
         Payload() = delete;
 
         Payload(
             std::string && serialNumber,
             Nln::Json && details,
-            const Id requestId,
+            LoggerPtr logger, // NOLINT
             const DateTime::Offset expiresAfter = 0s
         ) : m_serialNumber(std::forward<std::string>(serialNumber)),
             m_details(std::forward<Nln::Json>(details)), m_result(std::nullopt),
-            m_expiresAfter(expiresAfter), m_requestId(requestId) {
+            m_logger(std::move(logger)), m_expiresAfter(expiresAfter) {
             assert(m_details.is_object());
         }
 
@@ -59,21 +61,33 @@ namespace Server::KkmOp {
         [[maybe_unused]]
         void fail(
             const Http::Status status,
+            std::string && message,
+            const SrcLoc::Point & location = SrcLoc::Point::current()
+        ) {
+            assert(Meta::toUnderlying(status) >= 400);
+            m_logger->error(location, message);
+            m_status = status;
+            if (!m_result.has_value()) {
+                m_result.emplace(Nln::EmptyJsonObject);
+            }
+            m_result.value()[Json::Mbs::c_successKey] = false;
+            m_result.value()[Json::Mbs::c_messageKey] = std::move(message);
+        }
+
+        [[maybe_unused]]
+        void fail(
+            const Http::Status status,
             const std::string_view message,
             const SrcLoc::Point & location = SrcLoc::Point::current()
         ) {
             assert(Meta::toUnderlying(status) >= 400);
+            m_logger->error(location, message);
             m_status = status;
             if (!m_result.has_value()) {
                 m_result.emplace(Nln::EmptyJsonObject);
             }
             m_result.value()[Json::Mbs::c_successKey] = false;
             m_result.value()[Json::Mbs::c_messageKey] = message;
-            if (Log::s_appendLocation) {
-                LOG_ERROR(Server::Mbs::c_prefixedTextWithSource, m_requestId, message, SrcLoc::toMbs(location));
-            } else {
-                LOG_ERROR(Server::Mbs::c_prefixedText, m_requestId, message);
-            }
         }
     };
 
@@ -86,19 +100,16 @@ namespace Server::KkmOp {
         std::scoped_lock registryLock(s_registryMutex);
         if (s_connParamsRegistry.contains(wcSerialNumber)) {
             auto & params = s_connParamsRegistry.at(wcSerialNumber);
-            LOG_DEBUG(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*params));
+            payload.m_logger->debug(Wcs::c_selectKkm, wcSerialNumber, static_cast<std::wstring>(*params));
             return params;
         }
         auto [it, insert]
             = s_connParamsRegistry.try_emplace(wcSerialNumber, Registry::load(wcSerialNumber));
         if (insert) {
-            LOG_DEBUG(Wcs::c_selectKkm, payload.m_requestId, wcSerialNumber, static_cast<std::wstring>(*it->second));
+            payload.m_logger->debug(Wcs::c_selectKkm, wcSerialNumber, static_cast<std::wstring>(*it->second));
             return it->second;
         }
-        payload.fail(
-            Http::Status::NotFound,
-            std::format(Mbs::c_notFound, payload.m_requestId, payload.m_serialNumber)
-        );
+        payload.fail(Http::Status::NotFound, std::format(Mbs::c_notFound, payload.m_serialNumber));
         return nullptr;
     }
 
@@ -107,7 +118,7 @@ namespace Server::KkmOp {
     void callMethod(UndetailedMethod<R> method, Payload & payload) {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             callMethod(
-                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::make_shared<Logger>(*payload.m_logger) },
                 method, payload.m_result
             );
         }
@@ -118,7 +129,7 @@ namespace Server::KkmOp {
     void callMethod(DetailedMethod<R, D> method, Payload & payload) {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             callMethod(
-                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::make_shared<Logger>(*payload.m_logger) },
                 method, payload.m_details, payload.m_result
             );
         }
@@ -136,9 +147,10 @@ namespace Server::KkmOp {
         }
 
         const auto connParams = Registry::make(connString);
-        NewDevice kkm { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) };
+        auto logger = std::make_shared<Logger>(*payload.m_logger);
+        NewDevice kkm { connParams, logger };
+        logger->debug(Wcs::c_getKkmInfo);
         std::wstring serialNumber { kkm.serialNumber() };
-        LOG_DEBUG(Wcs::c_getKkmInfo, payload.m_requestId, serialNumber);
         Registry::save(connParams, kkm);
 
         {
@@ -151,7 +163,7 @@ namespace Server::KkmOp {
         kkm.printHello();
         payload.m_result << result;
 
-        LOG_INFO(Wcs::c_connParamsSaved, payload.m_requestId, serialNumber);
+        payload.m_logger->info(Wcs::c_connParamsSaved, serialNumber);
     }
 
     void resetRegistry(Payload & payload) {
@@ -177,7 +189,7 @@ namespace Server::KkmOp {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             collectDataFromMethods(
                 payload.m_result,
-                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::make_shared<Logger>(*payload.m_logger) },
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
@@ -195,7 +207,7 @@ namespace Server::KkmOp {
         if (const auto connParams = resolveConnParams(payload); connParams) {
             collectDataFromMethods(
                 payload.m_result,
-                Device { connParams, std::format(Wcs::c_requestPrefix, payload.m_requestId) },
+                Device { connParams, std::make_shared<Logger>(*payload.m_logger) },
                 &Device::getStatus,
                 &Device::getShiftState,
                 &Device::getReceiptState,
@@ -372,9 +384,9 @@ namespace Server::KkmOp {
 
         if (!cacheKey.empty()) {
             if (auto cacheEntry = Cache::load(cacheKey); cacheEntry) {
+                request.m_logger->debug(Cache::Wcs::c_fromCache);
                 request.m_response.m_status = cacheEntry->m_status;
                 request.m_response.m_data = cacheEntry->m_data;
-                LOG_DEBUG(Cache::Wcs::c_fromCache, request.m_id);
                 return;
             }
         }
@@ -405,7 +417,7 @@ namespace Server::KkmOp {
         }
 
         Payload payload {
-            std::move(serialNumber), std::move(details), request.m_id,
+            std::move(serialNumber), std::move(details), request.m_logger,
             request.m_method == Http::Method::Get ? c_reportCacheLifeTime : c_receiptCacheLifeTime
         };
 

@@ -4,6 +4,7 @@
 #include "connparams.h"
 #include "variables.h"
 #include "strings.h"
+#include "except.h"
 
 namespace Kkm {
     [[nodiscard]]

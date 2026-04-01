@@ -5,13 +5,22 @@
 
 #include "types.h"
 #include "variables.h"
-#include <lib/queue.h>
+#ifndef SINGLE_THREAD
+#   include <lib/queue.h>
+#endif
 #include <string>
 
 namespace Log {
+#ifdef SINGLE_THREAD
+    struct Record {
+#else
     struct alignas(Ccy::c_queueAlignment) Record {
+#endif
         std::wstring m_message {};
-        std::wstring_view m_terse {};
+        std::wstring_view m_terseMsg1 {};
+        std::wstring_view m_terseMsg2 {};
+        std::wstring m_location {};
+        Category m_category { Category::Generic };
         Level m_level { Level::Debug };
         bool m_toConsole { false };
         bool m_toFile { false };
@@ -19,6 +28,7 @@ namespace Log {
 
         Record() noexcept {
             m_message.reserve(s_lineSize);
+            m_location.reserve(MAX_PATH);
         }
 
         Record(const Record &) = delete;

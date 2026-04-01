@@ -26,9 +26,8 @@ namespace KkmOperator::Wcs {
     };
 
     constexpr Csv c_commandPrefix { L"ПП [{}]: " };
-    constexpr Csv c_prefixedText { L"ПП [{}]: {}" };
-    constexpr Csv c_getKkmInfo { L"ПП [{}]: ККМ [{}]: Получение информации об устройстве" };
-    constexpr Csv c_connParamsSaved { L"ПП [{}]: Параметры подключения ККМ [{}] успешно сохранены" };
+    constexpr Csv c_getKkmInfo { L"Получение информации об устройстве" };
+    constexpr Csv c_connParamsSaved { L"Параметры подключения ККМ [{}] успешно сохранены" };
 
     constexpr Csv c_error { L"** ошибка **" };
     constexpr Csv c_fmtModel { L"Модель: {}" };

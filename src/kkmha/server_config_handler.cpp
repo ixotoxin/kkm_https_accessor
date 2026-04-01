@@ -2,6 +2,7 @@
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "server_config_handler.h"
+#include "server_strings.h"
 #include "http_json_response.h"
 #include <lib/wconv.h>
 #include <lib/text.h>

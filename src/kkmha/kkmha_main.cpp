@@ -155,11 +155,11 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
         usage(std::wcerr, argv[0]);
 
     } catch (const Basic::Failure & e) {
-        LOG_ERROR(e);
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, e);
     } catch (const std::exception & e) {
-        LOG_ERROR(e);
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, e.what());
     } catch (...) {
-        LOG_ERROR(Basic::Wcs::c_somethingWrong);
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, Basic::Wcs::c_somethingWrong);
     }
 
     return EXIT_FAILURE;

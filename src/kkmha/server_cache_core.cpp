@@ -4,7 +4,7 @@
 #include "server_cache_core.h"
 #include "server_defaults.h"
 #include "server_strings.h"
-#include <log2/core.h>
+#include "server_logger.h"
 #include <utility>
 #include <atomic>
 #include <mutex>
@@ -20,7 +20,7 @@ namespace Server::Cache {
         const Key & key,
         const DateTime::Point expiredAt,
         const Http::Status status,
-        std::shared_ptr<Http::ProtoResponse> data
+        std::shared_ptr<Http::ProtoResponse> data //NOLINT
     ) {
         std::scoped_lock cacheLock { s_cacheMutex };
         s_cache[key] = {
@@ -50,7 +50,7 @@ namespace Server::Cache {
                     s_cache,
                     [] (const auto & item) { return item.second.m_expiredAt < DateTime::Clock::now(); }
                 );
-                LOG_DEBUG(Wcs::c_cacheMaintain, oldSize, s_cache.size());
+                log(Log::Level::Debug, Wcs::c_cacheMaintain, oldSize, s_cache.size());
             }
             s_counter = 0;
         }

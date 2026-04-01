@@ -48,7 +48,7 @@ namespace KkmJsonLoader {
         if (details.contains(Mbs::c_query)) {
             query.assign(Text::convert(Text::lowered(details.at(Mbs::c_query).get<std::string>())));
         } else {
-            throw Basic::Failure(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
+            throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
         }
 
         Nln::Json result(Nln::EmptyJsonObject);
@@ -56,7 +56,7 @@ namespace KkmJsonLoader {
             std::wstring connString;
             const bool found { Json::handleKey(details, "connParams", connString) };
             if (!found) {
-                throw Basic::Failure(KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams")); // NOLINT(*-exception-baseclass)
+                throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"))); // NOLINT(*-exception-baseclass)
             }
             const auto connParams = Registry::make(connString);
             NewDevice kkm { connParams };
@@ -127,7 +127,7 @@ namespace KkmJsonLoader {
         } else if (query == L"reset-state") {
             callMethod(Device { Registry::load(serial) }, &Device::resetState, details, result);
         } else {
-            throw Basic::Failure(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
+            throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
         }
 
 #if WITH_CRTD || WITH_SNTZ
@@ -153,7 +153,7 @@ namespace KkmJsonLoader {
     inline int safeExec(wchar_t * serialNumber, const wchar_t * fileName) noexcept try {
         return exec(serialNumber, fileName);
     } catch (const Basic::Failure & e) {
-        printError(e.explain(Log::s_appendLocation));
+        printError(e.explain()); // TODO: Подумать, есть ли необходимость в выводе источника исключения
         return EXIT_FAILURE;
     } catch (const std::exception & e) {
         printError(Text::convert(e.what()));

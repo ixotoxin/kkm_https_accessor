@@ -3,6 +3,10 @@
 
 #pragma once
 
+#ifdef SINGLE_THREAD
+#   error Not required
+#endif
+
 #include "spinlock.h"
 #include <type_traits>
 #include <mutex>

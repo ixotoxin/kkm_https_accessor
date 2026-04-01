@@ -1,7 +1,8 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "server_ping_handler.h"
+#include "server_strings.h"
 #include <cassert>
 
 namespace Server::Ping {

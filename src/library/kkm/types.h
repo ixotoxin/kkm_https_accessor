@@ -4,7 +4,7 @@
 #pragma once
 
 #include "macro.h"
-#include <lib/except.h>
+#include <lib/wconv.h>
 #include <string_view>
 #include <unordered_map>
 #include <fptr10.h>
@@ -16,30 +16,6 @@ namespace Kkm {
     namespace Atol = Atol::Fptr;
 
     class Device;
-
-    class Failure final : public Basic::Failure {
-    public:
-        Failure() = delete;
-        Failure(const Failure &) = default;
-        Failure(Failure &&) noexcept = default;
-
-        explicit Failure(
-            const std::wstring_view message,
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Basic::Failure(message, std::forward<SrcLoc::Point>(location)) {}
-
-        explicit Failure(
-            Atol::Fptr & kkm,
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Basic::Failure(kkm.errorDescription(), std::forward<SrcLoc::Point>(location)) {
-            kkm.resetError();
-        }
-
-        ~Failure() override = default;
-
-        Failure & operator=(const Failure &) = default;
-        Failure & operator=(Failure &&) noexcept = default;
-    };
 
 #if VERSION_LIMIT >= VERSION_10107
     enum class TimeZone : std::remove_cv_t<decltype(Atol::LIBFPTR_TIME_ZONE_DEVICE)> {

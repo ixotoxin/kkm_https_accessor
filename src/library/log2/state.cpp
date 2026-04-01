@@ -41,4 +41,9 @@ namespace Log {
     void asBackgroundProcess() noexcept {
         s_isForegroundProcess = false;
     }
+
+    [[nodiscard, maybe_unused]]
+    bool allowed(const Level level) noexcept {
+        return Console::allowed(level) || File::allowed(level) || EventLog::allowed(level);
+    }
 }

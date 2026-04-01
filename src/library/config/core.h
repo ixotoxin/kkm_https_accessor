@@ -5,9 +5,9 @@
 
 #include "variables.h"
 #include "strings.h"
-#include <lib/except.h>
+#include "except.h"
+#include "logger.h"
 #include <lib/json.h>
-#include <log2/core.h>
 #include <main/variables.h>
 #include <concepts>
 #include <fstream>
@@ -16,8 +16,6 @@
 #include <format>
 
 namespace Config {
-    using Basic::Failure;
-
     void setBaseVars(wchar_t ** envp);
 
     template<typename T, std::same_as<void (*)(const Nln::Json &)> ... SETTERS>
@@ -32,12 +30,12 @@ namespace Config {
             (setters(json), ...);
             std::filesystem::current_path(Main::s_directory);
             return;
-        } catch (const Failure & e) {
-            LOG_WARNING(e);
+        } catch (Failure & e) {
+            log(Log::Level::Warning, e);
         } catch (const std::exception & e) {
-            LOG_WARNING(e);
+            log(Log::Level::Warning, e.what());
         } catch (...) {
-            LOG_WARNING(Basic::Wcs::c_somethingWrong);
+            log(Log::Level::Warning, Basic::Wcs::c_somethingWrong);
         }
         throw Failure(Wcs::c_invalidConfig); // NOLINT(*-exception-baseclass)
     }

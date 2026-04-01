@@ -14,13 +14,17 @@
 namespace Log {
     namespace Console {
         [[maybe_unused]]
-        void write(const Level level, const std::wstring_view message) noexcept try {
+        void write(const Level level, const std::wstring_view message, const std::wstring_view location) noexcept try {
             std::wostream & output {
                 s_output == Output::StdOut ? std::wcout
                 : (s_output == Output::StdErr ? std::wcerr
                 : (level >= Level::Warning ? std::wcerr : std::wcout))
             };
-            output << message << L'\n';
+            output << message;
+            if (!location.empty()) {
+                output << L" (" << Wcs::c_source << L' ' << location << L')';
+            }
+            output << L'\n';
             if (s_flushEveryWrite) {
                 output.flush();
             }
@@ -72,8 +76,12 @@ namespace Log {
         } catch (...) {}
 
         [[maybe_unused]]
-        void write(const std::wstring_view message) noexcept try {
-            s_file << message << L'\n';
+        void write(const std::wstring_view message, const std::wstring_view location) noexcept try {
+            s_file << message;
+            if (!location.empty()) {
+                s_file << L" (" << Wcs::c_source << L' ' << location << L')';
+            }
+            s_file << L'\n';
             if (s_flushEveryWrite) {
                 s_file.flush();
             }
@@ -88,6 +96,20 @@ namespace Log {
             { Level::Info, static_cast<::WORD>(EVENTLOG_INFORMATION_TYPE) },
             { Level::Warning, static_cast<::WORD>(EVENTLOG_WARNING_TYPE) },
             { Level::Error, static_cast<::WORD>(EVENTLOG_ERROR_TYPE) }
+        };
+
+        static const std::unordered_map<Level, ::DWORD> c_event1Id {
+            { Level::Debug, MSG_GENERIC_INFO },
+            { Level::Info, MSG_GENERIC_INFO },
+            { Level::Warning, MSG_GENERIC_WARNING },
+            { Level::Error, MSG_GENERIC_ERROR }
+        };
+
+        static const std::unordered_map<Level, ::DWORD> c_event2Id {
+            { Level::Debug, MSG_GENERIC_INFO_WITH_SOURCE },
+            { Level::Info, MSG_GENERIC_INFO_WITH_SOURCE },
+            { Level::Warning, MSG_GENERIC_WARNING_WITH_SOURCE },
+            { Level::Error, MSG_GENERIC_ERROR_WITH_SOURCE }
         };
 
         static HANDLE s_sourceHandle { nullptr };
@@ -109,24 +131,53 @@ namespace Log {
         }
 
         [[maybe_unused]]
-        void write(const Level level, const wchar_t * message) noexcept try {
+        void write(
+            const Category category,
+            const Level level,
+            const wchar_t * message
+        ) noexcept try {
             assert(c_types.contains(level));
+            assert(c_event1Id.contains(level));
 
-            const wchar_t * strings[2] {
-                c_eventSource,
-                message
-            };
+            const wchar_t * strings[1] { message };
 
             ::ReportEventW(
-                s_sourceHandle,     // Event log handle
-                c_types.at(level),  // Event type
-                c_eventCategory,    // Event category
-                c_eventId,          // Event identifier
-                nullptr,            // No security identifier
-                2,                  // Size of strings array
-                0,                  // No binary data
-                strings,            // Array of strings
-                nullptr             // No binary data
+                s_sourceHandle,                 // Event log handle
+                c_types.at(level),              // Event type
+                static_cast<::WORD>(category),  // Event category
+                c_event1Id.at(level),           // Event identifier
+                nullptr,                        // No security identifier
+                1,                              // Size of strings array
+                0,                              // No binary data
+                strings,                        // Array of strings
+                nullptr                         // No binary data
+            );
+        } catch (...) {
+            close();
+        }
+
+        [[maybe_unused]]
+        void write(
+            const Category category,
+            const Level level,
+            const wchar_t * message,
+            const wchar_t * location
+        ) noexcept try {
+            assert(c_types.contains(level));
+            assert(c_event2Id.contains(level));
+
+            const wchar_t * strings[2] { message, location };
+
+            ::ReportEventW(
+                s_sourceHandle,                 // Event log handle
+                c_types.at(level),              // Event type
+                static_cast<::WORD>(category),  // Event category
+                c_event2Id.at(level),           // Event identifier
+                nullptr,                        // No security identifier
+                2,                              // Size of strings array
+                0,                              // No binary data
+                strings,                        // Array of strings
+                nullptr                         // No binary data
             );
         } catch (...) {
             close();
@@ -161,16 +212,20 @@ namespace Log {
     void write(const Record & event) noexcept {
         if (event.m_toConsole && Console::allowed()) {
             if (Console::s_terse) {
-                Console::write(event.m_level, event.m_terse);
+                Console::write(event.m_level, event.m_terseMsg1, event.m_location);
             } else {
-                Console::write(event.m_level, event.m_message);
+                Console::write(event.m_level, event.m_message, event.m_location);
             }
         }
         if (event.m_toFile && File::open()) {
-            File::write(event.m_message);
+            File::write(event.m_message, event.m_location);
         }
         if (event.m_toEventLog && EventLog::open()) {
-            EventLog::write(event.m_level, event.m_message.c_str());
+            if (event.m_location.empty()) {
+                EventLog::write(event.m_category, event.m_level, event.m_terseMsg2.data());
+            } else {
+                EventLog::write(event.m_category, event.m_level, event.m_terseMsg2.data(), event.m_location.data());
+            }
         }
     }
 }

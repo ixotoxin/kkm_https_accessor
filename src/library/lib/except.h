@@ -5,10 +5,7 @@
 
 #include "macro.h"
 #include "strings.h"
-#include "wconv.h"
 #include "srcloc.h"
-#include <utility>
-#include <system_error>
 #include <string>
 #include <format>
 
@@ -17,6 +14,7 @@ namespace Basic {
     protected:
         std::wstring m_message {};
         SrcLoc::Point m_location;
+        unsigned short m_category;
 
     public:
         Failure() = delete;
@@ -25,32 +23,36 @@ namespace Basic {
 
         [[maybe_unused]]
         explicit Failure(
+            std::wstring && message,
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        ) : m_message(std::move(message)), m_location(std::move(location)), m_category(category) {} // NOLINT
+
+        [[maybe_unused]]
+        explicit Failure(
             const std::wstring_view message,
+            const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(message.begin(), message.end()), m_location(std::forward<SrcLoc::Point>(location)) {}
-
-        [[maybe_unused]]
-        explicit Failure(
-            const std::string_view message,
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(Text::convert(message)), m_location(std::forward<SrcLoc::Point>(location)) {}
-
-        [[maybe_unused]]
-        explicit Failure(
-            const std::exception & e,
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(Text::convert(e.what())), m_location(std::forward<SrcLoc::Point>(location)) {}
-
-        [[maybe_unused]]
-        explicit Failure(
-            const std::error_code & e,
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(Text::convert(e.message())), m_location(std::forward<SrcLoc::Point>(location)) {}
+        ) : m_message(message.begin(), message.end()), m_location(std::move(location)), m_category(category) {} // NOLINT
 
         virtual ~Failure() = default;
 
         Failure & operator=(const Failure &) = default;
         Failure & operator=(Failure &&) noexcept = default;
+
+        [[maybe_unused]]
+        bool category(const unsigned short clarifyingCategory) noexcept {
+            if (m_category == 0) {
+                m_category = clarifyingCategory;
+                return true;
+            }
+            return false;
+        }
+
+        [[nodiscard, maybe_unused]]
+        unsigned short category() const noexcept {
+            return m_category;
+        }
 
         [[nodiscard, maybe_unused]]
         const std::wstring & what() const noexcept {
@@ -68,25 +70,8 @@ namespace Basic {
         }
 
         [[maybe_unused]]
-        virtual void appendExplanation(std::wstring & result) const noexcept {
-            result.append(m_message);
-        }
-
-        [[nodiscard, maybe_unused]]
-        virtual std::wstring explain(const bool appendLocation) const noexcept {
-            std::wstring result { m_message };
-            if (appendLocation) {
-                result += m_location;
-            }
-            return result;
-        }
-
-        [[maybe_unused]]
-        virtual void appendExplanation(std::wstring & result, const bool appendLocation) const noexcept {
-            result.append(m_message);
-            if (appendLocation) {
-                result += m_location;
-            }
+        virtual void explain(std::wstring & receiver) const noexcept {
+            receiver.append(m_message);
         }
     };
 
@@ -101,35 +86,23 @@ namespace Basic {
 
         [[maybe_unused]]
         explicit DataError(Failure && e, const std::wstring_view variable = {})
-        : Failure(std::forward<Failure>(e)), m_variable(variable) {}
+        : Failure(std::move(e)), m_variable(variable) {}
+
+        [[maybe_unused]]
+        explicit DataError(
+            std::wstring && message,
+            const std::wstring_view variable = {},
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        ) : Failure(std::move(message), category, std::move(location)), m_variable(variable) {} // NOLINT
 
         [[maybe_unused]]
         explicit DataError(
             const std::wstring_view message,
             const std::wstring_view variable = {},
+            const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(message, std::forward<SrcLoc::Point>(location)), m_variable(variable) {}
-
-        [[maybe_unused]]
-        explicit DataError(
-            const std::string_view message,
-            const std::wstring_view variable = {},
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(message, std::forward<SrcLoc::Point>(location)), m_variable(variable) {}
-
-        [[maybe_unused]]
-        explicit DataError(
-            const std::exception & e,
-            const std::wstring_view variable = {},
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(e, std::forward<SrcLoc::Point>(location)), m_variable(variable) {}
-
-        [[maybe_unused]]
-        explicit DataError(
-            const std::error_code & e,
-            const std::wstring_view variable = {},
-            SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(e, std::forward<SrcLoc::Point>(location)), m_variable(variable) {}
+        ) : Failure(message, category, std::move(location)), m_variable(variable) {} // NOLINT
 
         ~DataError() override = default;
 
@@ -156,36 +129,11 @@ namespace Basic {
         }
 
         [[maybe_unused]]
-        void appendExplanation(std::wstring & result) const noexcept override {
+        void explain(std::wstring & result) const noexcept override {
             if (m_variable.empty()) {
                 result.append(m_message);
             } else {
                 LIB_WFMT2(result, Wcs::c_dataError, m_message, m_variable);
-            }
-        }
-
-        [[nodiscard, maybe_unused]]
-        std::wstring explain(const bool appendLocation) const noexcept override {
-            std::wstring message {
-                m_variable.empty()
-                ? m_message
-                : LIB_WFMT(Wcs::c_dataError, m_message, m_variable)
-            };
-            if (appendLocation) {
-                message += m_location;
-            }
-            return message;
-        }
-
-        [[maybe_unused]]
-        void appendExplanation(std::wstring & result, const bool appendLocation) const noexcept override {
-            if (m_variable.empty()) {
-                result.append(m_message);
-            } else {
-                LIB_WFMT2(result, Wcs::c_dataError, m_message, m_variable);
-            }
-            if (appendLocation) {
-                result += m_location;
             }
         }
     };

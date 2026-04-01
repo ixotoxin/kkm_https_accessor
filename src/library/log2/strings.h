@@ -10,6 +10,17 @@
 namespace Log::Wcs {
     LOG_WSTRI(c_enableAsync, L"Включено асинхронное логирование");
     LOG_WSTRI(c_disableAsync, L"Выключено асинхронное логирование");
+    LOG_WSTRI(c_source, L"источник");
+
+    inline const std::unordered_map<CategoryUnderlying, std::wstring_view> c_categoryLabels {
+        { c_catUnknown, L"UNK" },
+        { c_catGeneric, L"GEN" },
+        { c_catConfiguration, L"CFG" },
+        { c_catService, L"SRV" },
+        { c_catNetwork, L"NET" },
+        { c_catWebServer, L"WEB" },
+        { c_catCashRegister, L"CRG" }
+    };
 
     inline const std::unordered_map<Level, std::wstring_view> c_levelLabels {
         { Level::Debug, L"DBG" },

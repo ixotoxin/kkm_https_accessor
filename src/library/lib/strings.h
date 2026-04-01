@@ -26,7 +26,7 @@ namespace Basic {
         LIB_CSTRI(c_ok, "OK");
         LIB_CSTRI(c_somethingWrong, "Что-то пошло не так!");
         LIB_CSTRI(c_fallbackErrorMessage, "[ error ]");
-        LIB_STRI(c_source, "источник");
+        // LIB_STRI(c_source, "источник"); // CLEANUP
     }
 }
 

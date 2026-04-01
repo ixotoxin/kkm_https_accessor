@@ -11,77 +11,96 @@ namespace Log {
         [[nodiscard, maybe_unused]] bool allowed() noexcept;
         [[nodiscard, maybe_unused]] bool allowed(Level) noexcept;
 
-        class ScopeLevelDown {
+        class ScopedLevelDown {
             const LevelUnderlying m_prevLevel { s_level };
 
         public:
-            ScopeLevelDown() = delete;
-            ScopeLevelDown(const ScopeLevelDown &) = delete;
-            ScopeLevelDown(ScopeLevelDown &&) = delete;
+            ScopedLevelDown() = delete;
+            ScopedLevelDown(const ScopedLevelDown &) = delete;
+            ScopedLevelDown(ScopedLevelDown &&) = delete;
 
             [[maybe_unused]]
-            explicit ScopeLevelDown(const Level level) noexcept {
+            explicit ScopedLevelDown(const Level level) noexcept {
                 if (Meta::toUnderlying(level) < s_level) {
                     s_level = Meta::toUnderlying(level);
                 }
             }
 
-            ~ScopeLevelDown() {
+            ~ScopedLevelDown() {
                 s_level = m_prevLevel;
             }
 
-            ScopeLevelDown & operator=(const ScopeLevelDown &) = delete;
-            ScopeLevelDown & operator=(ScopeLevelDown &&) = delete;
+            ScopedLevelDown & operator=(const ScopedLevelDown &) = delete;
+            ScopedLevelDown & operator=(ScopedLevelDown &&) = delete;
         };
 
-        class ScopeLevelUp {
+        class ScopedLevelUp {
             const LevelUnderlying m_prevLevel { s_level };
 
         public:
-            ScopeLevelUp() = delete;
-            ScopeLevelUp(const ScopeLevelUp &) = delete;
-            ScopeLevelUp(ScopeLevelUp &&) = delete;
+            ScopedLevelUp() = delete;
+            ScopedLevelUp(const ScopedLevelUp &) = delete;
+            ScopedLevelUp(ScopedLevelUp &&) = delete;
 
-            explicit ScopeLevelUp(const Level level) noexcept {
+            explicit ScopedLevelUp(const Level level) noexcept {
                 if (Meta::toUnderlying(level) > s_level) {
                     s_level = Meta::toUnderlying(level);
                 }
             }
 
-            ~ScopeLevelUp() {
+            ~ScopedLevelUp() {
                 s_level = m_prevLevel;
             }
 
-            ScopeLevelUp & operator=(const ScopeLevelUp &) = delete;
-            ScopeLevelUp & operator=(ScopeLevelUp &&) = delete;
+            ScopedLevelUp & operator=(const ScopedLevelUp &) = delete;
+            ScopedLevelUp & operator=(ScopedLevelUp &&) = delete;
         };
 
-        class ScopeSolo {
+        class ScopedSolo {
             const LevelUnderlying m_prevFileFgLevel { File::s_fgLevel };
             const LevelUnderlying m_prevFileBgLevel { File::s_bgLevel };
             const LevelUnderlying m_prevEventLogFgLevel { EventLog::s_fgLevel };
             const LevelUnderlying m_prevEventLogBgLevel { EventLog::s_bgLevel };
 
         public:
-            ScopeSolo() noexcept {
+            ScopedSolo() noexcept {
                 File::s_fgLevel = c_levelNone;
                 File::s_bgLevel = c_levelNone;
                 EventLog::s_fgLevel = c_levelNone;
                 EventLog::s_bgLevel = c_levelNone;
             }
 
-            ScopeSolo(const ScopeSolo &) = delete;
-            ScopeSolo(ScopeSolo &&) = delete;
+            ScopedSolo(const ScopedSolo &) = delete;
+            ScopedSolo(ScopedSolo &&) = delete;
 
-            ~ScopeSolo() {
+            ~ScopedSolo() {
                 File::s_fgLevel = m_prevFileFgLevel;
                 File::s_bgLevel = m_prevFileBgLevel;
                 EventLog::s_fgLevel = m_prevEventLogFgLevel;
                 EventLog::s_bgLevel = m_prevEventLogBgLevel;
             }
 
-            ScopeSolo & operator=(const ScopeSolo &) = delete;
-            ScopeSolo & operator=(ScopeSolo &&) = delete;
+            ScopedSolo & operator=(const ScopedSolo &) = delete;
+            ScopedSolo & operator=(ScopedSolo &&) = delete;
+        };
+
+        class ScopedMute {
+            const LevelUnderlying m_prevLevel { s_level };
+
+        public:
+            ScopedMute() noexcept {
+                s_level = c_levelNone;
+            }
+
+            ScopedMute(const ScopedMute &) = delete;
+            ScopedMute(ScopedMute &&) = delete;
+
+            ~ScopedMute() {
+                s_level = m_prevLevel;
+            }
+
+            ScopedMute & operator=(const ScopedMute &) = delete;
+            ScopedMute & operator=(ScopedMute &&) = delete;
         };
     }
 
@@ -95,4 +114,5 @@ namespace Log {
 
     [[maybe_unused]] void asForegroundProcess() noexcept;
     [[maybe_unused]] void asBackgroundProcess() noexcept;
+    [[nodiscard, maybe_unused]] bool allowed(Level) noexcept;
 }

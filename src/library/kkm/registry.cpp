@@ -3,6 +3,7 @@
 
 #include "registry.h"
 #include "strings.h"
+#include "except.h"
 #include <filesystem>
 #include <fstream>
 

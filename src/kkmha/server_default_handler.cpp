@@ -5,6 +5,7 @@
 #include "server_default_strings.h"
 #include "server_static_variables.h"
 #include "server_favicon.h"
+#include "server_strings.h"
 #include "http_solid_response.h"
 #include "http_binary_response.h"
 #include <cassert>
@@ -21,9 +22,9 @@ namespace Server::Default {
 
         if (request.m_method == Http::Method::Get) {
             if (Static::s_enable && request.m_hint.size() < 2) {
+                request.m_logger->debug(Wcs::c_redirectToStatic);
                 request.m_response.m_status = Http::Status::MovedTemporarily;
                 request.m_response.m_data = std::make_shared<Http::SolidResponse>(Mbs::c_redirectToStaticResponse);
-                LOG_DEBUG(Wcs::c_redirectToStatic, request.m_id);
             } else if (request.m_hint.size() == 2 && request.m_hint[1] == "favicon.ico") {
                 request.m_response.m_data
                     = std::make_shared<Http::BinaryResponse<Http::Regular>>(

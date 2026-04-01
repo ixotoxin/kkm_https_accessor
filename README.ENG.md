@@ -38,6 +38,7 @@ are located in the `.\_msvc` and `.\_clang` directories, respectively.
 | `config_build.cmd`         | Sets build options.                                                                                                                                     |
 | `test.cmd`                 | Builds the debug version and runs unit tests.                                                                                                           |
 | `test_building.cmd`        | Builds with different sets of build parameters and runs unit tests.                                                                                     |
+| `build_elogmsg.cmd`        | Builds the resources (EventLog messages). Alternative to compiling via CMake.                                                                           |
 | `build_debug.cmd`          | Builds the debug version.                                                                                                                               |
 | `build_crtd.cmd`           | Builds the debug version with enabled CRT Debug.                                                                                                        |
 | `build_sntz.cmd`           | Builds the release version with AddressSanitizer and UndefinedBehaviorSanitizer.                                                                        |
@@ -62,6 +63,7 @@ CMake options:
 | `BUILD_SEPARATED` | Build separated .exe files.                             |
 | `BUILD_STATIC`    | Static build.                                           |
 | `BUILD_TESTS`     | Build with unit-tests.                                  |
+| `BUILD_ELOGMSG`   | Build resources (EventLog messages).                    |
 | `WITH_SHORTCUTS`  | Build with command shortcuts enabled.                   |
 | `WITH_RELSL`      | Use relative paths for source files in the application. |
 | `WITH_SBIAC`      | Allow invasive access to the std::string buffer.        |
@@ -78,8 +80,12 @@ When building the project with the option `-D BUILD_STATIC=ON`, the dependencies
 build, the files `libcrypto-?-x64.dll` and `libssl-?-x64.dll` will also be placed there. When building with the
 `-D BUILD_SEPARATED=ON` option, three executable files will be created: `kkmha.exe`, `kkmop.exe`, and `kkmjl.exe`.
 
-The `.\_build` directory also already contains configuration files, etc.,
-which form a ready-to-use environment for launch.
+The `.\_build` directory also already contains configuration files, etc., which form a ready-to-use environment for
+launch.
+
+The `regmsg.exe` application registers the resources necessary for the correct display of messages in the `Event Log`.
+`Administrator` privileges are required to run it. The resources are contained within the file itself, so it should not
+be deleted; if the file is moved, it must be run again to re-register the resources.
 
 In order to run the service on a PC other than the one on which the build was made, you may need to install the latest
 package [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).

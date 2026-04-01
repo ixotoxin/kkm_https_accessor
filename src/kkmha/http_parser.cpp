@@ -4,7 +4,6 @@
 #include "http_parser.h"
 #include "http_defaults.h"
 #include <lib/text.h>
-#include <log2/core.h>
 
 namespace Http {
     using Basic::Failure;
@@ -72,7 +71,7 @@ namespace Http {
         if (field == "content-length") {
             m_expectedBodySize = Text::cast<size_t>(value);
             if (m_expectedBodySize > c_requestBodySizeLimit) {
-                LOG_ERROR(Wcs::c_bodySizeLimitExceeded, m_request.m_id);
+                m_request.m_logger->error(Wcs::c_bodySizeLimitExceeded);
                 m_expectedBodySize = 0;
                 m_request.m_response.m_status = Status::BadRequest;
                 m_request.m_response.m_data.emplace<std::string>(Mbs::c_bodySizeLimitExceeded);
@@ -83,7 +82,7 @@ namespace Http {
         }
     }
 
-    void Parser::parseBody(std::istream & stream) {
+    void Parser::parseBody(std::istream & stream) { // NOLINT
         char buffer[c_parserBufferSize];
         while (stream.read(buffer, sizeof(buffer))) {
             m_request.m_body.append(buffer, sizeof(buffer));
@@ -91,7 +90,7 @@ namespace Http {
         m_request.m_body.append(buffer, stream.gcount());
     }
 
-    void Parser::dummyReader(std::istream & stream) { // NOLINT(*-convert-member-functions-to-static)
+    void Parser::dummyReader(std::istream & stream) { // NOLINT // NOLINT(*-convert-member-functions-to-static)
         stream.ignore(std::numeric_limits<std::streamsize>::max());
     }
 
@@ -104,11 +103,11 @@ namespace Http {
             }
             return;
         } catch (const Failure & e) {
-            LOG_ERROR(e);
+            m_request.m_logger->error(e);
         } catch (const std::exception & e) {
-            LOG_ERROR(e);
+            m_request.m_logger->error(e.what());
         } catch (...) {
-            LOG_ERROR(Basic::Wcs::c_somethingWrong);
+            m_request.m_logger->error(Basic::Wcs::c_somethingWrong);
         }
         if (m_request.m_response.m_status == Status::Ok) {
             m_request.m_response.m_status = Status::BadRequest;

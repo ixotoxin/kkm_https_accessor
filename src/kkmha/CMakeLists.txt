@@ -17,6 +17,8 @@ add_executable(
     kkmha_main.cpp
 )
 
+add_dependencies(kkmha regmsg)
+
 if (BUILD_SEPARATED)
     target_sources(kkmha PRIVATE kkmha_variables.cpp)
 endif ()
@@ -29,7 +31,6 @@ target_link_libraries(kkmha PRIVATE mtlib)
 target_link_libraries(kkmha PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(kkmha PRIVATE asio::asio)
 target_link_libraries(kkmha PRIVATE nlohmann_json::nlohmann_json)
-#target_link_libraries(kkmha INTERFACE <threads>)
 
 if (BUILD_STATIC)
     #target_link_libraries(kkmha PRIVATE Advapi32.lib)

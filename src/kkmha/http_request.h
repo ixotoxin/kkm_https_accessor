@@ -4,6 +4,8 @@
 #pragma once
 
 #include "http_types.h"
+#include "http_strings.h"
+#include "http_logger.h"
 #include "http_response.h"
 #include "asio.h"
 #include <lib/datetime.h>
@@ -28,15 +30,16 @@ namespace Http {
         std::string m_body {};
         Asio::IpAddress m_remote;
         std::vector<std::string> m_hint {};
-
         Method m_method { Method::NotImplemented };
         const IdType m_id;
+        LoggerPtr m_logger;
 
         Request() = delete;
 
         explicit Request(Asio::IpAddress && remote)
         : m_remote { std::forward<Asio::IpAddress>(remote) },
-          m_id { static_cast<IdType>(s_sequence.fetch_add(1 + (DateTime::windows() & c_idMask))) } {}
+          m_id { static_cast<IdType>(s_sequence.fetch_add(1 + (DateTime::windows() & c_idMask))) },
+          m_logger { std::make_shared<Logger>(std::format(Wcs::c_requestPrefix, m_id)) } {}
 
         Request(const Request &) = delete;
         Request(Request &&) = delete;

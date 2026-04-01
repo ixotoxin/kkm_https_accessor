@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -9,9 +9,8 @@ namespace Server {
     namespace Wcs {
         using Csv = const std::wstring_view;
 
-        constexpr Csv c_prefixedText { L"Запрос [{:04x}]: {}" };
-        constexpr Csv c_forbidden { L"Запрос [{:04x}]: Сбой авторизации" };
-        constexpr Csv c_redirectToStatic { L"Запрос [{:04x}]: Перенаправляем в /static/" };
+        constexpr Csv c_forbidden { L"Сбой авторизации" };
+        constexpr Csv c_redirectToStatic { L"Перенаправляем в /static/" };
 
         constexpr Csv c_starting { L"Запуск сервера..." };
         constexpr Csv c_startingFailed { L"Не удалось запустить сервер" };
@@ -30,11 +29,6 @@ namespace Server {
 
     namespace Mbs {
         using Csv = const std::string_view;
-
-        constexpr Csv c_prefixedText { "Запрос [{:04x}]: {}" };
-        constexpr Csv c_prefixedTextWithSource { "Запрос [{:04x}]: {} ({})" };
-        constexpr Csv c_prefixedOperation { "Запрос [{:04x}]: {}: {}" };
-        constexpr Csv c_prefixedOperationWithSource { "Запрос [{:04x}]: {}: {} ({})" };
 
         constexpr Csv c_badRequest { "Некорректный запрос" };
         constexpr Csv c_methodNotAllowed { "Невозможно выполнить данный запрос" };

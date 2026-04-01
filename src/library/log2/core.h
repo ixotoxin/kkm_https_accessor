@@ -6,33 +6,33 @@
 #include "types.h"
 #include "variables.h"
 #include "strings.h"
-#include "queue.h"
-#include "accessor.h"
+#ifdef SINGLE_THREAD
+#   include "writers.h"
+#else
+#   include "queue.h"
+#   include "accessor.h"
+#endif
 #include "state.h"
 #include <lib/wconv.h>
 #include <lib/text.h>
-#include <variant>
-#include <string>
+#ifndef SINGLE_THREAD
+#   include <variant>
+#endif
 #include <format>
-
-#define LOG_DEBUG(x, ...) Log::write(Log::Level::Debug, x __VA_OPT__(,) __VA_ARGS__)
-#define LOG_INFO(x, ...) Log::write(Log::Level::Info, x __VA_OPT__(,) __VA_ARGS__)
-#define LOG_WARNING(x, ...) Log::write(Log::Level::Warning, x __VA_OPT__(,) __VA_ARGS__)
-#define LOG_ERROR(x, ...) Log::write(Log::Level::Error, x __VA_OPT__(,) __VA_ARGS__)
 
 namespace Log {
     namespace Wcs {
-        constexpr std::wstring_view c_prefix { L"{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}: {}: " };
+        constexpr std::wstring_view c_tsPrefix { L"{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}: {}: {}: " };
     }
 
-    constexpr size_t c_excessSize { 21 };
+    constexpr size_t c_terseMsg1Offset { 21 };
+    constexpr size_t c_terseMsg2Offset { 31 };
 
     [[nodiscard, maybe_unused]] std::wstring levelLabel(int);
 
 #ifndef SINGLE_THREAD
     [[maybe_unused]] void enableAsync() noexcept;
     [[maybe_unused]] void disableAsync() noexcept;
-#endif
 
     using RmlRecordAccessor = ExclusiveAccessor<std::recursive_mutex>;
     using RecordVariant = std::variant<RmlRecordAccessor, LoggerQueue::ProducerAccessor>;
@@ -42,27 +42,46 @@ namespace Log {
     inline auto RecordWrite = [] (auto & accessor) -> void { accessor.complete(); };
 
     [[nodiscard, maybe_unused]] RecordVariant getFreeRecord();
+#endif
 
     [[maybe_unused]]
-    inline bool writePrefix(std::wstring & result, const Level level) noexcept try {
-        result.clear();
+    inline bool formatPrefix(
+        std::wstring & buffer,
+        CategoryUnderlying category,
+        const Level level,
+        const std::wstring_view prefix
+    ) noexcept try {
+        buffer.clear();
         ::SYSTEMTIME localTime;
         ::GetLocalTime(&localTime);
+        if (!Wcs::c_categoryLabels.contains(category)) {
+            category = c_catUnknown;
+        }
         std::format_to(
-            std::back_inserter(result),
-            Wcs::c_prefix,
+            std::back_inserter(buffer),
+            Wcs::c_tsPrefix,
             localTime.wYear, localTime.wMonth, localTime.wDay,
             localTime.wHour, localTime.wMinute, localTime.wSecond,
+            Wcs::c_categoryLabels.at(category),
             Wcs::c_levelLabels.at(level)
         );
-        return result.size() >= c_excessSize;
+        if (!prefix.empty()) {
+            buffer.append(prefix);
+        }
+        return buffer.size() >= c_terseMsg1Offset;
     } catch (...) {
         return false;
     }
 
     template<Meta::View T, typename ... Args>
     [[maybe_unused]]
-    void write(const Level level, const T message, Args && ... args) noexcept try {
+    void write(
+        const Category category,
+        const Level level,
+        const std::wstring_view prefix,
+        const T message,
+        Args && ... args
+    ) noexcept try {
         if (message.empty()) {
             return;
         }
@@ -70,10 +89,14 @@ namespace Log {
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
+#ifdef SINGLE_THREAD
+            Record record {};
+#else
             if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
                 auto & record = std::visit(RecordRef, recordVariant);
+#endif
                 auto & buffer = record.m_message;
-                if (writePrefix(buffer, level)) {
+                if (formatPrefix(buffer, Meta::toUnderlying(category), level, prefix)) {
                     if constexpr (Meta::isWide<T>) {
                         if constexpr (sizeof...(Args) > 0) {
                             std::vformat_to(std::back_inserter(buffer), message, std::make_wformat_args(args...));
@@ -90,120 +113,194 @@ namespace Log {
                             Text::appendConverted(buffer, message);
                         }
                     }
-                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_terseMsg1
+                        = std::wstring_view(buffer.data() + c_terseMsg1Offset, buffer.size() - c_terseMsg1Offset);
+                    record.m_terseMsg2
+                        = std::wstring_view(buffer.data() + c_terseMsg2Offset, buffer.size() - c_terseMsg2Offset);
+                    record.m_location.clear();
+                    record.m_category = category;
                     record.m_level = level;
                     record.m_toConsole = writeToConsole;
                     record.m_toFile = writeToFile;
                     record.m_toEventLog = writeToEventLog;
+#ifdef SINGLE_THREAD
+                    write(record);
+#else
                     std::visit(RecordWrite, recordVariant);
                 }
+#endif
             }
         }
     } catch (...) {}
 
     template<Meta::Char T, typename ... Args>
     [[maybe_unused]]
-    void write(const Level level, const T * message, Args && ... args) noexcept {
-        write<typename Meta::TextTrait<T>::View>(level, message, std::forward<Args>(args)...);
+    void write(
+        const Category category,
+        const Level level,
+        const std::wstring_view prefix,
+        const T * message,
+        Args && ... args
+    ) noexcept {
+        write<typename Meta::TextTrait<T>::View>(category, level, prefix, message, std::forward<Args>(args)...);
     }
 
     template<Meta::String T, typename ... Args>
     [[maybe_unused]]
-    void write(const Level level, const T & message, Args && ... args) noexcept {
-        write<typename Meta::TextTrait<T>::View>(level, message, std::forward<Args>(args)...);
+    void write(
+        const Category category,
+        const Level level,
+        const std::wstring_view prefix,
+        const T & message,
+        Args && ... args
+    ) noexcept {
+        write<typename Meta::TextTrait<T>::View>(category, level, prefix, message, std::forward<Args>(args)...);
+    }
+
+    template<Meta::View T, typename ... Args>
+    [[maybe_unused]]
+    void write(
+        const SrcLoc::Point & location,
+        const Category category,
+        const Level level,
+        const std::wstring_view prefix,
+        const T message,
+        Args && ... args
+    ) noexcept try {
+        if (message.empty()) {
+            return;
+        }
+        const bool writeToConsole = Console::allowed(level);
+        const bool writeToFile = File::allowed(level);
+        const bool writeToEventLog = EventLog::allowed(level);
+        if (writeToConsole || writeToFile || writeToEventLog) {
+#ifdef SINGLE_THREAD
+            Record record {};
+#else
+            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+                auto & record = std::visit(RecordRef, recordVariant);
+#endif
+                auto & buffer = record.m_message;
+                if (formatPrefix(buffer, Meta::toUnderlying(category), level, prefix)) {
+                    if constexpr (Meta::isWide<T>) {
+                        if constexpr (sizeof...(Args) > 0) {
+                            std::vformat_to(std::back_inserter(buffer), message, std::make_wformat_args(args...));
+                        } else {
+                            buffer.append(message);
+                        }
+                    } else {
+                        if constexpr (sizeof...(Args) > 0) {
+                            std::string mbMessage {};
+                            mbMessage.reserve(s_lineSize);
+                            std::vformat_to(std::back_inserter(mbMessage), message, std::make_format_args(args...));
+                            Text::appendConverted(buffer, mbMessage);
+                        } else {
+                            Text::appendConverted(buffer, message);
+                        }
+                    }
+                    record.m_terseMsg1
+                        = std::wstring_view(buffer.data() + c_terseMsg1Offset, buffer.size() - c_terseMsg1Offset);
+                    record.m_terseMsg2
+                        = std::wstring_view(buffer.data() + c_terseMsg2Offset, buffer.size() - c_terseMsg2Offset);
+                    if (s_appendLocation) {
+                        Text::convert(record.m_location, location.file_name());
+                        record.m_location.append(L":");
+                        record.m_location.append(std::to_wstring(location.line()));
+                    } else {
+                        record.m_location.clear();
+                    }
+                    record.m_category = category;
+                    record.m_level = level;
+                    record.m_toConsole = writeToConsole;
+                    record.m_toFile = writeToFile;
+                    record.m_toEventLog = writeToEventLog;
+#ifdef SINGLE_THREAD
+                    write(record);
+#else
+                    std::visit(RecordWrite, recordVariant);
+                }
+#endif
+            }
+        }
+    } catch (...) {}
+
+    template<Meta::Char T, typename ... Args>
+    [[maybe_unused]]
+    void write(
+        const SrcLoc::Point & location,
+        const Category category,
+        const Level level,
+        const std::wstring_view prefix,
+        const T * message,
+        Args && ... args
+    ) noexcept {
+        write<typename Meta::TextTrait<T>::View>(
+            location, category, level, prefix, message, std::forward<Args>(args)...
+        );
+    }
+
+    template<Meta::String T, typename ... Args>
+    [[maybe_unused]]
+    void write(
+        const SrcLoc::Point & location,
+        const Category category,
+        const Level level,
+        const std::wstring_view prefix,
+        const T & message,
+        Args && ... args
+    ) noexcept {
+        write<typename Meta::TextTrait<T>::View>(
+            location, category, level, prefix, message, std::forward<Args>(args)...
+        );
     }
 
     [[maybe_unused]]
-    inline void write(const Level level, const Basic::Failure & e) noexcept try {
+    inline void write(
+        const Category clarifyingCategory,
+        const Level level,
+        const std::wstring_view prefix,
+        const Basic::Failure & e
+    ) noexcept try {
         const bool writeToConsole = Console::allowed(level);
         const bool writeToFile = File::allowed(level);
         const bool writeToEventLog = EventLog::allowed(level);
         if (writeToConsole || writeToFile || writeToEventLog) {
+#ifdef SINGLE_THREAD
+            Record record {};
+#else
             if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
                 auto & record = std::visit(RecordRef, recordVariant);
+#endif
                 auto & buffer = record.m_message;
-                if (writePrefix(buffer, level)) {
-                    e.appendExplanation(buffer, s_appendLocation);
-                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                    record.m_level = level;
-                    record.m_toConsole = writeToConsole;
-                    record.m_toFile = writeToFile;
-                    record.m_toEventLog = writeToEventLog;
-                    std::visit(RecordWrite, recordVariant);
+                auto category = e.category();
+                if (category == 0) {
+                    category = Meta::toUnderlying(clarifyingCategory);
                 }
-            }
-        }
-    } catch (...) {}
-
-    [[maybe_unused]]
-    inline void write(const Level level, const std::exception & e) noexcept try {
-        const bool writeToConsole = Console::allowed(level);
-        const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level);
-        if (writeToConsole || writeToFile || writeToEventLog) {
-            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
-                auto & record = std::visit(RecordRef, recordVariant);
-                auto & buffer = record.m_message;
-                if (writePrefix(buffer, level)) {
-                    Text::appendConverted(buffer, e.what());
-                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                    record.m_level = level;
-                    record.m_toConsole = writeToConsole;
-                    record.m_toFile = writeToFile;
-                    record.m_toEventLog = writeToEventLog;
-                    std::visit(RecordWrite, recordVariant);
-                }
-            }
-        }
-    } catch (...) {}
-
-    [[maybe_unused]]
-    inline void write(const Level level, const std::error_code & e) noexcept try {
-        const bool writeToConsole = Console::allowed(level);
-        const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level);
-        if (writeToConsole || writeToFile || writeToEventLog) {
-            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
-                auto & record = std::visit(RecordRef, recordVariant);
-                auto & buffer = record.m_message;
-                if (writePrefix(buffer, level)) {
-                    Text::appendConverted(buffer, e.message());
-                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
-                    record.m_level = level;
-                    record.m_toConsole = writeToConsole;
-                    record.m_toFile = writeToFile;
-                    record.m_toEventLog = writeToEventLog;
-                    std::visit(RecordWrite, recordVariant);
-                }
-            }
-        }
-    } catch (...) {}
-
-    template<class T>
-    requires requires (const T & t) { { t() } -> Meta::String; }
-    [[maybe_unused]]
-    void write(const Level level, const T & func) noexcept try {
-        const bool writeToConsole = Console::allowed(level);
-        const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level);
-        if (writeToConsole || writeToFile || writeToEventLog) {
-            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
-                auto & record = std::visit(RecordRef, recordVariant);
-                auto & buffer = record.m_message;
-                if (writePrefix(buffer, level)) {
-                    if constexpr (Meta::isWide<std::remove_cvref_t<decltype(func())>>) {
-                        buffer.append(func());
+                if (formatPrefix(buffer, category, level, prefix)) {
+                    e.explain(buffer);
+                    auto & location { e.where() };
+                    record.m_terseMsg1
+                        = std::wstring_view(buffer.data() + c_terseMsg1Offset, buffer.size() - c_terseMsg1Offset);
+                    record.m_terseMsg2
+                        = std::wstring_view(buffer.data() + c_terseMsg2Offset, buffer.size() - c_terseMsg2Offset);
+                    if (s_appendLocation) {
+                        Text::convert(record.m_location, location.file_name());
+                        record.m_location.append(L":");
+                        record.m_location.append(std::to_wstring(location.line()));
                     } else {
-                        const auto & temp = func();
-                        Text::appendConverted(buffer, temp);
+                        record.m_location.clear();
                     }
-                    record.m_terse = std::wstring_view(buffer.data() + c_excessSize, buffer.size() - c_excessSize);
+                    record.m_category = static_cast<Category>(category);
                     record.m_level = level;
                     record.m_toConsole = writeToConsole;
                     record.m_toFile = writeToFile;
                     record.m_toEventLog = writeToEventLog;
+#ifdef SINGLE_THREAD
+                    write(record);
+#else
                     std::visit(RecordWrite, recordVariant);
                 }
+#endif
             }
         }
     } catch (...) {}

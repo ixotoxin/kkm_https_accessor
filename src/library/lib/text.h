@@ -5,6 +5,7 @@
 
 #include "meta.h"
 #include "strings.h"
+#include "wconv.h"
 #include "except.h"
 #include "text_traits.h"
 #include <cassert>

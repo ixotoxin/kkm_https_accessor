@@ -3,6 +3,10 @@
 
 #pragma once
 
+#ifdef SINGLE_THREAD
+#   error Not required
+#endif
+
 #include "record.h"
 #include "writers.h"
 #include <lib/concurrency.h>

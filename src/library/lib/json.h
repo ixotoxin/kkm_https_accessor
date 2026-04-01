@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "macro.h"
 #include "strings.h"
+#include "wconv.h"
 #include "except.h"
 #include "numeric.h"
 #include "datetime.h"
@@ -247,7 +247,7 @@ namespace Json {
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
-        throw DataError(e); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what())); // NOLINT(*-exception-baseclass)
     }
 
     template<Meta::Numeric T>
@@ -264,7 +264,7 @@ namespace Json {
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
-        throw DataError(e); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what())); // NOLINT(*-exception-baseclass)
     }
 
     template<Meta::fromTemplate<std::chrono::duration> T>
@@ -278,7 +278,7 @@ namespace Json {
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
-        throw DataError(e); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what())); // NOLINT(*-exception-baseclass)
     }
 
     template<Meta::FloatingPoint T>
@@ -295,7 +295,7 @@ namespace Json {
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
-        throw DataError(e); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what())); // NOLINT(*-exception-baseclass)
     }
 
     template<Meta::String T>
@@ -321,7 +321,7 @@ namespace Json {
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
-        throw DataError(e); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what())); // NOLINT(*-exception-baseclass)
     }
 
     template<std::same_as<std::filesystem::path> T>
@@ -332,7 +332,7 @@ namespace Json {
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
-        throw DataError(e); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what())); // NOLINT(*-exception-baseclass)
     }
 
     [[maybe_unused]]
@@ -349,7 +349,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     [[maybe_unused]]
@@ -376,7 +376,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -398,7 +398,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<typename T>
@@ -427,7 +427,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -449,7 +449,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<typename T>
@@ -478,7 +478,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -507,7 +507,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<typename T>
@@ -536,7 +536,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -562,7 +562,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<typename T>
@@ -592,7 +592,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -622,7 +622,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<typename T>
@@ -651,7 +651,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -677,7 +677,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<typename T>
@@ -707,7 +707,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -733,7 +733,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     [[maybe_unused]]
@@ -760,7 +760,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }
@@ -787,7 +787,7 @@ namespace Json {
         e.variable(jsonPath);
         throw;
     } catch (const Nln::Exception & e) {
-        throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+        throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
     }
 
     template<Meta::BackSideGrowingRange T>
@@ -815,7 +815,7 @@ namespace Json {
             e.variable(jsonPath);
             throw;
         } catch (const Nln::Exception & e) {
-            throw DataError(e, jsonPath); // NOLINT(*-exception-baseclass)
+            throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
     }

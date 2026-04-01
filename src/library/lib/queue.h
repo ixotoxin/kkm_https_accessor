@@ -13,9 +13,6 @@
 #include <array>
 
 namespace Ccy {
-    enum class QueueGrowthPolicy { Call, Round, Step };
-    enum class QueueSlotState { Free, ProdLocked, Ready, ConsLocked };
-
 #ifdef __cpp_lib_hardware_interference_size
     constexpr size_t c_queueAlignment { std::hardware_constructive_interference_size };
 #else
@@ -26,6 +23,9 @@ namespace Ccy {
     constexpr int c_queueDefaultBlocksNumberLimit { 16 };
     constexpr bool c_queueDefaultAutoCompletion { true };
     constexpr unsigned c_queueDefaultAcquireAttempts { 5 };
+
+    enum class QueueGrowthPolicy { Call, Round, Step };
+    enum class QueueSlotState { Free, ProdLocked, Ready, ConsLocked };
 
     class QueueSlotAutoCompletion {
     public:

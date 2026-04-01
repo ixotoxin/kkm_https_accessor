@@ -5,40 +5,37 @@
 
 #include "macro.h"
 #include "types.h"
-#include <lib/winapi.h>
 #include <string_view>
 
 namespace Log {
-    LOG_CONST(bool, c_enableAsyncDef, true);
     LOG_CONST(size_t, c_lineSizeDef, 384);
     LOG_CONST(size_t, c_lineSizeMin, 64);
     LOG_CONST(size_t, c_lineSizeMax, 1024);
+#ifndef SINGLE_THREAD
+    LOG_CONST(bool, c_enableAsyncDef, true);
     LOG_CONST(size_t, c_blockSize, 1024);
     LOG_CONST(size_t, c_blocksNumberDef, 16);
     LOG_CONST(size_t, c_blocksNumberMin, 1);
     LOG_CONST(size_t, c_blocksNumberMax, 64);
     LOG_CONST(size_t, c_acquireAttempts, 3);
+#endif
 
     namespace Console {
         LOG_CONST(bool, c_terseDef, true);
         LOG_CONST(Output, c_outputDef, Output::Separated);
-        LOG_CONST(bool, c_flushEveryWrite, true);
-        LOG_CONST(LevelUnderlying, c_level, c_levelInfo);
+        LOG_CONST(bool, c_flushEveryWriteDef, true);
+        LOG_CONST(LevelUnderlying, c_levelDef, c_levelInfo);
     }
 
     namespace File {
         LOG_CONST(std::wstring_view, c_directoryDef, L"logs");
-        LOG_CONST(std::wstring_view, c_filenameFormatDef, L"kkmha-{:04d}-{:02d}.log");
-        LOG_CONST(bool, c_flushEveryWrite, true);
-        LOG_CONST(LevelUnderlying, c_fgLevel, c_levelNone);
-        LOG_CONST(LevelUnderlying, c_bgLevel, c_levelInfo);
+        LOG_CONST(bool, c_flushEveryWriteDef, true);
+        LOG_CONST(LevelUnderlying, c_fgLevelDef, c_levelNone);
+        LOG_CONST(LevelUnderlying, c_bgLevelDef, c_levelInfo);
     }
 
     namespace EventLog {
-        LOG_CONST(const wchar_t *, c_eventSourceDef, L"KKM HTTPS Accessor");
-        LOG_CONST(::DWORD, c_eventId, 0);
-        LOG_CONST(::WORD, c_eventCategory, 0);
-        LOG_CONST(LevelUnderlying, c_fgLevel, c_levelNone);
-        LOG_CONST(LevelUnderlying, c_bgLevel, c_levelWarning);
+        LOG_CONST(LevelUnderlying, c_fgLevelDef, c_levelNone);
+        LOG_CONST(LevelUnderlying, c_bgLevelDef, c_levelWarning);
     }
 }

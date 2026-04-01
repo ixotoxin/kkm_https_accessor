@@ -12,7 +12,8 @@ namespace Http {
     namespace Wcs {
         using Csv = const std::wstring_view;
 
-        constexpr Csv c_bodySizeLimitExceeded { L"Запрос [{:04x}]: Превышен разрешенный размер тела запроса" };
+        constexpr Csv c_requestPrefix { L"Запрос [{:04x}]: " };
+        constexpr Csv c_bodySizeLimitExceeded { L"Превышен разрешенный размер тела запроса" };
     }
 
     namespace Mbs {

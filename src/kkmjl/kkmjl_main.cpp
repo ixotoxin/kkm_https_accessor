@@ -12,7 +12,7 @@
 #include <iostream>
 #include "kkmjl_core.h"
 
-int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
+int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
     Config::initLogger();
     Config::initProfiler();
@@ -34,7 +34,7 @@ int wmain(int argc, wchar_t ** argv, wchar_t ** envp) {
             L"    \"!usage\": \"" << Json::escapeBasic(argv[0]) << L" {сн} {вф}\"\n"
             L"}";
     } catch (const Basic::Failure & e) {
-        KkmJsonLoader::printError(e.explain(Log::s_appendLocation));
+        KkmJsonLoader::printError(e.explain()); // TODO: Подумать, есть ли необходимость в выводе источника исключения
     } catch (const std::exception & e) {
         KkmJsonLoader::printError(Text::convert(e.what()));
     } catch (...) {

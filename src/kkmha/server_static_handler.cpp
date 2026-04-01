@@ -4,10 +4,11 @@
 #include "server_static_handler.h"
 #include "server_static_variables.h"
 #include "server_static_strings.h"
-#include "http_solid_response.h"
-#include "http_binary_response.h"
+#include "server_strings.h"
 #include "server_cache_strings.h"
 #include "server_cache_core.h"
+#include "http_solid_response.h"
+#include "http_binary_response.h"
 #include <lib/except.h>
 #include <lib/path.h>
 #include <cassert>
@@ -88,9 +89,9 @@ namespace Server::Static {
                 return fail(request, Http::Status::NotFound, error.message());
             }
             if (DateTime::cast<DateTime::Point>(fileTime) <= cacheEntry->m_cachedAt) {
+                request.m_logger->debug(Cache::Wcs::c_fromCache);
                 request.m_response.m_status = cacheEntry->m_status;
                 request.m_response.m_data = cacheEntry->m_data;
-                LOG_DEBUG(Cache::Wcs::c_fromCache, request.m_id);
                 return;
             }
         }

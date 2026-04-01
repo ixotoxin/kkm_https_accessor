@@ -4,6 +4,7 @@
 #pragma once
 
 #include "types.h"
+#include "logger.h"
 #include "connparams.h"
 #include "callparams.h"
 #include <optional>
@@ -14,7 +15,8 @@ namespace Kkm {
         Device() = delete;
         Device(const Device &) = delete;
         Device(Device &&) = delete;
-        explicit Device(ConnParams, std::wstring_view = {});
+        Device(ConnParams, LoggerPtr);
+        explicit Device(ConnParams);
         ~Device();
 
         Device & operator=(const Device &) = delete;
@@ -57,21 +59,21 @@ namespace Kkm {
     protected:
         Atol::Fptr m_kkm {};
         std::optional<FfdVersionsResult> m_ffdVersions { std::nullopt };
+        LoggerPtr m_logger;
         std::wstring m_serialNumber {};
-        std::wstring m_logPrefix;
         unsigned long m_drvVersion { FALLBACK_VERSION };
         unsigned int m_lineLength { 0 };
         FfdVersion m_storedFfdVersion { FfdVersion::Unknown };
         bool m_needToCancelReceipt { false };
 
-        explicit Device(std::wstring_view);
+        explicit Device(LoggerPtr) noexcept;
 
         void connect(ConnParams);
 
         [[nodiscard]] std::wstring fault(const SrcLoc::Point & = SrcLoc::Point::current());
-        void fail(Result &, std::wstring_view, const SrcLoc::Point & = SrcLoc::Point::current());
-        void fail(Result &, const std::wstring &, const SrcLoc::Point & = SrcLoc::Point::current());
-        void fail(Result &, std::wstring &&, const SrcLoc::Point & = SrcLoc::Point::current());
+        void fail(Result &, std::wstring_view, const SrcLoc::Point & = SrcLoc::Point::current()) const;
+        void fail(Result &, const std::wstring &, const SrcLoc::Point & = SrcLoc::Point::current()) const;
+        void fail(Result &, std::wstring &&, const SrcLoc::Point & = SrcLoc::Point::current()) const;
         void fail(Result &, const SrcLoc::Point & = SrcLoc::Point::current());
 
         void detectFfdVersions();
@@ -104,7 +106,8 @@ namespace Kkm {
         NewDevice() = delete;
         NewDevice(const NewDevice &) = delete;
         NewDevice(NewDevice &&) = delete;
-        explicit NewDevice(ConnParams, std::wstring_view = {});
+        NewDevice(ConnParams, LoggerPtr);
+        explicit NewDevice(ConnParams);
         ~NewDevice() = default;
 
         NewDevice & operator=(const NewDevice &) = delete;
