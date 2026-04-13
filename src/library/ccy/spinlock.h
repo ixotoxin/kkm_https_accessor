@@ -3,11 +3,7 @@
 
 #pragma once
 
-#ifdef SINGLE_THREAD
-#   error Not required
-#endif
-
-#include <atomic>
+#include "types.h"
 #include <thread>
 #if defined(__clang__)
 #   include <immintrin.h>
@@ -18,9 +14,10 @@
 #endif
 
 namespace Ccy {
-    enum class Spin { Pause, YieldThread, WaitFlag, Active };
+    enum class SpinMethod { Pause, YieldThread, WaitFlag, Active };
+    constexpr auto c_defaultSpinMethod = SpinMethod::Pause;
 
-    template<Spin P = Spin::Pause>
+    template<SpinMethod P = c_defaultSpinMethod>
     class SpinLock {
         std::atomic_flag m_flag {};
 
@@ -34,13 +31,13 @@ namespace Ccy {
         SpinLock & operator=(SpinLock &&) = delete;
 
         void lock() noexcept {
-            while (m_flag.test_and_set(std::memory_order_acquire)) {
-                if constexpr (P == Spin::Pause) {
+            while (m_flag.test_and_set(MemOrd::acquire)) {
+                if constexpr (P == SpinMethod::Pause) {
                     _mm_pause();
-                } else if constexpr (P == Spin::YieldThread) {
+                } else if constexpr (P == SpinMethod::YieldThread) {
                     std::this_thread::yield();
-                } else if constexpr (P == Spin::WaitFlag) {
-                    m_flag.wait(true, std::memory_order_relaxed);
+                } else if constexpr (P == SpinMethod::WaitFlag) {
+                    m_flag.wait(true, MemOrd::relaxed);
                 }
             }
         }
@@ -48,19 +45,19 @@ namespace Ccy {
         /** Lockable requirements **/
         [[maybe_unused]]
         bool try_lock() noexcept {
-            return !m_flag.test_and_set(std::memory_order_acquire);
+            return !m_flag.test_and_set(MemOrd::acquire);
         }
 
         void unlock() noexcept {
-            m_flag.clear(std::memory_order_release);
-            if constexpr (P == Spin::WaitFlag) {
+            m_flag.clear(MemOrd::release);
+            if constexpr (P == SpinMethod::WaitFlag) {
                 m_flag.notify_one();
             }
         }
     };
 
-    template class SpinLock<Spin::Pause>;
-    template class SpinLock<Spin::YieldThread>;
-    template class SpinLock<Spin::WaitFlag>;
-    template class SpinLock<Spin::Active>;
+    template class SpinLock<SpinMethod::Pause>;
+    template class SpinLock<SpinMethod::YieldThread>;
+    template class SpinLock<SpinMethod::WaitFlag>;
+    template class SpinLock<SpinMethod::Active>;
 }

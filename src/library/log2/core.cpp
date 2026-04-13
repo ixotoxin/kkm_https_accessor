@@ -17,16 +17,29 @@ namespace Log {
         return RecordVariant { std::in_place_type<RmlRecordAccessor>, s_record, s_mutex };
     }
 
-    // using RecordAccessorFunc = RecordVariant (*)();
     static std::atomic s_recordAccessor { syncRecordAccessor };
 
     static std::shared_ptr<LoggerQueue> s_queue { nullptr };
-    static std::thread s_bgWriter {};
-    static std::barrier s_barrier { 2 };
+    static std::thread s_asyncWriter {};
     static bool s_atExitDisableAsync { false };
 
     RecordVariant asyncRecordAccessor() {
         return RecordVariant { std::in_place_type<LoggerQueue::ProducerAccessor>, s_queue->producerSlot() };
+    }
+
+    void asyncWriterFunc() {
+        bool notEmpty {};
+        // while (s_queue->consuming() || !s_queue->empty()) {
+        while (s_queue->consuming() || notEmpty) {
+            auto slot = s_queue->consumerSlot();
+            notEmpty = static_cast<bool>(slot);
+            if (notEmpty) {
+                write(*slot);
+                slot.complete();
+            } else {
+                std::this_thread::yield();
+            }
+        }
     }
 
     [[maybe_unused]]
@@ -36,27 +49,16 @@ namespace Log {
             return;
         }
         write(Category::Generic, Level::Debug, {}, Wcs::c_enableAsync);
-        s_queue = std::make_shared<LoggerQueue>();
-        s_bgWriter = std::thread { [] {
-            bool notEmpty {};
-            while (s_queue->consuming() || notEmpty) {
-                auto slot = s_queue->consumerSlot();
-                notEmpty = static_cast<bool>(slot);
-                if (notEmpty) {
-                    write(*slot);
-                    slot.complete();
-                } else {
-                    std::this_thread::yield();
-                }
+        s_queue = Ccy::make<LoggerQueue>();
+        if (s_queue) {
+            s_asyncWriter = std::thread { asyncWriterFunc };
+            s_recordAccessor = asyncRecordAccessor;
+            if (!s_atExitDisableAsync) {
+                s_atExitDisableAsync = true;
+                std::atexit([] {
+                    disableAsync();
+                });
             }
-            s_barrier.arrive_and_wait();
-        } };
-        s_recordAccessor = asyncRecordAccessor;
-        if (!s_atExitDisableAsync) {
-            s_atExitDisableAsync = true;
-            std::atexit([] {
-                disableAsync();
-            });
         }
     }
 
@@ -67,19 +69,16 @@ namespace Log {
             return;
         }
         s_recordAccessor = syncRecordAccessor;
-        if (s_queue) {
-            s_queue->stop();
-            s_barrier.arrive_and_wait();
-            s_queue.reset();
-        }
-        if (s_bgWriter.joinable()) {
-            s_bgWriter.join();
+        s_queue->gracefulShutdown<Ccy::WaitMethod::YieldThread>();
+        s_queue.reset();
+        if (s_asyncWriter.joinable()) {
+            s_asyncWriter.join();
         }
         write(Category::Generic, Level::Debug, {}, Wcs::c_disableAsync);
     }
 
     [[nodiscard, maybe_unused]]
-    RecordVariant getFreeRecord() {
+    RecordVariant acquireWritableRecord() {
         return s_recordAccessor.load(std::memory_order_relaxed)();
     }
 #endif
