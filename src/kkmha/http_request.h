@@ -18,7 +18,11 @@ namespace Http {
         using SequenceType = int64_t;
 
         static constexpr SequenceType c_idMask { 0xfff };
-        static inline std::atomic<SequenceType> s_sequence { 1 + (DateTime::windows() & c_idMask) };
+
+        // ISSUE: Разобраться, почему MSVC с LTCG эту переменную без явного указания выравнивания превращает в разных TU
+        //  в разные типы [ '__declspec(align(8)) struct (8 bytes)' and 'struct (8 bytes)' ] и, как следствие,
+        //  не может слинковать.
+        alignas(alignof(int64_t)) static inline std::atomic<SequenceType> s_sequence { 1 + (DateTime::windows() & c_idMask) };
 
     public:
         using IdType = uint16_t;

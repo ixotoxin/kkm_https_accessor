@@ -41,7 +41,7 @@ namespace Log {
     inline auto RecordRef = [] (auto & accessor) -> Record & { return *accessor; };
     inline auto RecordWrite = [] (auto & accessor) -> void { accessor.complete(); };
 
-    [[nodiscard, maybe_unused]] RecordVariant getFreeRecord();
+    [[nodiscard, maybe_unused]] RecordVariant acquireWritableRecord();
 #endif
 
     [[maybe_unused]]
@@ -92,7 +92,7 @@ namespace Log {
 #ifdef SINGLE_THREAD
             Record record {};
 #else
-            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+            if (auto recordVariant = acquireWritableRecord(); std::visit(RecordReady, recordVariant)) {
                 auto & record = std::visit(RecordRef, recordVariant);
 #endif
                 auto & buffer = record.m_message;
@@ -177,7 +177,7 @@ namespace Log {
 #ifdef SINGLE_THREAD
             Record record {};
 #else
-            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+            if (auto recordVariant = acquireWritableRecord(); std::visit(RecordReady, recordVariant)) {
                 auto & record = std::visit(RecordRef, recordVariant);
 #endif
                 auto & buffer = record.m_message;
@@ -268,7 +268,7 @@ namespace Log {
 #ifdef SINGLE_THREAD
             Record record {};
 #else
-            if (auto recordVariant = getFreeRecord(); std::visit(RecordReady, recordVariant)) {
+            if (auto recordVariant = acquireWritableRecord(); std::visit(RecordReady, recordVariant)) {
                 auto & record = std::visit(RecordRef, recordVariant);
 #endif
                 auto & buffer = record.m_message;

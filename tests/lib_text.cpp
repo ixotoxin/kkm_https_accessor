@@ -328,7 +328,7 @@ namespace UnitTests {
                 REQUIRE(std::is_same_v<decltype(Text::convert(wcc)), std::list<std::string>>);
                 REQUIRE(mbc.size() == 6);
 
-                auto it { mbc.begin() };
+                auto it = mbc.begin();
 
                 REQUIRE(it++->empty());
                 REQUIRE(it++->empty());
@@ -375,7 +375,7 @@ namespace UnitTests {
                 REQUIRE(std::is_same_v<decltype(Text::convert(mbc)), std::list<std::wstring>>);
                 REQUIRE(wcc.size() == 6);
 
-                auto it { wcc.begin() };
+                auto it = wcc.begin();
 
                 REQUIRE(it++->empty());
                 REQUIRE(it++->empty());

@@ -6,7 +6,7 @@
 #include "types.h"
 #include "variables.h"
 #ifndef SINGLE_THREAD
-#   include <lib/queue.h>
+#   include <ccy/dynamique.h>
 #endif
 #include <string>
 
@@ -14,7 +14,7 @@ namespace Log {
 #ifdef SINGLE_THREAD
     struct Record {
 #else
-    struct alignas(Ccy::c_queueAlignment) Record {
+    struct alignas(Ccy::c_alignment) Record {
 #endif
         std::wstring m_message {};
         std::wstring_view m_terseMsg1 {};

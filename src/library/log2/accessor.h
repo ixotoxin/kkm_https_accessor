@@ -9,7 +9,7 @@
 
 #include "record.h"
 #include "writers.h"
-#include <lib/concurrency.h>
+#include <ccy/concepts.h>
 
 namespace Log {
     class RecordAccessor {
@@ -20,7 +20,7 @@ namespace Log {
         RecordAccessor(const RecordAccessor &) = delete;
         RecordAccessor(RecordAccessor &&) noexcept = default;
         explicit RecordAccessor(Record & record) noexcept : m_record { record } {}
-        ~RecordAccessor() = default;
+        virtual ~RecordAccessor() = default;
 
         RecordAccessor & operator=(const RecordAccessor &) = delete;
         RecordAccessor & operator=(RecordAccessor &&) = delete;
@@ -40,12 +40,12 @@ namespace Log {
             return true;
         }
 
-        void complete() const noexcept {
+        virtual void complete() const noexcept final {
             write(m_record);
         }
     };
 
-    template<Ccy::Locker T>
+    template<Ccy::AnyLocker T>
     class ExclusiveAccessor : public RecordAccessor {
         std::unique_lock<T> m_lock;
 
@@ -54,7 +54,7 @@ namespace Log {
         ExclusiveAccessor(const ExclusiveAccessor &) = delete;
         ExclusiveAccessor(ExclusiveAccessor &&) noexcept = default;
         ExclusiveAccessor(Record & record, T & mutex) noexcept : RecordAccessor(record), m_lock { mutex } {}
-        ~ExclusiveAccessor() = default;
+        ~ExclusiveAccessor() override = default;
 
         ExclusiveAccessor & operator=(const ExclusiveAccessor &) = delete;
         ExclusiveAccessor & operator=(ExclusiveAccessor &&) = delete;

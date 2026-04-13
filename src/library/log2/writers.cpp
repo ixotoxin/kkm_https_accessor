@@ -188,6 +188,9 @@ namespace Log {
 
     [[maybe_unused]]
     void initWriters() {
+        // ISSUE: а так ли это необходимо?
+        // std::ios_base::sync_with_stdio(false);
+        // std::cin.tie(nullptr);
         if (!s_atExitCloseWriters) {
             s_atExitCloseWriters = true;
             std::atexit([] {

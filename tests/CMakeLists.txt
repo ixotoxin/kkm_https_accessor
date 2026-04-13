@@ -43,3 +43,15 @@ target_compile_definitions(test_lib_json PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
 target_link_libraries(test_lib_json PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(test_lib_json PRIVATE utlib)
 add_test(NAME test_lib_json COMMAND test_lib_json)
+
+add_executable(test_ccy_dynamique ccy_dynamique.cpp)
+target_link_libraries(test_ccy_dynamique PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_dynamique COMMAND test_ccy_dynamique)
+
+add_executable(test_ccy_statique ccy_statique.cpp)
+target_link_libraries(test_ccy_statique PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_statique COMMAND test_ccy_statique)
+
+add_executable(test_ccy_dynrespool ccy_dynrespool.cpp)
+target_link_libraries(test_ccy_dynrespool PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_dynrespool COMMAND test_ccy_dynrespool)
