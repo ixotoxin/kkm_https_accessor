@@ -44,6 +44,22 @@ target_link_libraries(test_lib_json PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(test_lib_json PRIVATE utlib)
 add_test(NAME test_lib_json COMMAND test_lib_json)
 
+add_executable(test_ccy_spinlock_p ccy_spinlock_p.cpp)
+target_link_libraries(test_ccy_spinlock_p PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_spinlock_p COMMAND test_ccy_spinlock_p)
+
+add_executable(test_ccy_spinlock_y ccy_spinlock_y.cpp)
+target_link_libraries(test_ccy_spinlock_y PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_spinlock_y COMMAND test_ccy_spinlock_y)
+
+add_executable(test_ccy_spinlock_w ccy_spinlock_w.cpp)
+target_link_libraries(test_ccy_spinlock_w PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_spinlock_w COMMAND test_ccy_spinlock_w)
+
+add_executable(test_ccy_spinlock_a ccy_spinlock_a.cpp)
+target_link_libraries(test_ccy_spinlock_a PRIVATE Catch2::Catch2WithMain)
+add_test(NAME test_ccy_spinlock_a COMMAND test_ccy_spinlock_a)
+
 add_executable(test_ccy_dynamique ccy_dynamique.cpp)
 target_link_libraries(test_ccy_dynamique PRIVATE Catch2::Catch2WithMain)
 add_test(NAME test_ccy_dynamique COMMAND test_ccy_dynamique)

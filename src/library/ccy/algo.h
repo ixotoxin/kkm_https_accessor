@@ -14,26 +14,26 @@ namespace Ccy {
         U current { value.fetch_add(1, MemOrd::relaxed) };
         U next { current + 1 };
         if (next >= static_cast<U>(B)) {
-        // v1 {{{
+    // v1 {{{
             // value.compare_exchange_weak(next, next % static_cast<U>(B), MemOrd::relaxed);
-        // }}} v1
-        // v2 {{{
+    // }}} v1
+    // v2 {{{
             // auto next2 = next - static_cast<U>(B);
             // while (next2 >= static_cast<U>(B)) next2 -= static_cast<U>(B);
             // value.compare_exchange_weak(next, next2, MemOrd::relaxed);
-        // }}} v2
-        // v3 {{{
+    // }}} v2
+    // v3 {{{
             value.compare_exchange_weak(next, next - static_cast<U>(B), MemOrd::relaxed);
-        // }}}
+    // }}}
         }
-        if (current >= static_cast<U>(B)) {
-        // v1 {{{
-            // current = current % static_cast<U>(B);
-        // }}} v1
-        // v2,3 {{{
-            while (current >= static_cast<U>(B)) current -= static_cast<U>(B);
-        // }}} v2,3
-        }
+    // v1 {{{
+        // if (current >= static_cast<U>(B)) {
+        //     current = current % static_cast<U>(B);
+        // }
+    // }}} v1
+    // v2,3 {{{
+        while (current >= static_cast<U>(B)) current -= static_cast<U>(B);
+    // }}} v2,3
         return current;
     }
 
@@ -44,26 +44,26 @@ namespace Ccy {
         U current { value.fetch_add(1, MemOrd::relaxed) };
         U next { current + 1 };
         if (next >= bound) {
-        // v1 {{{
+    // v1 {{{
             // value.compare_exchange_weak(next, next % bound, MemOrd::relaxed);
-        // }}} v1
-        // v2 {{{
+    // }}} v1
+    // v2 {{{
             // auto next2 = next - bound;
             // while (next2 >= bound) next2 -= bound;
             // value.compare_exchange_weak(next, next2, MemOrd::relaxed);
-        // }}} v2
-        // v3 {{{
+    // }}} v2
+    // v3 {{{
             value.compare_exchange_weak(next, next - bound, MemOrd::relaxed);
-        // }}} v3
+    // }}} v3
         }
-        if (current >= bound) {
-        // v1 {{{
-            // current = current % bound;
-        // }}} v1
-        // v2,3 {{{
-            while (current >= bound) current -= bound;
-        // }}} v2,3
-        }
+    // v1 {{{
+        // if (current >= bound) {
+        //     current = current % bound;
+        // }
+    // }}} v1
+    // v2,3 {{{
+        while (current >= bound) current -= bound;
+    // }}} v2,3
         return current;
     }
 
@@ -75,13 +75,13 @@ namespace Ccy {
         U current { value.load(MemOrd::relaxed) };
         U next;
         do {
-        // v1 {{{
+    // v1 {{{
             // next = (current + 1) % static_cast<U>(B);
-        // }}} v1
-        // v2 {{{
+    // }}} v1
+    // v2 {{{
             next = current + 1;
             while (next >= static_cast<U>(B)) next -= static_cast<U>(B);
-        // }}} v2
+    // }}} v2
         } while (!value.compare_exchange_weak(current, next, MemOrd::relaxed));
         return next;
     }
@@ -94,13 +94,13 @@ namespace Ccy {
         U current { value.load(MemOrd::relaxed) };
         U next;
         do {
-        // v1 {{{
+    // v1 {{{
             // next = (current + 1) % bound;
-        // }}} v1
-        // v2 {{{
+    // }}} v1
+    // v2 {{{
             next = current + 1;
             while (next >= bound) next -= bound;
-        // }}} v2
+    // }}} v2
         } while (!value.compare_exchange_weak(current, next, MemOrd::relaxed));
         return next;
     }

@@ -19,23 +19,37 @@ namespace Log {
 
     static std::atomic s_recordAccessor { syncRecordAccessor };
 
-    static std::shared_ptr<LoggerQueue> s_queue { nullptr };
+    static std::atomic<std::shared_ptr<LoggerQueue>> s_queue { nullptr };
     static std::thread s_asyncWriter {};
     static bool s_atExitDisableAsync { false };
 
     RecordVariant asyncRecordAccessor() {
-        return RecordVariant { std::in_place_type<LoggerQueue::ProducerAccessor>, s_queue->producerSlot() };
+        return RecordVariant {
+            std::in_place_type<LoggerQueue::ProducerAccessor>, s_queue.load(std::memory_order_acquire)->producerSlot()
+        };
     }
 
     void asyncWriterFunc() {
         bool notEmpty {};
-        // while (s_queue->consuming() || !s_queue->empty()) {
-        while (s_queue->consuming() || notEmpty) {
-            auto slot = s_queue->consumerSlot();
+        // while (s_queue.load(std::memory_order_acquire)->consuming() || notEmpty) {
+        //     auto slot = s_queue.load(std::memory_order_acquire)->consumerSlot();
+        //     notEmpty = static_cast<bool>(slot);
+        //     if (notEmpty) {
+        //         write(*slot);
+        //         slot.complete();
+        //     } else {
+        //         std::this_thread::yield();
+        //     }
+        // }
+        for (;;) {
+            auto queue = s_queue.load(std::memory_order_acquire).get(); // NOLINT
+            if (!queue || (!queue->consuming() && !notEmpty)) {
+                break;
+            }
+            auto slot = queue->consumerSlot();
             notEmpty = static_cast<bool>(slot);
             if (notEmpty) {
                 write(*slot);
-                slot.complete();
             } else {
                 std::this_thread::yield();
             }
@@ -45,14 +59,14 @@ namespace Log {
     [[maybe_unused]]
     void enableAsync() noexcept {
         std::scoped_lock lock { s_mutex };
-        if (!s_enableAsync || s_queue) {
+        if (!s_enableAsync || s_queue.load(std::memory_order_acquire)) {
             return;
         }
         write(Category::Generic, Level::Debug, {}, Wcs::c_enableAsync);
-        s_queue = Ccy::make<LoggerQueue>();
-        if (s_queue) {
+        s_queue.store(Ccy::make<LoggerQueue>(), std::memory_order_release);
+        if (s_queue.load(std::memory_order_acquire)) {
             s_asyncWriter = std::thread { asyncWriterFunc };
-            s_recordAccessor = asyncRecordAccessor;
+            s_recordAccessor.store(asyncRecordAccessor, std::memory_order_release);
             if (!s_atExitDisableAsync) {
                 s_atExitDisableAsync = true;
                 std::atexit([] {
@@ -65,15 +79,15 @@ namespace Log {
     [[maybe_unused]]
     void disableAsync() noexcept {
         std::scoped_lock lock { s_mutex };
-        if (!s_queue) {
+        if (!s_queue.load(std::memory_order_acquire)) {
             return;
         }
-        s_recordAccessor = syncRecordAccessor;
-        s_queue->gracefulShutdown<Ccy::WaitMethod::YieldThread>();
-        s_queue.reset();
+        s_recordAccessor.store(syncRecordAccessor, std::memory_order_release);
+        s_queue.load(std::memory_order_acquire)->gracefulShutdown<Ccy::WaitMethod::YieldThread>();
         if (s_asyncWriter.joinable()) {
             s_asyncWriter.join();
         }
+        s_queue.load(std::memory_order_acquire).reset();
         write(Category::Generic, Level::Debug, {}, Wcs::c_disableAsync);
     }
 

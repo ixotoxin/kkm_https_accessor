@@ -10,9 +10,9 @@
 #include <mutex>
 #include <chrono>
 #if defined(__clang__)
-#   include <immintrin.h>
+#   include <immintrin.h> // NOLINT
 #elif defined(_MSC_VER)
-#   include <intrin.h>
+#   include <intrin.h> // NOLINT
 #else
 #   error Unsupported compiler
 #endif
@@ -35,7 +35,7 @@ namespace Ccy {
         GrowthPolicy G = c_defaultGrowthPolicy      /** Политика роста пула **/
     >
     requires (S > 1 && A > 0)
-    class alignas(c_alignment) DynamicResourcePool;
+    class alignas(c_hwCIS) DynamicResourcePool;
 
     template<class P>
     concept AnyDynamicResourcePool
@@ -46,7 +46,7 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    class alignas(c_alignment) DynamicResourcePool
+    class alignas(c_hwCIS) DynamicResourcePool
     : public std::enable_shared_from_this<DynamicResourcePool<T, S, H, O, E, A, G>> {
     protected:
         struct KeyTag {};
@@ -141,12 +141,12 @@ namespace Ccy {
 
         BlockPointer m_head { nullptr };
         Block * m_tail { nullptr };
-        std::atomic<Block *> m_blockCursor { nullptr };
         InternalSizeType m_capacity { 0 };
-        InternalSizeType m_free { 0 };
         InternalSizeType m_takenBlocks { 0 };
         InternalSizeType m_availableBlocks;
         SpinLock<> m_spinLock {};
+        alignas(c_hwDIS) InternalSizeType m_free { 0 };
+        alignas(c_hwDIS) std::atomic<Block *> m_blockCursor { nullptr };
 
         template<bool X> bool init() noexcept(X);
         bool grow() noexcept(c_noExceptAccess);
@@ -154,12 +154,12 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    struct alignas(c_alignment) DynamicResourcePool<T, S, H, O, E, A, G>::Block : std::enable_shared_from_this<Block> {
+    struct alignas(c_hwCIS) DynamicResourcePool<T, S, H, O, E, A, G>::Block : std::enable_shared_from_this<Block> {
         std::atomic<BlockPointer> m_next { nullptr };
-        InternalIndexType m_index { 0 };
-        InternalSizeType m_free { S };
-        alignas(c_alignment) std::atomic_flag m_flags[static_cast<size_t>(S)] {};
-        alignas(c_alignment) Payload m_payload[static_cast<size_t>(S)] {};
+        alignas(c_hwDIS) InternalSizeType m_free { S };
+        alignas(c_hwDIS) InternalIndexType m_index { 0 };
+        alignas(c_hwDIS) std::atomic_flag m_flags[static_cast<size_t>(S)] {};
+        alignas(c_hwDIS) Payload m_payload[static_cast<size_t>(S)] {};
 
         Block() noexcept(c_noExceptPayload) = default;
         Block(const Block &) = delete;
@@ -274,7 +274,6 @@ namespace Ccy {
             assert(pool);
             assert(block);
             assert(m_index < S);
-            // assert(m_index != c_invalidIndex);
             assert(block->m_flags[m_index].test(MemOrd::acquire));
             pool->m_free.fetch_sub(1, MemOrd::acq_rel);
             block->m_free.fetch_sub(1, MemOrd::acq_rel);
@@ -303,8 +302,9 @@ namespace Ccy {
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
     DynamicResourcePool<T, S, H, O, E, A, G>::DynamicResourcePool(KeyTag, ThrowingTag, const int maxBlocks)
-    : m_head { std::make_shared<Block>() }, m_tail { m_head.get() }, m_blockCursor { m_tail },
-      m_capacity { S }, m_free { S }, m_takenBlocks { 1 }, m_availableBlocks { maxBlocks - 1 } {
+    : m_head { std::make_shared<Block>() }, m_tail { m_head.get() },
+      m_capacity { S }, m_takenBlocks { 1 }, m_availableBlocks { maxBlocks - 1 },
+      m_free { S }, m_blockCursor { m_tail } {
         assert(m_availableBlocks.load(MemOrd::acquire) >= 0);
     }
 
@@ -331,11 +331,11 @@ namespace Ccy {
             m_head = std::make_shared<Block>();
         }
         m_tail = m_head.get();
-        m_blockCursor.store(m_tail, MemOrd::release);
         m_takenBlocks.fetch_add(1, MemOrd::acq_rel);
         m_availableBlocks.fetch_sub(1, MemOrd::acq_rel);
         m_capacity.store(S, MemOrd::release);
         m_free.store(S, MemOrd::release);
+        m_blockCursor.store(m_tail, MemOrd::release);
         return true;
     }
 
@@ -361,11 +361,11 @@ namespace Ccy {
             return false;
         }
 
-        m_blockCursor.store(m_tail, MemOrd::release);
         m_takenBlocks.fetch_add(1, MemOrd::acq_rel);
         m_availableBlocks.fetch_sub(1, MemOrd::acq_rel);
         m_capacity.fetch_add(S, MemOrd::release);
         m_free.fetch_add(S, MemOrd::acq_rel);
+        m_blockCursor.store(m_tail, MemOrd::release);
         return true;
     }
 

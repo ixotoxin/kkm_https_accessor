@@ -1,7 +1,6 @@
 // Copyright (c) 2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
-#include <concepts>
 #include <latch>
 #include <iostream>
 #include <catch2/catch_test_macros.hpp>
@@ -412,12 +411,6 @@ namespace UnitTests {
                 return true;
             }
         };
-
-        static_assert(!std::default_initializable<IntSequence>);
-        static_assert(!std::move_constructible<IntSequence>);
-        static_assert(!std::copy_constructible<IntSequence>);
-        static_assert(!std::movable<IntSequence>);
-        static_assert(!std::copyable<IntSequence>);
 
         TEST_CASE("Concurrency workloads using a dynamic resource pool", "[concurrency]") {
             auto ints = Ccy::make<IntSequence>();

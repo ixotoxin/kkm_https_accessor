@@ -9,9 +9,9 @@
 #include <thread>
 #include <chrono>
 #if defined(__clang__)
-#   include <immintrin.h>
+#   include <immintrin.h> // NOLINT
 #elif defined(_MSC_VER)
-#   include <intrin.h>
+#   include <intrin.h> // NOLINT
 #else
 #   error Unsupported compiler
 #endif
@@ -26,7 +26,7 @@ namespace Ccy {
         unsigned A = c_queueDefaultAcquireAttempts  /** Количество по-умолчанию попыток захватить слот **/
     >
     requires (S > 1 && A > 0)
-    class alignas(c_alignment) StaticMpmcQueue {
+    class alignas(c_hwCIS) StaticMpmcQueue {
     protected:
         using InternalSizeType = std::atomic_int_fast32_t;
         using InternalIndexType = std::atomic_uint_fast64_t;
@@ -67,12 +67,12 @@ namespace Ccy {
 
         [[nodiscard, maybe_unused]]
         bool producing() const noexcept {
-            return m_producing.test(MemOrd::acquire);
+            return m_producer.m_enable.test(MemOrd::acquire);
         }
 
         [[nodiscard, maybe_unused]]
         bool consuming() const noexcept {
-            return m_consuming.test(MemOrd::acquire);
+            return m_consumer.m_enable.test(MemOrd::acquire);
         }
 
         [[nodiscard]] ProducerAccessor producerSlot(unsigned = A) noexcept(c_noExceptAccess);
@@ -109,13 +109,13 @@ namespace Ccy {
 
         [[maybe_unused]]
         void shutdown() noexcept {
-            m_producing.clear(MemOrd::release);
+            m_producer.m_enable.clear(MemOrd::release);
         }
 
         [[maybe_unused]]
         void stop() noexcept {
-            m_producing.clear(MemOrd::release);
-            m_consuming.clear(MemOrd::release);
+            m_producer.m_enable.clear(MemOrd::release);
+            m_consumer.m_enable.clear(MemOrd::release);
         }
 
         template<WaitMethod W = c_defaultWaitMethod>
@@ -153,13 +153,17 @@ namespace Ccy {
         using State = QueueSlotState;
         using Completion = QueueAccessorCompletion<C>;
 
-        InternalIndexType m_producerIndex { 0 };
-        InternalIndexType m_consumerIndex { 0 };
-        InternalSizeType m_free { S };
-        std::atomic_flag m_producing {};
-        std::atomic_flag m_consuming {};
-        alignas(c_alignment) std::atomic<State> m_state[static_cast<size_t>(S)] {};
-        alignas(c_alignment) Payload m_payload[static_cast<size_t>(S)] {};
+        struct alignas(c_hwDIS) {
+            InternalIndexType m_index { 0 };
+            std::atomic_flag m_enable {};
+        } m_producer;
+        struct alignas(c_hwDIS) {
+            InternalIndexType m_index { 0 };
+            std::atomic_flag m_enable {};
+        } m_consumer;
+        alignas(c_hwDIS) InternalSizeType m_free { S };
+        alignas(c_hwDIS) std::atomic<State> m_state[static_cast<size_t>(S)] {};
+        alignas(c_hwDIS) Payload m_payload[static_cast<size_t>(S)] {};
     };
 
     template<std::default_initializable T, int S, bool C, bool H, bool E, unsigned A>
@@ -399,8 +403,8 @@ namespace Ccy {
         for (auto & el : m_state) {
             el.store(State::Free, MemOrd::relaxed);
         }
-        m_producing.test_and_set(MemOrd::acquire);
-        m_consuming.test_and_set(MemOrd::acquire);
+        m_producer.m_enable.test_and_set(MemOrd::acquire);
+        m_consumer.m_enable.test_and_set(MemOrd::acquire);
     }
 
     template<std::default_initializable T, int S, bool C, bool H, bool E, unsigned A>
@@ -411,9 +415,13 @@ namespace Ccy {
         assert(acquireAttempts > 0);
 
         do {
-            for (auto count = S; count && m_producing.test(MemOrd::acquire) && m_free.load(MemOrd::acquire); --count) {
+            for (
+                auto count = S;
+                count && m_producer.m_enable.test(MemOrd::acquire) && m_free.load(MemOrd::acquire);
+                --count
+            ) {
                 auto state = State::Free;
-                auto index = iteratePostInc<S>(m_producerIndex);
+                auto index = iteratePostInc<S>(m_producer.m_index);
                 if (m_state[index].compare_exchange_strong(state, State::ProdLocked, MemOrd::acq_rel, MemOrd::acquire)) {
                     return { this, index };
                 }
@@ -426,9 +434,9 @@ namespace Ccy {
     template<std::default_initializable T, int S, bool C, bool H, bool E, unsigned A>
     requires (S > 1 && A > 0)
     auto StaticMpmcQueue<T, S, C, H, E, A>::consumerSlot() noexcept -> ConsumerAccessor {
-        while (m_consuming.test(MemOrd::acquire) && m_free.load(MemOrd::acquire) < S) {
+        while (m_consumer.m_enable.test(MemOrd::acquire) && m_free.load(MemOrd::acquire) < S) {
             auto state = State::Ready;
-            auto index = iteratePostInc<S>(m_consumerIndex);
+            auto index = iteratePostInc<S>(m_consumer.m_index);
             if (m_state[index].compare_exchange_strong(state, State::ConsLocked, MemOrd::acq_rel, MemOrd::acquire)) {
                 return { this, index };
             }
@@ -440,7 +448,7 @@ namespace Ccy {
     template<std::default_initializable T, int S, bool C, bool H, bool E, unsigned A>
     requires (S > 1 && A > 0)
     auto StaticMpmcQueue<T, S, C, H, E, A>::clear() noexcept(c_noExceptAccess) -> std::pair<SizeType, SizeType> {
-        if (m_producing.test(MemOrd::acquire) || m_consuming.test(MemOrd::acquire)) {
+        if (m_producer.m_enable.test(MemOrd::acquire) || m_consumer.m_enable.test(MemOrd::acquire)) {
             return { 0, 0 };
         }
 

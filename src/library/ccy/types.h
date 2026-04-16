@@ -3,14 +3,19 @@
 
 #pragma once
 
+#include <type_traits>
 #include <new>
+#include <algorithm>
+// #include <bit>
 #include <atomic>
 
 namespace Ccy {
 #ifdef __cpp_lib_hardware_interference_size
-    constexpr size_t c_alignment { std::hardware_constructive_interference_size };
+    constexpr size_t c_hwDIS { std::hardware_destructive_interference_size };
+    constexpr size_t c_hwCIS { std::hardware_constructive_interference_size };
 #else
-    constexpr size_t c_alignment { 64 };
+    constexpr size_t c_hwDIS { 64 };
+    constexpr size_t c_hwCIS { 64 };
 #endif
 
     template<class T>
@@ -41,4 +46,13 @@ namespace Ccy {
     constexpr NonThrowingTag NonThrowing {};
 
     class Discard : public std::exception {};
+
+    // template<size_t A, size_t C>
+    // requires (A > 0) && (C > 0)
+    // struct alignas(std::bit_ceil(A)) AlignedPadding {
+    //     char m_padding[std::bit_ceil(A) * C] {};
+    // };
+    //
+    // template<typename T, size_t C>
+    // using TypeAlignedPadding = AlignedPadding<std::max({sizeof(T), alignof(T)}), C>;
 }
