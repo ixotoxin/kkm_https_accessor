@@ -14,7 +14,7 @@ namespace Log {
 #ifdef SINGLE_THREAD
     struct Record {
 #else
-    struct alignas(Ccy::c_alignment) Record {
+    struct alignas(Ccy::c_hwCIS) Record {
 #endif
         std::wstring m_message {};
         std::wstring_view m_terseMsg1 {};
