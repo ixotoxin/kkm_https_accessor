@@ -24,6 +24,12 @@ inline std::wostream & operator<<(std::wostream & stream, const Nln::Json & json
     return stream;
 }
 
+inline std::string & operator+=(std::string & output, const Nln::Json & json) {
+    nlohmann::detail::serializer<Nln::Json> s(nlohmann::detail::output_adapter<char>(output), ' ');
+    s.dump(json, false, false, 0);
+    return output;
+}
+
 namespace Json {
     using Basic::Failure;
     using Basic::DataError;
@@ -138,7 +144,7 @@ namespace Json {
 
         const auto extraSpace = Detail::basicExtraSpace(text);
         if (extraSpace == 0) {
-            return { text.begin(), text.end() };
+            return { text.data(), text.size() };
         }
 
         size_t size { text.size() };
@@ -183,7 +189,7 @@ namespace Json {
     inline std::wstring escapeFull(const std::wstring_view text) {
         const auto extraSpace = Detail::fullExtraSpace(text);
         if (extraSpace == 0) {
-            return { text.begin(), text.end() };
+            return { text.data(), text.size() };
         }
 
         const size_t size { text.size() };
@@ -317,7 +323,7 @@ namespace Json {
         if (json.is_boolean()) {
             auto value = Text::yesNo<typename Meta::TextTrait<T>::Wideness>(json.get<bool>());
             // auto value = Numeric::boolCast<typename Meta::TextTrait<T>::View, Meta::YesNo>(json.get<bool>());
-            return { value.begin(), value.end() };
+            return { value.data(), value.size() };
         }
         throw DataError(Basic::Wcs::c_invalidValue); // NOLINT(*-exception-baseclass)
     } catch (const Nln::Exception & e) {
@@ -818,5 +824,10 @@ namespace Json {
             throw DataError(Text::convert(e.what()), jsonPath); // NOLINT(*-exception-baseclass)
         }
         throw DataError(Basic::Wcs::c_invalidValue, jsonPath); // NOLINT(*-exception-baseclass)
+    }
+
+    inline void dumpTo(std::string & output, const Nln::Json & json) {
+        nlohmann::detail::serializer<Nln::Json> s(nlohmann::detail::output_adapter<char>(output), ' ');
+        s.dump(json, false, false, 0);
     }
 }
