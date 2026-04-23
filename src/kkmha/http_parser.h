@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -6,6 +6,7 @@
 #include "http_types.h"
 #include "http_strings.h"
 #include "http_request.h"
+#include <constants.h>
 #include <cassert>
 #include <istream>
 #include <string>
@@ -19,6 +20,9 @@ namespace Http {
         void parseBody(std::istream &);
         void dummyReader(std::istream &);
 
+        std::string m_line {};
+        std::string m_field {};
+        std::string m_value {};
         Request & m_request;
         Reader m_reader { &Parser::parseMethod };
         size_t m_expectedBodySize { 0 };
@@ -28,7 +32,13 @@ namespace Http {
         Parser() = delete;
         Parser(const Parser &) = delete;
         Parser(Parser &&) = delete;
-        explicit Parser(Request & request) : m_request(request) {}
+
+        explicit Parser(Request & request) : m_request(request) {
+            m_line.reserve(c_sStrSize);
+            m_field.reserve(c_sStrSize);
+            m_value.reserve(c_sStrSize);
+        }
+
         ~Parser() = default;
 
         Parser & operator=(const Parser &) = delete;

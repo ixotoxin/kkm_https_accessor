@@ -47,6 +47,7 @@ namespace DateTime {
 
     constexpr SleepUnit c_basicSleep { 1'000ms };
     constexpr SleepUnit c_basicSleepQuantum { 200ms };
+    constexpr size_t c_tsBufferSize { 31 };
 
     [[nodiscard, maybe_unused]] int64_t windows();
     [[nodiscard, maybe_unused]] int64_t unix();
@@ -57,17 +58,23 @@ namespace DateTime {
     [[nodiscard, maybe_unused]]
     T cast(const std::tm & dateTime) {
         if constexpr (Meta::isWide<T>) {
-            return
-                std::format(
-                    Wcs::c_timestamp, dateTime.tm_year + 1'900, dateTime.tm_mon + 1, dateTime.tm_mday,
-                    dateTime.tm_hour, dateTime.tm_min, dateTime.tm_sec
-                );
+            std::wstring result {};
+            result.reserve(c_tsBufferSize);
+            std::format_to(
+                std::back_inserter(result), Wcs::c_timestamp,
+                dateTime.tm_year + 1'900, dateTime.tm_mon + 1, dateTime.tm_mday,
+                dateTime.tm_hour, dateTime.tm_min, dateTime.tm_sec
+            );
+            return result;
         } else {
-            return
-                std::format(
-                    Mbs::c_timestamp, dateTime.tm_year + 1'900, dateTime.tm_mon + 1, dateTime.tm_mday,
-                    dateTime.tm_hour, dateTime.tm_min, dateTime.tm_sec
-                );
+            std::string result {};
+            result.reserve(c_tsBufferSize);
+            std::format_to(
+                std::back_inserter(result), Mbs::c_timestamp,
+                dateTime.tm_year + 1'900, dateTime.tm_mon + 1, dateTime.tm_mday,
+                dateTime.tm_hour, dateTime.tm_min, dateTime.tm_sec
+            );
+            return result;
         }
     }
 

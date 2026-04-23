@@ -78,7 +78,7 @@ namespace Kkm {
         if (m_serialNumber.empty()) {
             throw Failure(Wcs::c_exchangeError); // NOLINT(*-exception-baseclass)
         }
-        m_logger->appendPrefix(std::format(Wcs::c_kkmPrefix, m_serialNumber));
+        m_logger->appendPrefix(Wcs::c_kkmPrefix, m_serialNumber);
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_RECEIPT_LINE_LENGTH);
         if (m_kkm.queryData() < 0) {
             throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
@@ -118,7 +118,7 @@ namespace Kkm {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
-            result.m_message = std::forward<std::wstring>(message);
+            result.m_message = std::move(message);
         }
     }
 

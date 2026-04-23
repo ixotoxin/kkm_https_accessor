@@ -4,6 +4,8 @@
 #pragma once
 
 #include "core.h"
+#include <constants.h>
+#include <lib/msgbuild.h>
 #include <memory>
 
 namespace Log {
@@ -12,7 +14,7 @@ namespace Log {
     using LoggerPtr = std::shared_ptr<CategoryLogger>;
 
     class CategoryLogger {
-        std::wstring m_prefix;
+        std::wstring m_prefix {};
         Category m_category;
 
     public:
@@ -20,29 +22,33 @@ namespace Log {
         CategoryLogger(const CategoryLogger &) noexcept = default;
         CategoryLogger(CategoryLogger &&) noexcept = default;
 
-        CategoryLogger(const Category category, std::wstring && prefix) noexcept
-        : m_prefix { std::move(prefix) }, m_category { category } {}
-
         explicit CategoryLogger(const Category category, const std::wstring_view prefix = {}) noexcept
         : m_prefix { prefix }, m_category { category } {}
 
+        CategoryLogger(const Category category, std::wstring && prefix) noexcept
+        : m_prefix { std::move(prefix) }, m_category { category } {}
+
+        CategoryLogger(const Category category, Basic::Wcs::Message && prefix) noexcept
+        : m_prefix { std::move(prefix.m_message) }, m_category { category } {}
+
         explicit CategoryLogger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept // NOLINT
-        : m_prefix { Text::concat(parent.m_prefix, prefix) }, m_category { parent.m_category } {}
+        : m_prefix { Text::concat<c_xsStrSize>(parent.m_prefix, prefix) }, m_category { parent.m_category } {}
 
         CategoryLogger(CategoryLogger & parent, const Category category, const std::wstring_view prefix = {}) noexcept // NOLINT
-        : m_prefix { Text::concat(parent.m_prefix, prefix) }, m_category { category } {}
+        : m_prefix { Text::concat<c_xsStrSize>(parent.m_prefix, prefix) }, m_category { category } {}
 
         virtual ~CategoryLogger() = default;
 
         CategoryLogger & operator=(const CategoryLogger &) = delete;
         CategoryLogger & operator=(CategoryLogger &&) = delete;
 
-        void appendPrefix(const std::wstring & prefix) {
-            m_prefix.append(prefix);
-        }
-
-        void appendPrefix(const std::wstring_view prefix) {
-            m_prefix.append(prefix);
+        template<typename ... Args>
+        void appendPrefix(const std::wstring_view prefix, Args && ... args) {
+            if constexpr (sizeof...(Args) > 0) {
+                std::vformat_to(std::back_inserter(m_prefix), prefix, std::make_wformat_args(args...));
+            } else {
+                m_prefix.append(prefix);
+            }
         }
 
         template<Meta::View T, typename ... Args>

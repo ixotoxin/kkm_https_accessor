@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -16,21 +16,51 @@ namespace System {
 
     [[nodiscard, maybe_unused]] std::wstring errorMessage(::DWORD) noexcept;
 
-    [[nodiscard, maybe_unused]]
-    inline std::wstring
-    explainError(const ::DWORD error = ::GetLastError())
-    noexcept try {
-        return std::format(Wcs::c_fault, error, errorMessage(error));
+    [[maybe_unused]]
+    inline void explainErrorTo(std::wstring & output, const ::DWORD error = ::GetLastError()) noexcept try {
+        std::format_to(std::back_inserter(output), Wcs::c_fault, error, errorMessage(error));
     } catch (...) {
-        return Basic::Wcs::c_somethingWrong;
+        output.assign(Basic::Wcs::c_somethingWrong.data(), Basic::Wcs::c_somethingWrong.size());
     }
 
+    template<size_t S = 0>
     [[nodiscard, maybe_unused]]
-    inline std::wstring
-    explainError(const std::wstring_view operation, const ::DWORD error = ::GetLastError())
-    noexcept try {
-        return std::format(Wcs::c_failed, operation, error, errorMessage(error));
+    std::wstring explainError(const ::DWORD error = ::GetLastError()) noexcept try {
+        if constexpr (S) {
+            std::wstring result {};
+            result.reserve(S);
+            std::format_to(std::back_inserter(result), Wcs::c_fault, error, errorMessage(error));
+            return result;
+        } else {
+            return std::format(Wcs::c_fault, error, errorMessage(error));
+        }
     } catch (...) {
-        return Basic::Wcs::c_somethingWrong;
+        return { Basic::Wcs::c_somethingWrong.data(), Basic::Wcs::c_somethingWrong.size() };
+    }
+
+    [[maybe_unused]]
+    inline void explainErrorTo(
+        std::wstring & output,
+        const std::wstring_view operation,
+        const ::DWORD error = ::GetLastError()
+    ) noexcept try {
+        std::format_to(std::back_inserter(output), Wcs::c_failed, operation, error, errorMessage(error));
+    } catch (...) {
+        output.assign(Basic::Wcs::c_somethingWrong.data(), Basic::Wcs::c_somethingWrong.size());
+    }
+
+    template<size_t S = 0>
+    [[nodiscard, maybe_unused]]
+    std::wstring explainError(const std::wstring_view operation, const ::DWORD error = ::GetLastError()) noexcept try {
+        if constexpr (S) {
+            std::wstring result {};
+            result.reserve(S);
+            std::format_to(std::back_inserter(result), Wcs::c_failed, operation, error, errorMessage(error));
+            return result;
+        } else {
+            return std::format(Wcs::c_failed, operation, error, errorMessage(error));
+        }
+    } catch (...) {
+        return { Basic::Wcs::c_somethingWrong.data(), Basic::Wcs::c_somethingWrong.size() };
     }
 }

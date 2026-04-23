@@ -3,11 +3,9 @@
 
 #pragma once
 
-#include "macro.h"
 #include "strings.h"
 #include "srcloc.h"
-#include <string>
-#include <format>
+#include "msgbuild.h"
 
 namespace Basic {
     class Failure {
@@ -33,7 +31,14 @@ namespace Basic {
             const std::wstring_view message,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(message.begin(), message.end()), m_location(std::move(location)), m_category(category) {} // NOLINT
+        ) : m_message(message.data(), message.size()), m_location(std::move(location)), m_category(category) {} // NOLINT
+
+        [[maybe_unused]]
+        explicit Failure(
+            Wcs::Message && message,
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        ) : m_message(std::move(message.m_message)), m_location(std::move(location)), m_category(category) {} // NOLINT
 
         virtual ~Failure() = default;
 
@@ -104,6 +109,14 @@ namespace Basic {
             SrcLoc::Point && location = SrcLoc::Point::current()
         ) : Failure(message, category, std::move(location)), m_variable(variable) {} // NOLINT
 
+        [[maybe_unused]]
+        explicit DataError(
+            Wcs::Message && message,
+            const std::wstring_view variable = {},
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        ) : Failure(std::move(message.m_message), category, std::move(location)), m_variable(variable) {} // NOLINT
+
         ~DataError() override = default;
 
         DataError & operator=(const DataError &) = default;
@@ -123,17 +136,33 @@ namespace Basic {
 
         [[nodiscard, maybe_unused]]
         std::wstring explain() const noexcept override {
-            return m_variable.empty()
-               ? m_message
-               : LIB_WFMT(Wcs::c_dataError, m_message, m_variable);
+            if (m_variable.empty()) {
+                return m_message;
+            }
+            std::wstring result {};
+            result.reserve(Wcs::c_dataError.size() + m_message.size() + m_variable.size());
+            std::vformat_to(
+                std::back_inserter(result),
+                Wcs::c_dataError,
+                std::make_wformat_args(m_message, m_variable)
+            );
+            return result;
         }
 
         [[maybe_unused]]
-        void explain(std::wstring & result) const noexcept override {
+        void explain(std::wstring & output) const noexcept override {
             if (m_variable.empty()) {
-                result.append(m_message);
+                output.append(m_message);
             } else {
-                LIB_WFMT2(result, Wcs::c_dataError, m_message, m_variable);
+                const size_t size { output.size() + Wcs::c_dataError.size() + m_message.size() + m_variable.size() };
+                if (output.capacity() < size) {
+                    output.reserve(size);
+                }
+                std::vformat_to(
+                    std::back_inserter(output),
+                    Wcs::c_dataError,
+                    std::make_wformat_args(m_message, m_variable)
+                );
             }
         }
     };

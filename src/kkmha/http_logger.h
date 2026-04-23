@@ -10,15 +10,17 @@ namespace Http {
 
     class Logger : public Log::CategoryLogger {
     public:
-        Logger() = delete;
         Logger(const Logger &) noexcept = default;
         Logger(Logger &&) noexcept = default;
+
+        explicit Logger(const std::wstring_view prefix = {}) noexcept
+        : CategoryLogger(Log::Category::WebServer, prefix) {}
 
         explicit Logger(std::wstring && prefix) noexcept
         : CategoryLogger(Log::Category::WebServer, std::move(prefix)) {}
 
-        explicit Logger(const std::wstring_view prefix = {}) noexcept
-        : CategoryLogger(Log::Category::WebServer, prefix) {}
+        explicit Logger(Basic::Wcs::Message && prefix) noexcept
+        : CategoryLogger(Log::Category::WebServer, std::move(prefix)) {}
 
         explicit Logger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept // NOLINT
         : CategoryLogger(parent, Log::Category::WebServer, prefix) {}

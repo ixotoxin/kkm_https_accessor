@@ -1,10 +1,28 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "errexp.h"
 #include "defer.h"
 
 namespace System {
+    namespace {
+        void cleanUpMessage(wchar_t * text) {
+            wchar_t * end { text + std::wcslen(text) };
+            if (end != text) {
+                --end;
+                while (
+                    end != text
+                    && (*end == L' ' || *end == L'\n' || *end == L'\r' || *end == L'\t' || *end == L'\v' || *end == L'\f')
+                ) {
+                    *end-- = L'\0';
+                }
+                while (--end != text) {
+                    if (*end == L'\n' || *end == L'\r' /*|| *end == L'\t' || *end == L'\v' || *end == L'\f'*/) {
+                        *end = L' ';
+            } } }
+        }
+    }
+
     [[nodiscard, maybe_unused]]
     std::wstring errorMessage(const ::DWORD error) noexcept {
         wchar_t * text { nullptr };
@@ -21,28 +39,12 @@ namespace System {
                     nullptr
                 );
             if (status) {
-                wchar_t * end { text + std::wcslen(text) };
-                if (end != text) {
-                    --end;
-                    while (
-                        end != text
-                        && (*end == L' ' || *end == L'\n' || *end == L'\r' || *end == L'\t' || *end == L'\v' || *end == L'\f')
-                    ) {
-                        *end-- = L'\0';
-                    }
-                    while (--end != text) {
-                        if (*end == L'\n' || *end == L'\r' /*|| *end == L'\t' || *end == L'\v' || *end == L'\f'*/) {
-                            *end = L' ';
-                        }
-                    }
-                }
+                cleanUpMessage(text);
             } else {
-                freeTextBuffer.perform();
-                text = const_cast<wchar_t *>(Basic::Wcs::c_somethingWrong);
+                return { Basic::Wcs::c_somethingWrong.data(), Basic::Wcs::c_somethingWrong.size() };
             }
         } catch (...) {
-            freeTextBuffer.perform();
-            text = const_cast<wchar_t *>(Basic::Wcs::c_somethingWrong);
+            return { Basic::Wcs::c_somethingWrong.data(), Basic::Wcs::c_somethingWrong.size() };
         }
         return text;
     }

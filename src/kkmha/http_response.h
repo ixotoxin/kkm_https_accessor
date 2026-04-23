@@ -6,6 +6,7 @@
 #include "http_types.h"
 #include "http_strings.h"
 #include "http_proto_response.h"
+#include <constants.h>
 #include <lib/meta.h>
 #include <lib/json.h>
 #include <cassert>
@@ -40,17 +41,24 @@ namespace Http {
                 false,
                 Nln::EmptyJsonObject
             );
-            const std::string responseText { json.dump() };
+
+            std::string jsonText {};
+            jsonText.reserve(c_mStrSize);
+            jsonText += json;
+
+            std::string headerText {};
+            headerText.reserve(c_sStrSize);
+            std::format_to(
+                std::back_inserter(headerText),
+                Mbs::c_responseHeaderTemplate,
+                Meta::toUnderlying(status),
+                Mbs::c_statusStrings.at(status),
+                Mbs::c_jsonMimeType,
+                jsonText.size()
+            );
+
             std::ostream output { &buffer };
-            output
-                << std::format(
-                    Mbs::c_responseHeaderTemplate,
-                    Meta::toUnderlying(status),
-                    Mbs::c_statusStrings.at(status),
-                    Mbs::c_jsonMimeType,
-                    responseText.size()
-                )
-                << responseText;
+            output << headerText << jsonText;
         }
 
         void render(Asio::StreamBuffer & buffer) {

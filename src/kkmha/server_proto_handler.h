@@ -20,7 +20,8 @@ namespace Server {
         [[nodiscard]] virtual bool asyncReady() const noexcept = 0;
         virtual void operator()(Http::Request &) const noexcept = 0;
 
-        static void fail(
+        // CLEANUP
+        /*static void fail(
             Http::Request & request,
             const Http::Status status,
             const std::string & message,
@@ -30,7 +31,7 @@ namespace Server {
             request.m_logger->error(location, message);
             request.m_response.m_status = status;
             request.m_response.m_data = message;
-        }
+        }*/
 
         static void fail(
             Http::Request & request,
@@ -41,7 +42,7 @@ namespace Server {
             assert(Meta::toUnderlying(status) >= 400);
             request.m_logger->error(location, message);
             request.m_response.m_status = status;
-            request.m_response.m_data.emplace<std::string>(std::forward<std::string>(message));
+            request.m_response.m_data.emplace<std::string>(std::move(message));
         }
 
         static void fail(

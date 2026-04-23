@@ -5,6 +5,12 @@
 
 #include <string_view>
 
+constexpr size_t c_xsStrSize { 80 };
+constexpr size_t c_sStrSize { 4 * c_xsStrSize };
+constexpr size_t c_mStrSize { 4 * c_sStrSize };
+constexpr size_t c_lStrSize { 4 * c_mStrSize };
+constexpr size_t c_xlStrSize { 4 * c_lStrSize };
+
 namespace Log {
     namespace File {
         constexpr std::wstring_view c_kkmHttpAccessorFilenameFormat { L"kkmha-{:04d}-{:02d}.log" };

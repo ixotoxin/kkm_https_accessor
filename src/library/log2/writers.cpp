@@ -53,11 +53,18 @@ namespace Log {
                 }
             }
             s_currentMonth = localTime.wMonth;
+            std::wstring fileName {};
+            fileName.reserve(c_xsStrSize);
 #ifdef EXTERNAL_LOG_VARIABLES
-            filePath /= std::vformat(c_filenameFormat, std::make_wformat_args(localTime.wYear, localTime.wMonth));
+            std::vformat_to(
+                std::back_inserter(fileName),
+                c_filenameFormat,
+                std::make_wformat_args(localTime.wYear, localTime.wMonth)
+            );
 #else
-            filePath /= std::format(c_filenameFormat, localTime.wYear, localTime.wMonth);
+            std::format_to(std::back_inserter(fileName), c_filenameFormat, localTime.wYear, localTime.wMonth);
 #endif
+            filePath /= fileName;
             s_file.open(filePath, std::ios::out | std::ios::app);
             s_file.imbue(std::locale(".utf-8"));
             if (!s_file.good()) {

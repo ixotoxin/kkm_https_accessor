@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #include "datetime.h"
@@ -34,12 +34,15 @@ namespace DateTime {
     std::wostream & iso(std::wostream & stream) {
         ::SYSTEMTIME localTime;
         ::GetLocalTime(&localTime);
-        stream
-            << std::format(
-                Wcs::c_timestamp,
-                localTime.wYear, localTime.wMonth, localTime.wDay,
-                localTime.wHour, localTime.wMinute, localTime.wSecond
-            );
+        std::wstring str {};
+        str.reserve(c_tsBufferSize);
+        std::format_to(
+            std::back_inserter(str),
+            Wcs::c_timestamp,
+            localTime.wYear, localTime.wMonth, localTime.wDay,
+            localTime.wHour, localTime.wMinute, localTime.wSecond
+        );
+        stream << str;
         return stream;
     }
 
@@ -47,12 +50,15 @@ namespace DateTime {
     std::ostream & iso(std::ostream & stream) {
         ::SYSTEMTIME localTime;
         ::GetLocalTime(&localTime);
-        stream
-            << std::format(
-                Mbs::c_timestamp,
-                localTime.wYear, localTime.wMonth, localTime.wDay,
-                localTime.wHour, localTime.wMinute, localTime.wSecond
-            );
+        std::string str {};
+        str.reserve(c_tsBufferSize);
+        std::format_to(
+            std::back_inserter(str),
+            Mbs::c_timestamp,
+            localTime.wYear, localTime.wMonth, localTime.wDay,
+            localTime.wHour, localTime.wMinute, localTime.wSecond
+        );
+        stream << str;
         return stream;
     }
 }

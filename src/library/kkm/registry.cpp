@@ -75,7 +75,9 @@ namespace Kkm::Registry {
     ConnParams read(const std::filesystem::path & path, const std::wstring & serialNumber) {
         const std::ifstream file { path };
         if (!file.is_open() || !file.good()) {
-            throw Failure(KKM_WFMT(Wcs::c_loadingError, serialNumber)); // NOLINT(*-exception-baseclass)
+            // CLEANUP
+            // throw Failure(KKM_WFMT(Wcs::c_loadingError, serialNumber)); // NOLINT(*-exception-baseclass)
+            throw Failure(Fmt<c_sStrSize>(Wcs::c_loadingError, serialNumber)); // NOLINT(*-exception-baseclass)
         }
         const Nln::Json paramJson(Nln::Json::parse(std::ifstream(path)));
         if (paramJson.is_array()) {
@@ -104,7 +106,9 @@ namespace Kkm::Registry {
         file << paramJson.dump();
         file.close();
         if (!std::filesystem::is_regular_file(path)) {
-            throw Failure(KKM_WFMT(Wcs::c_savingError, kkm.serialNumber())); // NOLINT(*-exception-baseclass)
+            // CLEANUP
+            // throw Failure(KKM_WFMT(Wcs::c_savingError, kkm.serialNumber())); // NOLINT(*-exception-baseclass)
+            throw Failure(Fmt<c_sStrSize>(Wcs::c_savingError, kkm.serialNumber())); // NOLINT(*-exception-baseclass)
         }
     }
 }

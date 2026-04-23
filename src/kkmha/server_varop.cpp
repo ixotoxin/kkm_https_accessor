@@ -42,6 +42,7 @@ namespace Server {
 
     std::wostream & vars(std::wostream & stream) {
         std::wstring securityLevel;
+        securityLevel.reserve(17);
 
         if (s_enableLegacyTls) {
             securityLevel.assign(L"0");
