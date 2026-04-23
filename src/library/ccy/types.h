@@ -5,17 +5,17 @@
 
 #include <type_traits>
 #include <new>
-#include <algorithm>
+// #include <algorithm>
 // #include <bit>
 #include <atomic>
 
 namespace Ccy {
 #ifdef __cpp_lib_hardware_interference_size
-    constexpr size_t c_hwDIS { std::hardware_destructive_interference_size };
-    constexpr size_t c_hwCIS { std::hardware_constructive_interference_size };
+    constexpr size_t c_trueSharingAlign { std::hardware_constructive_interference_size };
+    constexpr size_t c_falseSharingAlign { std::hardware_destructive_interference_size };
 #else
-    constexpr size_t c_hwDIS { 64 };
-    constexpr size_t c_hwCIS { 64 };
+    constexpr size_t c_trueSharingAlign { 64 };
+    constexpr size_t c_falseSharingAlign { 64 };
 #endif
 
     template<class T>
