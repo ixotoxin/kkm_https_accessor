@@ -106,7 +106,7 @@ namespace Log {
         if (Wcs::c_levelLabels.contains(static_cast<Level>(level))) {
             return Text::lowered(Wcs::c_levelLabels.at(static_cast<Level>(level)));
         }
-        return Basic::Wcs::c_fallbackErrorMessage;
+        return { Basic::Wcs::c_fallbackErrorMessage.data(), Basic::Wcs::c_fallbackErrorMessage.size() };
     }
 }
 

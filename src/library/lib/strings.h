@@ -9,9 +9,9 @@
 
 namespace Basic {
     namespace Wcs {
-        LIB_WCSTRI(c_ok, L"OK");
-        LIB_WCSTRI(c_somethingWrong, L"Что-то пошло не так!");
-        LIB_WCSTRI(c_fallbackErrorMessage, L"[ error ]");
+        LIB_WSTRI(c_ok, L"OK");
+        LIB_WSTRI(c_somethingWrong, L"Что-то пошло не так!");
+        LIB_WSTRI(c_fallbackErrorMessage, L"[ error ]");
         LIB_WSTRI(c_invalidValue, L"Недопустимое значение");
         LIB_WSTRI(c_rangeError, L"Значение вне диапазона");
         LIB_WSTRI(c_dataError, L"{0} (свойство '{1}')");
@@ -23,9 +23,9 @@ namespace Basic {
     }
 
     namespace Mbs {
-        LIB_CSTRI(c_ok, "OK");
-        LIB_CSTRI(c_somethingWrong, "Что-то пошло не так!");
-        LIB_CSTRI(c_fallbackErrorMessage, "[ error ]");
+        LIB_STRI(c_ok, "OK");
+        LIB_STRI(c_somethingWrong, "Что-то пошло не так!");
+        LIB_STRI(c_fallbackErrorMessage, "[ error ]");
         // LIB_STRI(c_source, "источник"); // CLEANUP
     }
 }
@@ -83,12 +83,12 @@ namespace Meta {
 namespace Json {
     namespace Wcs {
         LIB_WSTRI(c_jsonObjectWasExpected, L"Ожидался JSON-объект");
-        LIB_WCSTRI(c_successKey, L"!success");
-        LIB_WCSTRI(c_messageKey, L"!message");
+        LIB_WSTRI(c_successKey, L"!success");
+        LIB_WSTRI(c_messageKey, L"!message");
     }
 
     namespace Mbs {
-        LIB_CSTRI(c_successKey, "!success");
-        LIB_CSTRI(c_messageKey, "!message");
+        LIB_STRI(c_successKey, "!success");
+        LIB_STRI(c_messageKey, "!message");
     }
 }
