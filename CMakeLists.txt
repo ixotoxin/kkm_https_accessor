@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
-project(kkm_https_accessor VERSION 1.10.2 LANGUAGES CXX RC)
+
+project(kkm_https_accessor VERSION 1.10.3 LANGUAGES CXX RC)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_FIND_DEBUG_MODE ON)
@@ -209,14 +210,7 @@ set(
 )
 
 if (BUILD_SEPARATED)
-    list(APPEND
-        MTLIB_PUBLIC_DEFS
-            EXTERNAL_LIB_VARIABLES
-            EXTERNAL_MAIN_VARIABLES
-            EXTERNAL_LOG_VARIABLES
-            EXTERNAL_KKM_VARIABLES
-            EXTERNAL_CONF_VARIABLES
-    )
+    list(APPEND MTLIB_PUBLIC_DEFS EXTERNAL_LOG_VARIABLES)
 else ()
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmop")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/kkmjl")

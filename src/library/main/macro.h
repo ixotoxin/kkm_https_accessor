@@ -19,26 +19,28 @@
 #   define MAIN_MVARE(TYPE, NAME, VALUE)
 #endif
 
+// CLEANUP
+
 #ifdef EXTERNAL_MAIN_STRINGS
-#   define MAIN_CSTRI(NAME, VALUE) extern const char * const NAME
-#   define MAIN_CSTRE(NAME, VALUE) const char * const NAME { VALUE }
-#   define MAIN_WCSTRI(NAME, VALUE) extern const wchar_t * const NAME
-#   define MAIN_WCSTRE(NAME, VALUE) const wchar_t * const NAME { VALUE }
+// #   define MAIN_CSTRI(NAME, VALUE) extern const char * const NAME
+// #   define MAIN_CSTRE(NAME, VALUE) const char * const NAME { VALUE }
+// #   define MAIN_WCSTRI(NAME, VALUE) extern const wchar_t * const NAME
+// #   define MAIN_WCSTRE(NAME, VALUE) const wchar_t * const NAME { VALUE }
 #   define MAIN_STRI(NAME, VALUE) extern const std::string_view NAME
 #   define MAIN_STRE(NAME, VALUE) const std::string_view NAME { VALUE }
 #   define MAIN_WSTRI(NAME, VALUE) extern const std::wstring_view NAME
 #   define MAIN_WSTRE(NAME, VALUE) const std::wstring_view NAME { VALUE }
-#   define MAIN_FMT(F, A, ...) std::vformat(F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
-#   define MAIN_WFMT(F, A, ...) std::vformat(F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define MAIN_FMT(F, A, ...) std::vformat(F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define MAIN_WFMT(F, A, ...) std::vformat(F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
 #else
-#   define MAIN_CSTRI(NAME, VALUE) constexpr const char * NAME { VALUE }
-#   define MAIN_CSTRE(NAME, VALUE)
-#   define MAIN_WCSTRI(NAME, VALUE) constexpr const wchar_t * NAME { VALUE }
-#   define MAIN_WCSTRE(NAME, VALUE)
+// #   define MAIN_CSTRI(NAME, VALUE) constexpr const char * NAME { VALUE }
+// #   define MAIN_CSTRE(NAME, VALUE)
+// #   define MAIN_WCSTRI(NAME, VALUE) constexpr const wchar_t * NAME { VALUE }
+// #   define MAIN_WCSTRE(NAME, VALUE)
 #   define MAIN_STRI(NAME, VALUE) constexpr std::string_view NAME { VALUE }
 #   define MAIN_STRE(NAME, VALUE)
 #   define MAIN_WSTRI(NAME, VALUE) constexpr std::wstring_view NAME { VALUE }
 #   define MAIN_WSTRE(NAME, VALUE)
-#   define MAIN_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
-#   define MAIN_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define MAIN_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define MAIN_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
 #endif
