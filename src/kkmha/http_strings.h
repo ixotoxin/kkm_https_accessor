@@ -41,7 +41,7 @@ namespace Http {
         };
 
         inline const std::unordered_map<Status, std::string> c_statusStrings {
-            { Status::Ok, Basic::Mbs::c_ok },
+            { Status::Ok, { Basic::Mbs::c_ok.data(), Basic::Mbs::c_ok.size() } },
             { Status::MovedTemporarily, "Moved Temporarily" },
             { Status::BadRequest, "Bad Request" },
             // { Status::Unauthorized, "Unauthorized" },
