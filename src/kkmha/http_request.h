@@ -15,18 +15,14 @@
 
 namespace Http {
     class Request {
-        using SequenceType = int64_t;
-
-        static constexpr SequenceType c_idMask { 0xfff };
+        static SequenceType sequenceStep() { return 1 + (DateTime::windows() & 0xfff); }
 
         // ISSUE: Разобраться, почему MSVC с LTCG эту переменную без явного указания выравнивания превращает в разных TU
         //  в разные типы [ '__declspec(align(8)) struct (8 bytes)' and 'struct (8 bytes)' ] и, как следствие,
         //  не может слинковать.
-        alignas(alignof(int64_t)) static inline std::atomic<SequenceType> s_sequence { 1 + (DateTime::windows() & c_idMask) };
+        alignas(alignof(SequenceType)) static inline std::atomic<SequenceType> s_sequence { sequenceStep() };
 
     public:
-        using IdType = uint16_t;
-
         Header m_header {};
         Response m_response {};
         std::string m_verb {};
@@ -41,8 +37,8 @@ namespace Http {
         Request() = delete;
 
         explicit Request(Asio::IpAddress && remote)
-        : m_remote { std::forward<Asio::IpAddress>(remote) },
-          m_id { static_cast<IdType>(s_sequence.fetch_add(1 + (DateTime::windows() & c_idMask))) },
+        : m_remote { std::move(remote) },
+          m_id { static_cast<IdType>(s_sequence.fetch_add(sequenceStep(), std::memory_order_acq_rel)) },
           m_logger { std::make_shared<Logger>(std::format(Wcs::c_requestPrefix, m_id)) } {}
 
         Request(const Request &) = delete;

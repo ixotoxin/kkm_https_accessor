@@ -16,10 +16,10 @@ namespace Text {
     };
 
     [[maybe_unused]]
-    inline bool convert(std::wstring & result, const std::string_view text) noexcept try {
+    inline bool convert(std::wstring & output, const std::string_view text) noexcept try {
         if (text.empty()) {
-            result.clear();
-            return result.empty();
+            output.clear();
+            return output.empty();
         }
         using st = std::wstring::size_type;
         const st estimatedSize = WIN_MB2WC_ESTIMATED(text.data(), text.size());
@@ -28,11 +28,11 @@ namespace Text {
         }
 #if WITH_SBIAC
         const st requiredCapacity = std::max(estimatedSize, c_minimalCapacity);
-        if (requiredCapacity > result.capacity()) {
-            result.reserve(requiredCapacity);
+        if (requiredCapacity > output.capacity()) {
+            output.reserve(requiredCapacity);
         }
-        result.resize(estimatedSize);
-        const st estimatedSize2 = WIN_MB2WC(text.data(), text.size(), result.data(), result.capacity());
+        output.resize(estimatedSize);
+        const st estimatedSize2 = WIN_MB2WC(text.data(), text.size(), output.data(), output.capacity());
         assert(estimatedSize == estimatedSize2);
         return estimatedSize == estimatedSize2;
 #else
@@ -42,18 +42,18 @@ namespace Text {
         if (size <= 0) {
             return false;
         }
-        result.assign(buffer.get(), size);
-        return !result.empty();
+        output.assign(buffer.get(), size);
+        return !output.empty();
 #endif
     } catch (...) {
         return false;
     }
 
     [[maybe_unused]]
-    inline bool convert(std::string & result, const std::wstring_view text) noexcept try {
+    inline bool convert(std::string & output, const std::wstring_view text) noexcept try {
         if (text.empty()) {
-            result.clear();
-            return result.empty();
+            output.clear();
+            return output.empty();
         }
         using st = std::wstring::size_type;
         const st estimatedSize = WIN_WC2MB_ESTIMATED(text.data(), text.size());
@@ -62,11 +62,11 @@ namespace Text {
         }
 #if WITH_SBIAC
         const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
-        if (requiredCapacity > result.capacity()) {
-            result.reserve(requiredCapacity);
+        if (requiredCapacity > output.capacity()) {
+            output.reserve(requiredCapacity);
         }
-        result.resize(estimatedSize);
-        const st estimatedSize2 = WIN_WC2MB(text.data(), text.size(), result.data(), result.capacity());
+        output.resize(estimatedSize);
+        const st estimatedSize2 = WIN_WC2MB(text.data(), text.size(), output.data(), output.capacity());
         assert(estimatedSize == estimatedSize2);
         return estimatedSize == estimatedSize2;
 #else
@@ -76,8 +76,8 @@ namespace Text {
         if (size <= 0) {
             return false;
         }
-        result.assign(buffer.get(), size);
-        return !result.empty();
+        output.assign(buffer.get(), size);
+        return !output.empty();
 #endif
     } catch (...) {
         return false;
@@ -110,7 +110,7 @@ namespace Text {
     }
 
     [[maybe_unused]]
-    inline bool appendConverted(std::wstring & result, const std::string_view text) noexcept try {
+    inline bool appendConverted(std::wstring & output, const std::string_view text) noexcept try {
         if (text.empty()) {
             return false;
         }
@@ -119,14 +119,14 @@ namespace Text {
         if (additionalSize <= 0) {
             return false;
         }
-        const st initialSize = result.size();
+        const st initialSize = output.size();
         const st estimatedSize = initialSize + additionalSize;
         const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
-        if (requiredCapacity > result.capacity()) {
-            result.reserve(requiredCapacity);
+        if (requiredCapacity > output.capacity()) {
+            output.reserve(requiredCapacity);
         }
-        result.resize(estimatedSize);
-        const st additionalSize2 = WIN_MB2WC(text.data(), text.size(), result.data() + initialSize, requiredCapacity);
+        output.resize(estimatedSize);
+        const st additionalSize2 = WIN_MB2WC(text.data(), text.size(), output.data() + initialSize, requiredCapacity);
         assert(additionalSize == additionalSize2);
         return additionalSize == additionalSize2;
     } catch (...) {
@@ -134,7 +134,7 @@ namespace Text {
     }
 
     [[maybe_unused]]
-    inline bool appendConverted(std::string & result, const std::wstring_view text) noexcept try {
+    inline bool appendConverted(std::string & output, const std::wstring_view text) noexcept try {
         if (text.empty()) {
             return false;
         }
@@ -143,14 +143,14 @@ namespace Text {
         if (additionalSize <= 0) {
             return false;
         }
-        const st initialSize = result.size();
+        const st initialSize = output.size();
         const st estimatedSize = initialSize + additionalSize;
         const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
-        if (requiredCapacity > result.capacity()) {
-            result.reserve(requiredCapacity);
+        if (requiredCapacity > output.capacity()) {
+            output.reserve(requiredCapacity);
         }
-        result.resize(estimatedSize);
-        const st additionalSize2 = WIN_WC2MB(text.data(), text.size(), result.data() + initialSize, requiredCapacity);
+        output.resize(estimatedSize);
+        const st additionalSize2 = WIN_WC2MB(text.data(), text.size(), output.data() + initialSize, requiredCapacity);
         assert(additionalSize == additionalSize2);
         return additionalSize == additionalSize2;
     } catch (...) {

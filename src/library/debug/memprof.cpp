@@ -52,8 +52,8 @@ namespace Debug {
         );
         Log::write(
             Log::Category::Generic, Log::Level::Warning, {},
-            std::format(L"Address of leaked memory block: 0x{:016X}",
-            reinterpret_cast<uintptr_t>(memoryLeak))
+            L"Address of leaked memory block: 0x{:016X}",
+            reinterpret_cast<uintptr_t>(memoryLeak)
         );
 #   endif
 #endif

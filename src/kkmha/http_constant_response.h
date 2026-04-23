@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -30,6 +30,9 @@ namespace Http {
         [[maybe_unused]]
         explicit constexpr ConstantResponse(const std::string_view data)
         : ProtoResponse(), m_data { data } {}
+
+        [[maybe_unused]]
+        explicit constexpr ConstantResponse(std::string &&) = delete;
 
         ConstantResponse(const ConstantResponse &) = delete;
         ConstantResponse(ConstantResponse &&) = delete;

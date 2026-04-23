@@ -43,9 +43,7 @@ namespace Deferred {
                 } catch (...) {
                     if (m_exception) {
                         *m_exception = std::current_exception();
-                    }
-                }
-            }
+            } } }
         }
 
         Exec & operator=(const Exec &) = delete;
