@@ -23,56 +23,56 @@ namespace Bin {
         template<size_t N = S, size_t O = 0>
         requires (N > 0) && (N + O <= S)
         [[maybe_unused]]
-        void writeTo(Meta::String auto & result) const {
+        void writeTo(Meta::String auto & output) const {
             // static_assert(N > 0);
             // static_assert(N + O <= S);
-            using Txt = Meta::TextTrait<decltype(result)>;
+            using Txt = Meta::TextTrait<decltype(output)>;
             for (size_t count { N }, offset { O + N - 1 }; count; --count) {
-                result.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
-                result.push_back(Txt::c_hexDigits[m_bytes[offset--].m_l]);
+                output.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
+                output.push_back(Txt::c_hexDigits[m_bytes[offset--].m_l]);
             }
         }
 
         template<size_t N = S, size_t O = 0>
         requires (N > 0) && (N + O <= S)
         [[maybe_unused]]
-        void writeTo(Meta::String auto & result, size_t & pos) const {
+        void writeTo(Meta::String auto & output, size_t & pos) const {
             // static_assert(N > 0);
             // static_assert(N + O <= S);
-            using Txt = Meta::TextTrait<decltype(result)>;
-            if (result.size() < pos + N * 2) {
-                result.resize(pos + N * 2, Txt::c_defaultPadding);
+            using Txt = Meta::TextTrait<decltype(output)>;
+            if (output.size() < pos + N * 2) {
+                output.resize(pos + N * 2, Txt::c_defaultPadding);
             }
             for (size_t count { N }, offset { O + N - 1 }; count; --count) {
-                result[pos++] = Txt::c_hexDigits[m_bytes[offset].m_h];
-                result[pos++] = Txt::c_hexDigits[m_bytes[offset--].m_l];
+                output[pos++] = Txt::c_hexDigits[m_bytes[offset].m_h];
+                output[pos++] = Txt::c_hexDigits[m_bytes[offset--].m_l];
             }
         }
 
         [[maybe_unused]]
-        void appendTo(Meta::String auto & result, size_t count = S, size_t offset = 0) const {
+        void appendTo(Meta::String auto & output, size_t count = S, size_t offset = 0) const {
             assert(count > 0);
             assert(count + offset <= S);
-            using Txt = Meta::TextTrait<decltype(result)>;
+            using Txt = Meta::TextTrait<decltype(output)>;
             offset += count - 1;
             while (count--) {
-                result.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
-                result.push_back(Txt::c_hexDigits[m_bytes[offset--].m_l]);
+                output.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
+                output.push_back(Txt::c_hexDigits[m_bytes[offset--].m_l]);
             }
         }
 
         [[maybe_unused]]
-        void rewriteIn(Meta::String auto & result, size_t pos, size_t count = S, size_t offset = 0) const {
+        void rewriteIn(Meta::String auto & output, size_t pos, size_t count = S, size_t offset = 0) const {
             assert(count > 0);
             assert(count + offset <= S);
-            using Txt = Meta::TextTrait<decltype(result)>;
-            if (result.size() < pos + count * 2) {
-                result.resize(pos + count * 2, Txt::c_defaultPadding);
+            using Txt = Meta::TextTrait<decltype(output)>;
+            if (output.size() < pos + count * 2) {
+                output.resize(pos + count * 2, Txt::c_defaultPadding);
             }
             offset += count - 1;
             while (count--) {
-                result[pos++] = Txt::c_hexDigits[m_bytes[offset].m_h];
-                result[pos++] = Txt::c_hexDigits[m_bytes[offset--].m_l];
+                output[pos++] = Txt::c_hexDigits[m_bytes[offset].m_h];
+                output[pos++] = Txt::c_hexDigits[m_bytes[offset--].m_l];
             }
         }
     };
