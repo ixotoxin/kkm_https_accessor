@@ -29,30 +29,32 @@
 #   define LIB_MVARE(TYPE, NAME, VALUE)
 #endif
 
+// CLEANUP
+
 #ifdef EXTERNAL_LIB_STRINGS
-#   define LIB_CSTRI(NAME, VALUE) extern const char * const NAME
-#   define LIB_CSTRE(NAME, VALUE) const char * const NAME { VALUE }
-#   define LIB_WCSTRI(NAME, VALUE) extern const wchar_t * const NAME
-#   define LIB_WCSTRE(NAME, VALUE) const wchar_t * const NAME { VALUE }
+// #   define LIB_CSTRI(NAME, VALUE) extern const char * const NAME
+// #   define LIB_CSTRE(NAME, VALUE) const char * const NAME { VALUE }
+// #   define LIB_WCSTRI(NAME, VALUE) extern const wchar_t * const NAME
+// #   define LIB_WCSTRE(NAME, VALUE) const wchar_t * const NAME { VALUE }
 #   define LIB_STRI(NAME, VALUE) extern const std::string_view NAME
 #   define LIB_STRE(NAME, VALUE) const std::string_view NAME { VALUE }
 #   define LIB_WSTRI(NAME, VALUE) extern const std::wstring_view NAME
 #   define LIB_WSTRE(NAME, VALUE) const std::wstring_view NAME { VALUE }
-#   define LIB_FMT(F, A, ...) std::vformat(F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
-#   define LIB_WFMT(F, A, ...) std::vformat(F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
-#   define LIB_FMT2(R, F, A, ...) std::vformat_to(std::back_inserter(R),F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
-#   define LIB_WFMT2(R, F, A, ...) std::vformat_to(std::back_inserter(R),F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define LIB_FMT(F, A, ...) std::vformat(F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define LIB_WFMT(F, A, ...) std::vformat(F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define LIB_FMT2(R, F, A, ...) std::vformat_to(std::back_inserter(R),F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define LIB_WFMT2(R, F, A, ...) std::vformat_to(std::back_inserter(R),F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
 #else
-#   define LIB_CSTRI(NAME, VALUE) constexpr const char * NAME { VALUE }
-#   define LIB_CSTRE(NAME, VALUE)
-#   define LIB_WCSTRI(NAME, VALUE) constexpr const wchar_t * NAME { VALUE }
-#   define LIB_WCSTRE(NAME, VALUE)
+// #   define LIB_CSTRI(NAME, VALUE) constexpr const char * NAME { VALUE }
+// #   define LIB_CSTRE(NAME, VALUE)
+// #   define LIB_WCSTRI(NAME, VALUE) constexpr const wchar_t * NAME { VALUE }
+// #   define LIB_WCSTRE(NAME, VALUE)
 #   define LIB_STRI(NAME, VALUE) constexpr std::string_view NAME { VALUE }
 #   define LIB_STRE(NAME, VALUE)
 #   define LIB_WSTRI(NAME, VALUE) constexpr std::wstring_view NAME { VALUE }
 #   define LIB_WSTRE(NAME, VALUE)
-#   define LIB_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
-#   define LIB_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
-#   define LIB_FMT2(R, F, A, ...) std::format_to(std::back_inserter(R),F, A __VA_OPT__(,) __VA_ARGS__)
-#   define LIB_WFMT2(R, F, A, ...) std::format_to(std::back_inserter(R),F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define LIB_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define LIB_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define LIB_FMT2(R, F, A, ...) std::format_to(std::back_inserter(R),F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define LIB_WFMT2(R, F, A, ...) std::format_to(std::back_inserter(R),F, A __VA_OPT__(,) __VA_ARGS__)
 #endif

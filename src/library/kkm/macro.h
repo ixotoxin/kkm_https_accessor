@@ -19,28 +19,30 @@
 #   define KKM_MVARE(TYPE, NAME, VALUE)
 #endif
 
+// CLEANUP
+
 #ifdef EXTERNAL_KKM_STRINGS
-#   define KKM_CSTRI(NAME, VALUE) extern const char * const NAME
-#   define KKM_CSTRE(NAME, VALUE) const char * const NAME { VALUE }
-#   define KKM_WCSTRI(NAME, VALUE) extern const wchar_t * const NAME
-#   define KKM_WCSTRE(NAME, VALUE) const wchar_t * const NAME { VALUE }
+// #   define KKM_CSTRI(NAME, VALUE) extern const char * const NAME
+// #   define KKM_CSTRE(NAME, VALUE) const char * const NAME { VALUE }
+// #   define KKM_WCSTRI(NAME, VALUE) extern const wchar_t * const NAME
+// #   define KKM_WCSTRE(NAME, VALUE) const wchar_t * const NAME { VALUE }
 #   define KKM_STRI(NAME, VALUE) extern const std::string_view NAME
 #   define KKM_STRE(NAME, VALUE) const std::string_view NAME { VALUE }
 #   define KKM_WSTRI(NAME, VALUE) extern const std::wstring_view NAME
 #   define KKM_WSTRE(NAME, VALUE) const std::wstring_view NAME { VALUE }
-#   define KKM_FMT(F, A, ...) std::vformat(F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
-#   define KKM_WFMT(F, A, ...) std::vformat(F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define KKM_FMT(F, A, ...) std::vformat(F, std::make_format_args(A __VA_OPT__(,) __VA_ARGS__))
+// #   define KKM_WFMT(F, A, ...) std::vformat(F, std::make_wformat_args(A __VA_OPT__(,) __VA_ARGS__))
 #else
-#   define KKM_CSTRI(NAME, VALUE) constexpr const char * NAME { VALUE }
-#   define KKM_CSTRE(NAME, VALUE)
-#   define KKM_WCSTRI(NAME, VALUE) constexpr const wchar_t * NAME { VALUE }
-#   define KKM_WCSTRE(NAME, VALUE)
+// #   define KKM_CSTRI(NAME, VALUE) constexpr const char * NAME { VALUE }
+// #   define KKM_CSTRE(NAME, VALUE)
+// #   define KKM_WCSTRI(NAME, VALUE) constexpr const wchar_t * NAME { VALUE }
+// #   define KKM_WCSTRE(NAME, VALUE)
 #   define KKM_STRI(NAME, VALUE) constexpr std::string_view NAME { VALUE }
 #   define KKM_STRE(NAME, VALUE)
 #   define KKM_WSTRI(NAME, VALUE) constexpr std::wstring_view NAME { VALUE }
 #   define KKM_WSTRE(NAME, VALUE)
-#   define KKM_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
-#   define KKM_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define KKM_FMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
+// #   define KKM_WFMT(F, A, ...) std::format(F, A __VA_OPT__(,) __VA_ARGS__)
 #endif
 
 #define VERSION_10108 10'010'008
