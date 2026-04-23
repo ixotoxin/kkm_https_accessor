@@ -32,6 +32,10 @@ target_link_libraries(kkmha PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(kkmha PRIVATE asio::asio)
 target_link_libraries(kkmha PRIVATE nlohmann_json::nlohmann_json)
 
+if (POLICY CMP0207)
+    cmake_policy(SET CMP0207 NEW)
+endif ()
+
 if (BUILD_STATIC)
     #target_link_libraries(kkmha PRIVATE Advapi32.lib)
     target_link_libraries(kkmha PRIVATE Crypt32.lib)
