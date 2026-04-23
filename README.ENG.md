@@ -50,8 +50,8 @@ It is assumed that the required software is installed in the following directori
 |------------------------------------------------|---------------------------------------------------------|
 | ATOL Driver                                    | `%programfiles%\ATOL`                                   |
 | Microsoft Visual Studio 2022 Community Edition | `%programfiles%\Microsoft Visual Studio\2022\Community` |
-| Clang                                          | `C:\Devel\Platform\Clang\22.1.3-x86_64`                 |
-| CMake                                          | `C:\Devel\Platform\CMake\4.2.3-x86_64`                  |
+| Clang                                          | `C:\Devel\Platform\Clang\22.1.4-x86_64`                 |
+| CMake                                          | `C:\Devel\Platform\CMake\4.3.2-x86_64`                  |
 | Ninja                                          | `C:\Devel\Platform\Ninja\1.13.2`                        |
 
 The paths can be modified in the files `config_env.cmd` and `install_*_deps.cmd`. CMake and Ninja can be used from MSVS.

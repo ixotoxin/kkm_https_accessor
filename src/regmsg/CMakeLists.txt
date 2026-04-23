@@ -20,6 +20,10 @@ if (WITH_SNTZ)
     target_sntzr_link_options(regmsg)
 endif()
 
+if (POLICY CMP0207)
+    cmake_policy(SET CMP0207 NEW)
+endif ()
+
 install(
     TARGETS regmsg
     COMPONENT regmsg
