@@ -15,6 +15,7 @@
 #include "server_ping_handler.h"
 #include "http_parser.h"
 #include "http_request.h"
+#include <constants.h>
 #include <cassert>
 #include <utility>
 #include <memory>
@@ -164,7 +165,7 @@ namespace Server {
                     )
                 );
                 if (error) {
-                    throw Failure(Text::convert(Text::concat(Mbs::c_sslHandshakeOperation, ": "sv, error.message()))); // NOLINT(*-exception-baseclass)
+                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslHandshakeOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
                 }
             }
 
@@ -180,7 +181,7 @@ namespace Server {
                     )
                 );
                 if (error) {
-                    throw Failure(Text::convert(Text::concat(Mbs::c_sslReadOperation, ": "sv, error.message()))); // NOLINT(*-exception-baseclass)
+                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslReadOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
                 }
 
                 Http::Parser parser(request);
@@ -198,7 +199,7 @@ namespace Server {
                             )
                         );
                         if (error) {
-                            throw Failure(Text::convert(Text::concat(Mbs::c_sslReadOperation, ": "sv, error.message()))); // NOLINT(*-exception-baseclass)
+                            throw Failure(Cat<c_xsStrSize>(Mbs::c_sslReadOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
                         }
                         parser(buffer);
                         expecting = parser.expecting();
@@ -249,7 +250,7 @@ namespace Server {
                     )
                 );
                 if (error) {
-                    throw Failure(Text::convert(Text::concat(Mbs::c_sslWriteOperation, ": "sv, error.message()))); // NOLINT(*-exception-baseclass)
+                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslWriteOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
                 }
             }
 
@@ -294,7 +295,7 @@ namespace Server {
                         && error != asio::error::not_connected
                     ) {
                         request.m_logger->error(
-                            SrcLoc::Point::current(), Text::concat(Mbs::c_sslShutdownOperation, ": "sv, error.message())
+                            SrcLoc::Point::current(), Text::concat<c_xsStrSize>(Mbs::c_sslShutdownOperation, ": "sv, error.message())
                         );
                     }
                 }
@@ -305,7 +306,7 @@ namespace Server {
                 streamLowestLayer.close(error); // NOLINT(*-unused-return-value)
                 if (error) {
                     request.m_logger->error(
-                        SrcLoc::Point::current(), Text::concat(Mbs::c_socketCloseOperation, ": "sv, error.message())
+                        SrcLoc::Point::current(), Text::concat<c_xsStrSize>(Mbs::c_socketCloseOperation, ": "sv, error.message())
                     );
                 }
             }

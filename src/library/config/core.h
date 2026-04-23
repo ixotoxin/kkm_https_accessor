@@ -22,7 +22,9 @@ namespace Config {
     requires std::is_same_v<T, std::filesystem::path> || std::is_same_v<T, std::wstring>
     void readJson(const T & file, SETTERS ... setters) {
         if (!std::filesystem::is_regular_file(file)) {
-            throw Failure(CONF_WFMT(Wcs::c_cantReadConfig, file.wstring())); // NOLINT(*-exception-baseclass)
+            // CLEANUP
+            // throw Failure(CONF_WFMT(Wcs::c_cantReadConfig, file.wstring())); // NOLINT(*-exception-baseclass)
+            throw Failure(Fmt<c_sStrSize>(Wcs::c_cantReadConfig, file.wstring())); // NOLINT(*-exception-baseclass)
         }
         try {
             std::filesystem::current_path(Config::s_directory);

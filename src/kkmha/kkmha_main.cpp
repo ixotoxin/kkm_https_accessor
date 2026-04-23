@@ -5,6 +5,8 @@
 #include <cmake/variables.h>
 #include <lib/strings.h>
 #include <lib/setcli.h>
+#include <lib/memory.h>
+#include <lib/errexp.h>
 #include <main/varop.h>
 #include <main/shortcut.h>
 #include <log2/varop.h>
@@ -62,7 +64,12 @@ void usage(std::wostream & stream, const std::filesystem::path & path) {
 
 int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
+    const auto lfhError = System::enableLowFragmentationHeap();
     Config::initLogger();
+    if (lfhError) {
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, System::explainError(*lfhError));
+        return EXIT_FAILURE;
+    }
     Config::initProfiler();
 
     FORCE_MEMORY_LEAK;

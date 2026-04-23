@@ -308,13 +308,13 @@ namespace Text {
     template<Meta::TextualContainer T>
     [[maybe_unused]]
     T::size_type splitTo(
-        T & receiver,
+        T & output,
         const typename Meta::TextTrait<typename T::value_type>::View text,
         const typename Meta::TextTrait<typename T::value_type>::View delims,
         const bool clear = false
     ) {
-        if (clear && !receiver.empty()) {
-            receiver.clear();
+        if (clear && !output.empty()) {
+            output.clear();
         }
         if (text.empty() || delims.empty()) {
             return 0;
@@ -323,13 +323,13 @@ namespace Text {
         while (first != T::value_type::npos) {
             auto last = text.find_first_of(delims, first + 1);
             if (last == T::value_type::npos) {
-                receiver.emplace_back(text, first, text.length() - first);
+                output.emplace_back(text, first, text.length() - first);
                 break;
             }
-            receiver.emplace_back(text, first, last - first);
+            output.emplace_back(text, first, last - first);
             first = text.find_first_not_of(delims, last + 1);
         }
-        return receiver.size();
+        return output.size();
     }
 
     template<Meta::String T>
@@ -372,71 +372,95 @@ namespace Text {
     template<Meta::TextualContainer T>
     [[maybe_unused]]
     T::value_type::size_type joinTo(
-        typename Meta::TextTrait<typename T::value_type>::String & receiver,
+        typename Meta::TextTrait<typename T::value_type>::String & output,
         const T & container,
         const typename Meta::TextTrait<typename T::value_type>::View glue,
         const bool clear = false
     ) {
-        if (clear && !receiver.empty()) {
-            receiver.clear();
+        if (clear && !output.empty()) {
+            output.clear();
         }
         for (const auto & str : container) {
             if (!str.empty()) {
-                if (!receiver.empty()) {
-                    receiver.append(glue);
+                if (!output.empty()) {
+                    output.append(glue);
                 }
-                receiver.append(str);
+                output.append(str);
             }
         }
-        return receiver.length();
+        return output.length();
     }
 
     template<Meta::String T>
     [[maybe_unused]]
     T::size_type joinTo(
-        T & receiver,
+        T & output,
         T && text,
         const typename Meta::TextTrait<T>::View glue
     ) {
-        if (receiver.empty()) {
-            receiver.assign(std::forward<T>(text));
+        if (output.empty()) {
+            output.assign(std::forward<T>(text));
         } else {
-            receiver.append(glue);
-            receiver.append(text);
+            output.append(glue);
+            output.append(text);
         }
-        return receiver.length();
+        return output.length();
     }
 
     template<Meta::String T>
     [[maybe_unused]]
     T::size_type joinTo(
-        T & receiver,
+        T & output,
         const typename Meta::TextTrait<T>::View text,
         const typename Meta::TextTrait<T>::View glue
     ) {
-        if (receiver.empty()) {
-            receiver.assign(text);
+        if (output.empty()) {
+            output.assign(text);
         } else {
-            receiver.append(glue);
-            receiver.append(text);
+            output.append(glue);
+            output.append(text);
         }
-        return receiver.length();
+        return output.length();
     }
 
-    template<typename ... T>
+    /*template<typename ... T>
     requires (std::is_convertible_v<T, Meta::Wcs::View> && ...)
     [[nodiscard, maybe_unused]]
     Meta::Wcs::String concat(T && ... text) {
         Meta::Wcs::String result;
         (result.append(text), ...);
         return result;
-    }
+    }*/
 
-    template<typename ... T>
+    /*template<typename ... T>
     requires (std::is_convertible_v<T, Meta::Mbs::View> && ...)
     [[nodiscard, maybe_unused]]
     Meta::Mbs::String concat(T && ... text) {
         Meta::Mbs::String result;
+        (result.append(text), ...);
+        return result;
+    }*/
+
+    template<size_t S = 0, typename ... T>
+    requires (std::is_convertible_v<T, Meta::Wcs::View> && ...)
+    [[nodiscard, maybe_unused]]
+    Meta::Wcs::String concat(T && ... text) {
+        Meta::Wcs::String result;
+        if constexpr (S) {
+            result.reserve(S);
+        }
+        (result.append(text), ...);
+        return result;
+    }
+
+    template<size_t S = 0, typename ... T>
+    requires (std::is_convertible_v<T, Meta::Mbs::View> && ...)
+    [[nodiscard, maybe_unused]]
+    Meta::Mbs::String concat(T && ... text) {
+        Meta::Mbs::String result;
+        if constexpr (S) {
+            result.reserve(S);
+        }
         (result.append(text), ...);
         return result;
     }
@@ -444,9 +468,9 @@ namespace Text {
     template<Meta::String T, typename ... U>
     requires (std::is_convertible_v<U, typename Meta::TextTrait<T>::View> && ...)
     [[maybe_unused]]
-    T::size_type concatTo(T & receiver, U && ... text) {
-        (receiver.append(text), ...);
-        return receiver.length();
+    T::size_type concatTo(T & output, U && ... text) {
+        (output.append(text), ...);
+        return output.length();
     }
 
     template<Meta::Wideness T>

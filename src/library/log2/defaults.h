@@ -5,12 +5,13 @@
 
 #include "macro.h"
 #include "types.h"
+#include <constants.h>
 #include <string_view>
 
 namespace Log {
-    LOG_CONST(size_t, c_lineSizeDef, 384);
-    LOG_CONST(size_t, c_lineSizeMin, 64);
-    LOG_CONST(size_t, c_lineSizeMax, 1024);
+    LOG_CONST(size_t, c_lineSizeDef, c_sStrSize);
+    LOG_CONST(size_t, c_lineSizeMin, c_xsStrSize);
+    LOG_CONST(size_t, c_lineSizeMax, c_mStrSize);
 #ifndef SINGLE_THREAD
     LOG_CONST(bool, c_enableAsyncDef, true);
     LOG_CONST(size_t, c_blockSize, 1024);

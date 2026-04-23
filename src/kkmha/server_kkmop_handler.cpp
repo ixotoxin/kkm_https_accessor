@@ -5,11 +5,10 @@
 #include "server_kkmop_defauls.h"
 #include "server_kkmop_strings.h"
 #include "server_strings.h"
-#include "server_cache_strings.h"
 #include "server_cache_core.h"
 #include "http_constant_response.h"
 #include "http_json_response.h"
-// #include <lib/meta.h>
+#include <constants.h>
 #include <debug/memprof.h>
 #include <kkm/strings.h>
 #include <kkm/logger.h>
@@ -29,8 +28,6 @@ namespace Server::KkmOp {
     static std::mutex s_registryMutex {};
 
     struct Payload {
-        // using Id = decltype(Http::Request::m_id);
-
         const std::string m_serialNumber;
         const Nln::Json m_details;
         OptionalResult m_result;
@@ -45,8 +42,7 @@ namespace Server::KkmOp {
             Nln::Json && details,
             LoggerPtr logger, // NOLINT
             const DateTime::Offset expiresAfter = 0s
-        ) : m_serialNumber(std::forward<std::string>(serialNumber)),
-            m_details(std::forward<Nln::Json>(details)), m_result(std::nullopt),
+        ) : m_serialNumber(std::move(serialNumber)), m_details(std::move(details)), m_result(std::nullopt),
             m_logger(std::move(logger)), m_expiresAfter(expiresAfter) {
             assert(m_details.is_object());
         }
@@ -88,6 +84,22 @@ namespace Server::KkmOp {
             }
             m_result.value()[Json::Mbs::c_successKey] = false;
             m_result.value()[Json::Mbs::c_messageKey] = message;
+        }
+
+        [[maybe_unused]]
+        void fail(
+            const Http::Status status,
+            Basic::Mbs::Message && message,
+            const SrcLoc::Point & location = SrcLoc::Point::current()
+        ) {
+            assert(Meta::toUnderlying(status) >= 400);
+            m_logger->error(location, message.m_message);
+            m_status = status;
+            if (!m_result.has_value()) {
+                m_result.emplace(Nln::EmptyJsonObject);
+            }
+            m_result.value()[Json::Mbs::c_successKey] = false;
+            m_result.value()[Json::Mbs::c_messageKey] = std::move(message.m_message);
         }
     };
 
@@ -143,7 +155,11 @@ namespace Server::KkmOp {
         std::wstring connString;
         const bool found { Json::handleKey(payload.m_details, "connParams", connString) };
         if (!found) {
-            return payload.fail(Http::Status::BadRequest, KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"));
+            // return payload.fail(Http::Status::BadRequest, KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"));
+            return payload.fail(
+                Http::Status::BadRequest,
+                Basic::Mbs::Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, "connParams")
+            );
         }
 
         const auto connParams = Registry::make(connString);
@@ -302,29 +318,29 @@ namespace Server::KkmOp {
         payload.m_expiresAfter = c_reportCacheLifeTime;
     }
 
-    static const std::unordered_map<std::string, void (*)(Payload &)> s_handlers {
-        { "get/kkm/base-status", baseStatus },
-        { "get/kkm/status", status },
-        { "get/kkm/full-status", fullStatus },
-        { "post/kkm/learn", learn },
-        { "post/kkm/reset-registry", resetRegistry },
-        { "post/kkm/print-demo", printDemo },
-        { "post/kkm/print-non-fiscal-doc", printNonFiscalDocument },
-        { "post/kkm/print-info", printInfo },
-        { "post/kkm/print-fn-registrations", printFnRegistrations },
-        { "post/kkm/print-ofd-exchange-status", printOfdExchangeStatus },
-        { "post/kkm/print-ofd-test", printOfdTest },
-        { "post/kkm/print-close-shift-reports", printCloseShiftReports },
-        { "post/kkm/print-last-document", printLastDocument },
-        { "get/kkm/cash-stat", cashStat },
-        { "post/kkm/cash-in", cashIn },
-        { "post/kkm/cash-out", cashOut },
-        { "post/kkm/sell", sell },
-        { "post/kkm/sell-return", sellReturn },
-        { "post/kkm/report-x", reportX },
-        { "post/kkm/report-z", closeShift },
-        { "post/kkm/close-shift", closeShift },
-        { "post/kkm/reset-state", resetState }
+    static const std::unordered_map<std::string, std::pair<void (*)(Payload &), size_t>> s_handlers {
+        { "get/kkm/base-status", { baseStatus, c_mStrSize } },
+        { "get/kkm/status", { status, c_mStrSize * 3 / 2 } },
+        { "get/kkm/full-status", { fullStatus, c_lStrSize } },
+        { "post/kkm/learn", { learn, c_sStrSize } },
+        { "post/kkm/reset-registry", { resetRegistry, c_sStrSize } },
+        { "post/kkm/print-demo", { printDemo, c_sStrSize } },
+        { "post/kkm/print-non-fiscal-doc", { printNonFiscalDocument, c_sStrSize } },
+        { "post/kkm/print-info", { printInfo, c_sStrSize } },
+        { "post/kkm/print-fn-registrations", { printFnRegistrations, c_sStrSize } },
+        { "post/kkm/print-ofd-exchange-status", { printOfdExchangeStatus, c_sStrSize } },
+        { "post/kkm/print-ofd-test", { printOfdTest, c_sStrSize } },
+        { "post/kkm/print-close-shift-reports", { printCloseShiftReports, c_sStrSize } },
+        { "post/kkm/print-last-document", { printLastDocument, c_sStrSize } },
+        { "get/kkm/cash-stat", { cashStat, c_sStrSize } },
+        { "post/kkm/cash-in", { cashIn, c_sStrSize } },
+        { "post/kkm/cash-out", { cashOut, c_sStrSize } },
+        { "post/kkm/sell", { sell, c_sStrSize } },
+        { "post/kkm/sell-return", { sellReturn, c_sStrSize } },
+        { "post/kkm/report-x", { reportX, c_sStrSize } },
+        { "post/kkm/report-z", { closeShift, c_sStrSize } },
+        { "post/kkm/close-shift", { closeShift, c_sStrSize } },
+        { "post/kkm/reset-state", { resetState, c_sStrSize } }
     };
 
     bool Handler::asyncReady() const noexcept {
@@ -373,9 +389,10 @@ namespace Server::KkmOp {
             return fail(request, Http::Status::MethodNotAllowed, Server::Mbs::c_methodNotAllowed);
         }
 
-        Cache::Key cacheKey;
+        Cache::Key cacheKey {};
 
         if (!idempotencyKey.empty()) {
+            cacheKey.reserve(c_sStrSize);
             cacheKey.assign("kkm::::");
             cacheKey.append(request.m_remote.to_string());
             cacheKey.append("::::");
@@ -384,7 +401,7 @@ namespace Server::KkmOp {
 
         if (!cacheKey.empty()) {
             if (auto cacheEntry = Cache::load(cacheKey); cacheEntry) {
-                request.m_logger->debug(Cache::Wcs::c_fromCache);
+                request.m_logger->debug(Server::Wcs::c_fromCache);
                 request.m_response.m_status = cacheEntry->m_status;
                 request.m_response.m_data = cacheEntry->m_data;
                 return;
@@ -392,6 +409,7 @@ namespace Server::KkmOp {
         }
 
         std::string handlerKey, serialNumber;
+        handlerKey.reserve(c_xsStrSize);
 
         if (request.m_hint.size() == 4) {
             Text::concatTo(handlerKey, request.m_hint[0], "/", request.m_hint[1], "/", request.m_hint[3]);
@@ -421,7 +439,7 @@ namespace Server::KkmOp {
             request.m_method == Http::Method::Get ? c_reportCacheLifeTime : c_receiptCacheLifeTime
         };
 
-        handler->second(payload);
+        handler->second.first(payload);
 
         assert(!payload.m_result.has_value() || payload.m_result.value().is_object());
         assert(request.m_response.m_status == Http::Status::Ok);
@@ -439,7 +457,7 @@ namespace Server::KkmOp {
                 request.m_response.m_data = Http::ConstantResponse::s_okResponse;
             }
         } else {
-            auto response = std::make_shared<Http::JsonResponse>(std::move(payload.m_result));
+            auto response = std::make_shared<Http::JsonResponse>(std::move(payload.m_result), handler->second.second);
             if (!cacheKey.empty()) {
                 Cache::store(cacheKey, Cache::expiresAfter(payload.m_expiresAfter), payload.m_status, response);
             }

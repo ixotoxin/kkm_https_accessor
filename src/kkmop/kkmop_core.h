@@ -19,7 +19,7 @@ namespace KkmOperator {
     using namespace Kkm;
 
     template<std::derived_from<Result> R, typename T>
-    void logResult(const R & result, const std::wstring_view name, T && value) noexcept {
+    void logResult(R & result, const std::wstring_view name, T && value) noexcept {
         if (result.m_success) {
             log(Log::Level::Info, name, std::forward<T>(value));
         } else {
@@ -34,7 +34,10 @@ namespace KkmOperator {
         Log::Console::ScopedLevelDown scopeLevel { Log::Level::Info };
 
         for (int i = 0, n = 1; i < connParamCount; ++i, ++n) {
-            Log::CategoryLogger genLogger { Log::Category::Generic, std::format(Wcs::c_commandPrefix, n) };
+            Log::CategoryLogger genLogger {
+                Log::Category::Generic,
+                Basic::Wcs::Fmt<c_xsStrSize>(Wcs::c_commandPrefix, n)
+            };
             try {
                 auto kkmLogger { std::make_shared<Logger>(genLogger) };
                 const auto connParams = Registry::make(connParamItems[i]);

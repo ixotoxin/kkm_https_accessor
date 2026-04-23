@@ -9,27 +9,29 @@ namespace Http {
     using Basic::Failure;
 
     void Parser::parseMethod(std::istream & stream) {
-        std::string line;
-        std::getline(stream, line);
+        std::getline(stream, m_line);
 
-        auto pos1 = line.find_first_of(' ');
+        auto pos1 = m_line.find_first_of(' ');
         if (pos1 == std::string::npos) {
             m_request.m_response.m_status = Status::BadRequest;
             m_reader = &Parser::dummyReader;
             return;
         }
-        m_request.m_verb.assign(line.data(), line.data() + pos1);
+        m_request.m_verb.assign(m_line.data(), /*m_line.data() +*/ pos1);
 
         ++pos1;
-        auto pos2 = line.find_first_of(" ?#\r\n", pos1);
+        auto pos2 = m_line.find_first_of(" ?#\r\n", pos1);
         if (pos2 == std::string::npos || pos1 == pos2) {
             m_request.m_response.m_status = Status::BadRequest;
             m_reader = &Parser::dummyReader;
             return;
         }
-        m_request.m_path.assign(line.data() + pos1, line.data() + pos2);
+        m_request.m_path.reserve(pos2 - pos1);
+        // CLEANUP
+        // m_request.m_path.assign(m_line.data() + pos1, m_line.data() + pos2);
+        m_request.m_path.assign(m_line.data() + pos1, pos2 - pos1);
 
-        Text::splitTo(m_request.m_hint, Text::lowered<std::string>({ line.c_str(), pos2 }), " /\\");
+        Text::splitTo(m_request.m_hint, Text::lowered<std::string>({ m_line.c_str(), pos2 }), " /\\");
         if (m_request.m_hint.empty()) {
             m_request.m_response.m_status = Status::BadRequest;
             m_reader = &Parser::dummyReader;
@@ -51,11 +53,10 @@ namespace Http {
     }
 
     void Parser::parseHeader(std::istream & stream) {
-        std::string line;
-        std::getline(stream, line);
-        Text::trim(line);
+        std::getline(stream, m_line);
+        Text::trim(m_line);
 
-        if (line.empty()) {
+        if (m_line.empty()) {
             if (m_request.m_method == Method::Post && m_expectedBodySize) {
                 ++m_step;
                 m_reader = &Parser::parseBody;
@@ -65,11 +66,10 @@ namespace Http {
             return;
         }
 
-        std::string field, value;
-        Text::splitVariable(line, field, value);
-        m_request.m_header[field] = value;
-        if (field == "content-length") {
-            m_expectedBodySize = Text::cast<size_t>(value);
+        Text::splitVariable(m_line, m_field, m_value);
+        m_request.m_header[m_field] = m_value;
+        if (m_field == "content-length") {
+            m_expectedBodySize = Text::cast<size_t>(m_value);
             if (m_expectedBodySize > c_requestBodySizeLimit) {
                 m_request.m_logger->error(Wcs::c_bodySizeLimitExceeded);
                 m_expectedBodySize = 0;

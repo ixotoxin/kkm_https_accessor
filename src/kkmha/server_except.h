@@ -7,17 +7,23 @@
 #include <log2/types.h>
 
 namespace Server {
+    using Basic::Wcs::Cat;
+    using Basic::Wcs::Fmt;
+
     class Failure final : public Basic::Failure {
     public:
         Failure() = delete;
         Failure(const Failure &) = default;
         Failure(Failure &&) noexcept = default;
 
+        explicit Failure(const std::wstring_view message, SrcLoc::Point && location = SrcLoc::Point::current())
+        : Basic::Failure(message, Log::c_catWebServer, std::move(location)) {} // NOLINT
+
         explicit Failure(std::wstring && message, SrcLoc::Point && location = SrcLoc::Point::current())
         : Basic::Failure(std::move(message), Log::c_catWebServer, std::move(location)) {} // NOLINT
 
-        explicit Failure(const std::wstring_view message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(message, Log::c_catWebServer, std::move(location)) {} // NOLINT
+        explicit Failure(Basic::Wcs::Message && message, SrcLoc::Point && location = SrcLoc::Point::current())
+        : Basic::Failure(std::move(message), Log::c_catWebServer, std::move(location)) {} // NOLINT
 
         ~Failure() override = default;
 

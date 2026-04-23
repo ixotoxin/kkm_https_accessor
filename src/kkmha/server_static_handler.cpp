@@ -5,10 +5,10 @@
 #include "server_static_variables.h"
 #include "server_static_strings.h"
 #include "server_strings.h"
-#include "server_cache_strings.h"
 #include "server_cache_core.h"
 #include "http_solid_response.h"
 #include "http_binary_response.h"
+#include <constants.h>
 #include <lib/except.h>
 #include <lib/path.h>
 #include <cassert>
@@ -20,14 +20,18 @@ namespace Server::Static {
     using Basic::Failure;
 
     void redirectToIndex(Http::Request & request) {
-        std::string newPath { request.m_path };
+        std::string newPath {};
+        newPath.reserve(c_sStrSize);
+        newPath.assign(request.m_path);
         if (newPath.find_last_of("/"sv) != newPath.size() - 1) {
             newPath.append("/"sv);
         }
         newPath.append(s_indexFile);
+        std::string response {};
+        response.reserve(c_mStrSize);
+        std::format_to(std::back_inserter(response), Mbs::c_redirectResponseTemplate, newPath);
         request.m_response.m_status = Http::Status::MovedTemporarily;
-        request.m_response.m_data
-            = std::make_shared<Http::SolidResponse>(std::format(Mbs::c_redirectResponseTemplate, newPath));
+        request.m_response.m_data = std::make_shared<Http::SolidResponse>(std::move(response));
     }
 
     bool Handler::asyncReady() const noexcept {
@@ -48,6 +52,7 @@ namespace Server::Static {
 
         {
             std::wstring requestedPath { Text::convert(request.m_path) }, path2;
+            path2.reserve(c_sStrSize);
             auto pos = requestedPath.find_first_not_of(L'/');
             if (pos != std::string::npos) {
                 pos = requestedPath.find_first_of(L'/', pos);
@@ -80,8 +85,10 @@ namespace Server::Static {
             }
         }
 
-        Cache::Key cacheKey { "static::::" };
-        cacheKey.append(Text::convert(path.wstring()));
+        Cache::Key cacheKey {};
+        cacheKey.reserve(c_sStrSize);
+        cacheKey.assign("static::::");
+        Text::appendConverted(cacheKey, path.wstring());
 
         if (auto cacheEntry = Cache::load(cacheKey); cacheEntry) {
             auto fileTime = std::filesystem::last_write_time(path, error);
@@ -89,7 +96,7 @@ namespace Server::Static {
                 return fail(request, Http::Status::NotFound, error.message());
             }
             if (DateTime::cast<DateTime::Point>(fileTime) <= cacheEntry->m_cachedAt) {
-                request.m_logger->debug(Cache::Wcs::c_fromCache);
+                request.m_logger->debug(Server::Wcs::c_fromCache);
                 request.m_response.m_status = cacheEntry->m_status;
                 request.m_response.m_data = cacheEntry->m_data;
                 return;

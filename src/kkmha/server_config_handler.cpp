@@ -4,6 +4,7 @@
 #include "server_config_handler.h"
 #include "server_strings.h"
 #include "http_json_response.h"
+#include <constants.h>
 #include <lib/wconv.h>
 #include <lib/text.h>
 #include <kkm/variables.h>
@@ -20,7 +21,7 @@ namespace Server::Config {
         assert(request.m_response.m_status == Http::Status::Ok);
 
         if (request.m_method == Http::Method::Get && request.m_hint.size() == 3 && request.m_hint[2] == "general") {
-            auto response = std::make_shared<Http::JsonResponse>();
+            auto response = std::make_shared<Http::JsonResponse>(c_mStrSize);
             response->m_data["cliOperator"] = {
                 { "name", Text::convert(Kkm::s_cliOperatorName) },
                 { "inn", Text::convert(Kkm::s_cliOperatorInn) }

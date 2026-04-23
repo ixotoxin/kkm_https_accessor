@@ -21,11 +21,15 @@ namespace KkmJsonLoader {
 
     [[nodiscard]]
     inline int exec(wchar_t * serialNumber, const wchar_t * fileName) {
+        using Basic::Wcs::Fmt;
+
         Log::asBackgroundProcess();
         const std::filesystem::path path { fileName };
         std::ifstream file { path };
         if (!file.is_open() || !file.good()) {
-            throw Basic::Failure(LIB_WFMT(Basic::Wcs::c_couldntReadFile, path.filename().wstring())); // NOLINT(*-exception-baseclass)
+            // CLEANUP
+            // throw Basic::Failure(LIB_WFMT(Basic::Wcs::c_couldntReadFile, path.filename().wstring())); // NOLINT(*-exception-baseclass)
+            throw Basic::Failure(Fmt<c_sStrSize>(Basic::Wcs::c_couldntReadFile, path.filename().wstring())); // NOLINT(*-exception-baseclass)
         }
 
         const Nln::Json details(Nln::Json::parse(file));
@@ -48,7 +52,9 @@ namespace KkmJsonLoader {
         if (details.contains(Mbs::c_query)) {
             query.assign(Text::convert(Text::lowered(details.at(Mbs::c_query).get<std::string>())));
         } else {
-            throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
+            // CLEANUP
+            // throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
+            throw Basic::Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
         }
 
         Nln::Json result(Nln::EmptyJsonObject);
@@ -56,7 +62,9 @@ namespace KkmJsonLoader {
             std::wstring connString;
             const bool found { Json::handleKey(details, "connParams", connString) };
             if (!found) {
-                throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"))); // NOLINT(*-exception-baseclass)
+                // CLEANUP
+                // throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"))); // NOLINT(*-exception-baseclass)
+                throw Basic::Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, "connParams")); // NOLINT(*-exception-baseclass)
             }
             const auto connParams = Registry::make(connString);
             NewDevice kkm { connParams };
@@ -127,7 +135,9 @@ namespace KkmJsonLoader {
         } else if (query == L"reset-state") {
             callMethod(Device { Registry::load(serial) }, &Device::resetState, details, result);
         } else {
-            throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
+            // CLEANUP
+            // throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
+            throw Basic::Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
         }
 
 #if WITH_CRTD || WITH_SNTZ
