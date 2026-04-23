@@ -26,7 +26,7 @@ namespace Ccy {
         unsigned A = c_queueDefaultAcquireAttempts  /** Количество по-умолчанию попыток захватить слот **/
     >
     requires (S > 1 && A > 0)
-    class alignas(c_hwCIS) StaticMpmcQueue {
+    class alignas(c_trueSharingAlign) StaticMpmcQueue {
     protected:
         using InternalSizeType = std::atomic_int_fast32_t;
         using InternalIndexType = std::atomic_uint_fast64_t;
@@ -153,17 +153,17 @@ namespace Ccy {
         using State = QueueSlotState;
         using Completion = QueueAccessorCompletion<C>;
 
-        struct alignas(c_hwDIS) {
+        struct alignas(c_falseSharingAlign) {
             InternalIndexType m_index { 0 };
             std::atomic_flag m_enable {};
         } m_producer;
-        struct alignas(c_hwDIS) {
+        struct alignas(c_falseSharingAlign) {
             InternalIndexType m_index { 0 };
             std::atomic_flag m_enable {};
         } m_consumer;
-        alignas(c_hwDIS) InternalSizeType m_free { S };
-        alignas(c_hwDIS) std::atomic<State> m_state[static_cast<size_t>(S)] {};
-        alignas(c_hwDIS) Payload m_payload[static_cast<size_t>(S)] {};
+        alignas(c_falseSharingAlign) InternalSizeType m_free { S };
+        alignas(c_falseSharingAlign) std::atomic<State> m_state[static_cast<size_t>(S)] {};
+        alignas(c_falseSharingAlign) Payload m_payload[static_cast<size_t>(S)] {};
     };
 
     template<std::default_initializable T, int S, bool C, bool H, bool E, unsigned A>

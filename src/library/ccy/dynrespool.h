@@ -35,7 +35,7 @@ namespace Ccy {
         GrowthPolicy G = c_defaultGrowthPolicy      /** Политика роста пула **/
     >
     requires (S > 1 && A > 0)
-    class alignas(c_hwCIS) DynamicResourcePool;
+    class alignas(c_trueSharingAlign) DynamicResourcePool;
 
     template<class P>
     concept AnyDynamicResourcePool
@@ -46,7 +46,7 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    class alignas(c_hwCIS) DynamicResourcePool
+    class alignas(c_trueSharingAlign) DynamicResourcePool
     : public std::enable_shared_from_this<DynamicResourcePool<T, S, H, O, E, A, G>> {
     protected:
         struct KeyTag {};
@@ -142,11 +142,11 @@ namespace Ccy {
         BlockPointer m_head { nullptr };
         Block * m_tail { nullptr };
         InternalSizeType m_capacity { 0 };
-        InternalSizeType m_takenBlocks { 0 };
-        InternalSizeType m_availableBlocks;
+        InternalSizeType m_taken { 0 };
+        InternalSizeType m_available;
         SpinLock<> m_spinLock {};
-        alignas(c_hwDIS) InternalSizeType m_free { 0 };
-        alignas(c_hwDIS) std::atomic<Block *> m_blockCursor { nullptr };
+        alignas(c_falseSharingAlign) InternalSizeType m_free { 0 };
+        alignas(c_falseSharingAlign) std::atomic<Block *> m_cursor { nullptr };
 
         template<bool X> bool init() noexcept(X);
         bool grow() noexcept(c_noExceptAccess);
@@ -154,12 +154,12 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    struct alignas(c_hwCIS) DynamicResourcePool<T, S, H, O, E, A, G>::Block : std::enable_shared_from_this<Block> {
+    struct alignas(c_trueSharingAlign) DynamicResourcePool<T, S, H, O, E, A, G>::Block : std::enable_shared_from_this<Block> {
         std::atomic<BlockPointer> m_next { nullptr };
-        alignas(c_hwDIS) InternalSizeType m_free { S };
-        alignas(c_hwDIS) InternalIndexType m_index { 0 };
-        alignas(c_hwDIS) std::atomic_flag m_flags[static_cast<size_t>(S)] {};
-        alignas(c_hwDIS) Payload m_payload[static_cast<size_t>(S)] {};
+        alignas(c_falseSharingAlign) InternalSizeType m_free { S };
+        alignas(c_falseSharingAlign) InternalIndexType m_index { 0 };
+        alignas(c_falseSharingAlign) std::atomic_flag m_flags[static_cast<size_t>(S)] {};
+        alignas(c_falseSharingAlign) Payload m_payload[static_cast<size_t>(S)] {};
 
         Block() noexcept(c_noExceptPayload) = default;
         Block(const Block &) = delete;
@@ -303,16 +303,16 @@ namespace Ccy {
     requires (S > 1 && A > 0)
     DynamicResourcePool<T, S, H, O, E, A, G>::DynamicResourcePool(KeyTag, ThrowingTag, const int maxBlocks)
     : m_head { std::make_shared<Block>() }, m_tail { m_head.get() },
-      m_capacity { S }, m_takenBlocks { 1 }, m_availableBlocks { maxBlocks - 1 },
-      m_free { S }, m_blockCursor { m_tail } {
-        assert(m_availableBlocks.load(MemOrd::acquire) >= 0);
+      m_capacity { S }, m_taken { 1 }, m_available { maxBlocks - 1 },
+      m_free { S }, m_cursor { m_tail } {
+        assert(m_available.load(MemOrd::acquire) >= 0);
     }
 
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
     DynamicResourcePool<T, S, H, O, E, A, G>::DynamicResourcePool(KeyTag, NonThrowingTag, const int maxBlocks) noexcept
-    : m_availableBlocks { maxBlocks } {
-        assert(m_availableBlocks.load(MemOrd::acquire) > 0);
+    : m_available { maxBlocks } {
+        assert(m_available.load(MemOrd::acquire) > 0);
         init<true>();
     }
 
@@ -320,7 +320,7 @@ namespace Ccy {
     requires (S > 1 && A > 0)
     template<bool X>
     bool DynamicResourcePool<T, S, H, O, E, A, G>::init() noexcept(X) {
-        assert(m_availableBlocks.load(MemOrd::acquire) > 0);
+        assert(m_available.load(MemOrd::acquire) > 0);
         if constexpr (X) {
             try {
                 m_head = std::make_shared<Block>();
@@ -331,18 +331,18 @@ namespace Ccy {
             m_head = std::make_shared<Block>();
         }
         m_tail = m_head.get();
-        m_takenBlocks.fetch_add(1, MemOrd::acq_rel);
-        m_availableBlocks.fetch_sub(1, MemOrd::acq_rel);
+        m_taken.fetch_add(1, MemOrd::acq_rel);
+        m_available.fetch_sub(1, MemOrd::acq_rel);
         m_capacity.store(S, MemOrd::release);
         m_free.store(S, MemOrd::release);
-        m_blockCursor.store(m_tail, MemOrd::release);
+        m_cursor.store(m_tail, MemOrd::release);
         return true;
     }
 
     template<std::default_initializable T, int S, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
     bool DynamicResourcePool<T, S, H, O, E, A, G>::grow() noexcept(c_noExceptAccess) {
-        assert(m_availableBlocks.load(MemOrd::acquire) > 0);
+        assert(m_available.load(MemOrd::acquire) > 0);
 
         std::scoped_lock lock { m_spinLock };
 
@@ -361,11 +361,11 @@ namespace Ccy {
             return false;
         }
 
-        m_takenBlocks.fetch_add(1, MemOrd::acq_rel);
-        m_availableBlocks.fetch_sub(1, MemOrd::acq_rel);
+        m_taken.fetch_add(1, MemOrd::acq_rel);
+        m_available.fetch_sub(1, MemOrd::acq_rel);
         m_capacity.fetch_add(S, MemOrd::release);
         m_free.fetch_add(S, MemOrd::acq_rel);
-        m_blockCursor.store(m_tail, MemOrd::release);
+        m_cursor.store(m_tail, MemOrd::release);
         return true;
     }
 
@@ -376,7 +376,7 @@ namespace Ccy {
         assert(acquireAttempts > 0);
 
         if constexpr (c_noExceptConstr) {
-            if (m_takenBlocks.load(MemOrd::acquire) == 0) {
+            if (m_taken.load(MemOrd::acquire) == 0) {
                 std::scoped_lock lock { m_spinLock };
                 if (!init<c_noExceptAccess>()) {
                     return {};
@@ -384,12 +384,12 @@ namespace Ccy {
             }
         }
 
-        if (m_free.load(MemOrd::acquire) == 0 && (m_availableBlocks.load(MemOrd::acquire) == 0 || !grow())) {
+        if (m_free.load(MemOrd::acquire) == 0 && (m_available.load(MemOrd::acquire) == 0 || !grow())) {
             return {};
         }
 
-        auto roundCount = m_takenBlocks.load(MemOrd::acquire);
-        Block * block { m_blockCursor.load(MemOrd::acquire) };
+        auto roundCount = m_taken.load(MemOrd::acquire);
+        Block * block { m_cursor.load(MemOrd::acquire) };
 
         for (;;) {
             while (block->m_free.load(MemOrd::acquire) > 0) {
@@ -404,14 +404,14 @@ namespace Ccy {
                     return {};
                 }
                 if constexpr (G == GrowthPolicy::Round) {
-                    if (m_free.load(MemOrd::acquire) == 0 && (m_availableBlocks.load(MemOrd::acquire) == 0 || !grow())) {
+                    if (m_free.load(MemOrd::acquire) == 0 && (m_available.load(MemOrd::acquire) == 0 || !grow())) {
                         return {};
                     }
                 }
-                roundCount = m_takenBlocks.load(MemOrd::acquire);
+                roundCount = m_taken.load(MemOrd::acquire);
             }
             if constexpr (G == GrowthPolicy::Step) {
-                if (m_free.load(MemOrd::acquire) == 0 && (m_availableBlocks.load(MemOrd::acquire) == 0 || !grow())) {
+                if (m_free.load(MemOrd::acquire) == 0 && (m_available.load(MemOrd::acquire) == 0 || !grow())) {
                     return {};
                 }
             }
@@ -420,7 +420,7 @@ namespace Ccy {
             if (!next) {
                 next = m_head.get();
             }
-            if (m_blockCursor.compare_exchange_strong(block, next, MemOrd::acq_rel, MemOrd::acquire)) {
+            if (m_cursor.compare_exchange_strong(block, next, MemOrd::acq_rel, MemOrd::acquire)) {
                 block = next;
             }
         }

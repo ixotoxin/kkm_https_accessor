@@ -78,6 +78,8 @@ namespace Log {
 
     [[maybe_unused]]
     void disableAsync() noexcept {
+        // ISSUE: Во время вызова этой функции в других потоках случатся "фризы" при логировании, если в очереди
+        //  для асинхронного логирования слишком много записей. В данном проекте это не является проблемой.
         std::scoped_lock lock { s_mutex };
         if (!s_queue.load(std::memory_order_acquire)) {
             return;
@@ -87,7 +89,7 @@ namespace Log {
         if (s_asyncWriter.joinable()) {
             s_asyncWriter.join();
         }
-        s_queue.load(std::memory_order_acquire).reset();
+        s_queue.store(nullptr, std::memory_order_release);
         write(Category::Generic, Level::Debug, {}, Wcs::c_disableAsync);
     }
 

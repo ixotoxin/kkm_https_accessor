@@ -40,7 +40,7 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool C, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    class alignas(c_hwCIS) DynamicMpmcQueue
+    class alignas(c_trueSharingAlign) DynamicMpmcQueue
     : public std::enable_shared_from_this<DynamicMpmcQueue<T, S, C, H, O, E, A, G>> {
     protected:
         struct KeyTag {};
@@ -178,17 +178,17 @@ namespace Ccy {
         BlockPointer m_head { nullptr };
         Block * m_tail { nullptr };
         InternalSizeType m_capacity { 0 };
-        InternalSizeType m_availableBlocks;
+        InternalSizeType m_available;
         SpinLock<> m_spinLock {};
-        struct alignas(c_hwDIS) {
+        struct alignas(c_falseSharingAlign) {
             std::atomic<Slot *> m_cursor { nullptr };
             std::atomic_flag m_enable {};
         } m_producer;
-        struct alignas(c_hwDIS) {
+        struct alignas(c_falseSharingAlign) {
             std::atomic<Slot *> m_cursor { nullptr };
             std::atomic_flag m_enable {};
         } m_consumer;
-        alignas(c_hwDIS) InternalSizeType m_free { 0 };
+        alignas(c_falseSharingAlign) InternalSizeType m_free { 0 };
 
         template<bool X> bool init() noexcept(X);
         bool grow() noexcept(c_noExceptAccess);
@@ -196,10 +196,10 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool C, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    struct alignas(c_hwCIS) DynamicMpmcQueue<T, S, C, H, O, E, A, G>::Slot {
+    struct alignas(c_trueSharingAlign) DynamicMpmcQueue<T, S, C, H, O, E, A, G>::Slot {
         Slot * m_next { nullptr };
-        std::atomic<State> m_state { State::Free };
-        alignas(c_hwDIS) Payload m_payload {};
+        alignas(c_falseSharingAlign) std::atomic<State> m_state { State::Free };
+        alignas(c_falseSharingAlign) Payload m_payload {};
 
         Slot() noexcept(c_noExceptPayload) = default;
         Slot(const Slot &) = delete;
@@ -212,7 +212,7 @@ namespace Ccy {
 
     template<std::default_initializable T, int S, bool C, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
-    struct alignas(c_hwCIS) DynamicMpmcQueue<T, S, C, H, O, E, A, G>::Block {
+    struct alignas(c_trueSharingAlign) DynamicMpmcQueue<T, S, C, H, O, E, A, G>::Block {
         BlockPointer m_next { nullptr };
         Slot m_slots[static_cast<size_t>(S)] {};
 
@@ -234,7 +234,7 @@ namespace Ccy {
             return &m_slots[S - 1];
         }
 
-        Slot * assemble(Slot * next = nullptr) noexcept(c_noExceptConstr) {
+        Slot * assemble(Slot * next = nullptr) noexcept {
             auto first = &m_slots[0];
             auto last = &m_slots[S - 1];
             auto it = first;
@@ -490,12 +490,11 @@ namespace Ccy {
     requires (S > 1 && A > 0)
     DynamicMpmcQueue<T, S, C, H, O, E, A, G>::DynamicMpmcQueue(KeyTag, ThrowingTag, const int maxBlocks)
     : m_head { std::make_shared<Block>() }, m_tail { m_head.get() },
-      m_capacity { S }, m_availableBlocks { maxBlocks - 1 },
-      m_producer { .m_cursor { m_tail->firstSlot() } },
-      m_consumer { .m_cursor { m_tail->firstSlot() } },
-      m_free { S } {
-        assert(m_availableBlocks.load(MemOrd::acquire) >= 0);
-        m_head->assemble();
+      m_capacity { S }, m_available { maxBlocks - 1 }, m_free { S } {
+        assert(m_available.load(MemOrd::acquire) >= 0);
+        auto firstSlot = m_head->assemble();
+        m_producer.m_cursor.store(firstSlot, MemOrd::release);
+        m_consumer.m_cursor.store(firstSlot, MemOrd::release);
         m_producer.m_enable.test_and_set(MemOrd::acquire);
         m_consumer.m_enable.test_and_set(MemOrd::acquire);
     }
@@ -503,8 +502,8 @@ namespace Ccy {
     template<std::default_initializable T, int S, bool C, bool H, bool O, bool E, unsigned A, GrowthPolicy G>
     requires (S > 1 && A > 0)
     DynamicMpmcQueue<T, S, C, H, O, E, A, G>::DynamicMpmcQueue(KeyTag, NonThrowingTag, const int maxBlocks) noexcept
-    : m_availableBlocks { maxBlocks } {
-        assert(m_availableBlocks.load(MemOrd::acquire) > 0);
+    : m_available { maxBlocks } {
+        assert(m_available.load(MemOrd::acquire) > 0);
         init<true>();
     }
 
@@ -512,13 +511,14 @@ namespace Ccy {
     requires (S > 1 && A > 0)
     template<bool I>
     bool DynamicMpmcQueue<T, S, C, H, O, E, A, G>::init() noexcept(I) {
-        assert(m_availableBlocks.load(MemOrd::acquire) > 0);
+        assert(m_available.load(MemOrd::acquire) > 0);
         Block * head { nullptr };
+        Slot * firstSlot { nullptr };
         if constexpr (I) {
             try {
                 m_head = std::make_shared<Block>();
                 head = m_head.get();
-                head->assemble();
+                firstSlot = head->assemble();
             } catch (...) {
                 m_head.reset();
                 return false;
@@ -526,13 +526,12 @@ namespace Ccy {
         } else {
             m_head = std::make_shared<Block>();
             head = m_head.get();
-            head->assemble();
+            firstSlot = head->assemble();
         }
         m_tail = head;
-        auto firstSlot = head->firstSlot();
         m_producer.m_cursor.store(firstSlot, MemOrd::release);
         m_consumer.m_cursor.store(firstSlot, MemOrd::release);
-        m_availableBlocks.fetch_sub(1, MemOrd::acq_rel);
+        m_available.fetch_sub(1, MemOrd::acq_rel);
         m_capacity.store(S, MemOrd::release);
         m_free.store(S, MemOrd::release);
         m_producer.m_enable.test_and_set(MemOrd::acquire);
@@ -563,7 +562,7 @@ namespace Ccy {
         }
 
         m_tail = m_tail->m_next.get();
-        m_availableBlocks.fetch_sub(1, MemOrd::acq_rel);
+        m_available.fetch_sub(1, MemOrd::acq_rel);
         m_capacity.fetch_add(S, MemOrd::release);
         m_free.fetch_add(S, MemOrd::acq_rel);
         m_producer.m_cursor.store(lastSlot->m_next, MemOrd::release);
@@ -589,7 +588,7 @@ namespace Ccy {
         if (!m_producer.m_enable.test(MemOrd::acquire)) {
             return {};
         }
-        if (m_free.load(MemOrd::acquire) == 0 && (m_availableBlocks.load(MemOrd::acquire) == 0 || !grow())) {
+        if (m_free.load(MemOrd::acquire) == 0 && (m_available.load(MemOrd::acquire) == 0 || !grow())) {
             return {};
         }
 
@@ -616,7 +615,7 @@ namespace Ccy {
                     return {};
                 }
                 if constexpr (G == GrowthPolicy::Step) {
-                    if (m_free.load(MemOrd::acquire) == 0 && (m_availableBlocks.load(MemOrd::acquire) == 0 || !grow())) {
+                    if (m_free.load(MemOrd::acquire) == 0 && (m_available.load(MemOrd::acquire) == 0 || !grow())) {
                         return {};
                     }
                 }
@@ -625,7 +624,7 @@ namespace Ccy {
                 return {};
             }
             if constexpr (G == GrowthPolicy::Round) {
-                if (m_free.load(MemOrd::acquire) == 0 && (m_availableBlocks.load(MemOrd::acquire) == 0 || !grow())) {
+                if (m_free.load(MemOrd::acquire) == 0 && (m_available.load(MemOrd::acquire) == 0 || !grow())) {
                     return {};
                 }
             }
