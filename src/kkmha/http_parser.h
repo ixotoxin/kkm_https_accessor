@@ -6,6 +6,7 @@
 #include "http_types.h"
 #include "http_strings.h"
 #include "http_request.h"
+#include "http_text_response.h"
 #include <constants.h>
 #include <cassert>
 #include <istream>
@@ -61,7 +62,10 @@ namespace Http {
         void complete() const {
             assert(Mbs::c_statusStrings.contains(m_request.m_response.m_status));
             if (m_request.m_response.m_status != Status::Ok && m_request.emptyResponse()) {
-                m_request.m_response.m_data = Mbs::c_statusStrings.at(m_request.m_response.m_status);
+                m_request.m_response.m_data
+                    = std::make_shared<TextResponse>(
+                        false, Mbs::c_statusStrings.at(m_request.m_response.m_status)
+                    );
             }
         }
     };

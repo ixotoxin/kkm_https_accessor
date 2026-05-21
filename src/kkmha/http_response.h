@@ -5,25 +5,21 @@
 
 #include "http_types.h"
 #include "http_strings.h"
+#include "http_helpers.h"
 #include "http_proto_response.h"
 #include <constants.h>
 #include <lib/meta.h>
-#include <lib/json.h>
 #include <cassert>
 #include <memory>
-#include <variant>
 #include <ostream>
 #include <format>
 
 namespace Http {
     struct Response {
-        template<class... T>
-        struct RenderOverloads : T... { using T::operator()...; };
-
-        std::variant<std::nullptr_t, std::string, std::shared_ptr<ProtoResponse>> m_data { nullptr };
+        std::shared_ptr<ProtoResponse> m_data { nullptr };
         Status m_status { Status::Ok };
 
-        Response() = default;
+        Response() noexcept = default;
         Response(const Response &) = delete;
         Response(Response &&) = delete;
         ~Response() = default;
@@ -31,55 +27,29 @@ namespace Http {
         Response & operator=(const Response &) = delete;
         Response & operator=(Response &&) = delete;
 
-        static void render(Asio::StreamBuffer & buffer, const Status status, const std::string_view message = {}) {
-            assert(Mbs::c_statusStrings.contains(status));
-            const Nln::Json json(
-                {
-                    { Json::Mbs::c_successKey, status < Status::BadRequest },
-                    { Json::Mbs::c_messageKey, message.empty() ? Mbs::c_statusStrings.at(status) : message }
-                },
-                false,
-                Nln::EmptyJsonObject
-            );
+        void render(Asio::StreamBuffer & buffer) const {
+            assert(Mbs::c_statusStrings.contains(m_status));
 
-            std::string jsonText {};
-            jsonText.reserve(c_mStrSize);
-            jsonText += json;
+            if (m_data) {
+                m_data->render(buffer, m_status);
+            } else {
+                std::string jsonText {};
+                renderSimpleJson(jsonText, m_status < Status::BadRequest, Mbs::c_statusStrings.at(m_status));
 
-            std::string headerText {};
-            headerText.reserve(c_sStrSize);
-            std::format_to(
-                std::back_inserter(headerText),
-                Mbs::c_responseHeaderTemplate,
-                Meta::toUnderlying(status),
-                Mbs::c_statusStrings.at(status),
-                Mbs::c_jsonMimeType,
-                jsonText.size()
-            );
+                std::string headerText {};
+                headerText.reserve(c_sStrSize);
+                std::format_to(
+                    std::back_inserter(headerText),
+                    Mbs::c_responseHeaderTemplate,
+                    Meta::toUnderlying(m_status),
+                    Mbs::c_statusStrings.at(m_status),
+                    Mbs::c_jsonMimeType,
+                    jsonText.size()
+                );
 
-            std::ostream output { &buffer };
-            output << headerText << jsonText;
-        }
-
-        void render(Asio::StreamBuffer & buffer) {
-            std::visit(
-                RenderOverloads {
-                    [& buffer, status = m_status] (std::nullptr_t) {
-                        render(buffer, status);
-                    },
-                    [& buffer, status = m_status] (const std::string_view data) {
-                        render(buffer, status, data);
-                    },
-                    [& buffer, status = m_status] (const std::shared_ptr<ProtoResponse> data) {
-                        if (data) {
-                            data->render(buffer, status);
-                        } else {
-                            render(buffer, Status::InternalServerError);
-                        }
-                    }
-                },
-                m_data
-            );
+                std::ostream output { &buffer };
+                output << headerText << jsonText;
+            }
         }
     };
 }

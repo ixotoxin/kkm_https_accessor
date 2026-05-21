@@ -305,13 +305,13 @@ namespace Kkm {
         ) : m_commodityName(std::forward<T>(commodityName)),
             m_price(price), m_quantity(quantity), m_unit(unit), m_tax(tax) {
             if (m_commodityName.empty()) {
-                throw DataError(Wcs::c_invalidData, L"commodityName"); // NOLINT(*-exception-baseclass)
+                throw DataError(Wcs::c_invalidData, L"commodityName"sv);
             }
             if (m_price < c_minPrice || m_price > s_maxPrice) {
-                throw DataError(Wcs::c_invalidData, L"price"); // NOLINT(*-exception-baseclass)
+                throw DataError(Wcs::c_invalidData, L"price"sv);
             }
             if (m_quantity < c_minQuantity || m_quantity > s_maxQuantity) {
-                throw DataError(Wcs::c_invalidData, L"quantity"); // NOLINT(*-exception-baseclass)
+                throw DataError(Wcs::c_invalidData, L"quantity"sv);
             }
         }
 
@@ -327,14 +327,14 @@ namespace Kkm {
         PrintableText m_footerText {};
         std::wstring m_sellerEmail {};
         std::wstring m_customerAccount {};
-        std::wstring m_customerContact {}; // Телефон или электронный адрес покупателя
-        std::wstring m_customerName {}; // Покупатель (клиент)
-        std::wstring m_customerInn {}; // ИНН покупателя (клиента)
-        std::wstring m_customerBirthdate {}; // Дата рождения покупателя (клиента) [строка формата "ДД.ММ.ГГГГ"]
-        std::wstring m_customerCitizenship {}; // Гражданство [строка формата "ЦЦЦ"]
-        std::wstring m_customerDocumentCode {}; // Код вида документа, удостоверяющего личность [строка формата "ЦЦ"]
-        std::wstring m_customerDocumentData {}; // Данные документа, удостоверяющего личность
-        std::wstring m_customerAddress {}; // Адрес покупателя (клиента)
+        std::wstring m_customerContact {}; /** Телефон или электронный адрес покупателя **/
+        std::wstring m_customerName {}; /** Покупатель (клиент) **/
+        std::wstring m_customerInn {}; /** ИНН покупателя (клиента) **/
+        std::wstring m_customerBirthdate {}; /** Дата рождения покупателя (клиента) [строка формата "ДД.ММ.ГГГГ"] **/
+        std::wstring m_customerCitizenship {}; /** Гражданство [строка формата "ЦЦЦ"] **/
+        std::wstring m_customerDocumentCode {}; /** Код вида документа, удостоверяющего личность [строка формата "ЦЦ"] **/
+        std::wstring m_customerDocumentData {}; /** Данные документа, удостоверяющего личность **/
+        std::wstring m_customerAddress {}; /** Адрес покупателя (клиента) **/
         std::wstring m_electroPaymentId {};
         std::wstring m_electroPaymentAddInfo {};
         std::vector<ReceiptItemDetails> m_items {};

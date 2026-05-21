@@ -10,9 +10,11 @@
 #include <mutex>
 #include <chrono>
 #if defined(__clang__)
-#   include <immintrin.h> // NOLINT
+// NOLINTNEXTLINE
+#   include <immintrin.h>
 #elif defined(_MSC_VER)
-#   include <intrin.h> // NOLINT
+// NOLINTNEXTLINE
+#   include <intrin.h>
 #else
 #   error Unsupported compiler
 #endif
@@ -358,7 +360,7 @@ namespace Ccy {
                         }
                     } catch (...) {
                         release(queue);
-                        // reset();
+                        /*reset();*/
                         throw;
                     }
                 }
@@ -592,22 +594,22 @@ namespace Ccy {
             return {};
         }
 
-        // v3 {{{
-        // auto current = m_producerCursor.load(MemOrd::acquire);
-        // }}} v3
+        /** v3 {{{ **/
+        /*auto current = m_producerCursor.load(MemOrd::acquire);*/
+        /** }}} v3 **/
         for (;;) {
             for (auto count = m_capacity.load(MemOrd::acquire); count; --count) {
                 auto state = State::Free;
-            // v1 {{{
-                // auto current = m_producerCursor.exchange(m_producerCursor.load(MemOrd::acquire)->m_next, MemOrd::acq_rel);
-            // }}} v1
-            // v2 {{{
+            /** v1 {{{ **/
+                /*auto current = m_producerCursor.exchange(m_producerCursor.load(MemOrd::acquire)->m_next, MemOrd::acq_rel);*/
+            /** }}} v1 **/
+            /** v2 {{{ **/
                 auto current = m_producer.m_cursor.load(MemOrd::acquire);
                 m_producer.m_cursor.store(current->m_next, MemOrd::release);
-            // }}} v2
-            // v3 {{{
-                // m_producerCursor.compare_exchange_strong(current, current->m_next, MemOrd::acq_rel, MemOrd::acquire);
-            // }}} v3
+            /** }}} v2 **/
+            /** v3 {{{ **/
+                /*m_producerCursor.compare_exchange_strong(current, current->m_next, MemOrd::acq_rel, MemOrd::acquire);*/
+            /** }}} v3 **/
                 if (current->m_state.compare_exchange_strong(state, State::ProdLocked, MemOrd::acq_rel, MemOrd::acquire)) {
                     return { this->shared_from_this(), current };
                 }
@@ -640,24 +642,24 @@ namespace Ccy {
             }
         }
 
-        // v3 {{{
-        // auto current = m_consumerCursor.load(MemOrd::acquire);
-        // }}} v3
+        /** v3 {{{ **/
+        /*auto current = m_consumerCursor.load(MemOrd::acquire);*/
+        /** }}} v3 **/
         while (
             m_consumer.m_enable.test(MemOrd::acquire)
             && m_free.load(MemOrd::acquire) < m_capacity.load(MemOrd::acquire)
         ) {
             auto state = State::Ready;
-        // v1 {{{
-            // auto current = m_consumerCursor.exchange(m_consumerCursor.load(MemOrd::acquire)->m_next, MemOrd::acq_rel);
-        // }}} v1
-        // v2 {{{
+        /** v1 {{{ **/
+            /*auto current = m_consumerCursor.exchange(m_consumerCursor.load(MemOrd::acquire)->m_next, MemOrd::acq_rel);*/
+        /** }}} v1 **/
+        /** v2 {{{ **/
             auto current = m_consumer.m_cursor.load(MemOrd::acquire);
             m_consumer.m_cursor.store(current->m_next, MemOrd::release);
-        // }}} v2
-        // v3 {{{
-            // m_consumerCursor.compare_exchange_strong(current, current->m_next, MemOrd::acq_rel, MemOrd::acquire);
-        // }}} v3
+        /** }}} v2 **/
+        /** v3 {{{ **/
+            /*m_consumerCursor.compare_exchange_strong(current, current->m_next, MemOrd::acq_rel, MemOrd::acquire);*/
+        /** }}} v3 **/
             if (current->m_state.compare_exchange_strong(state, State::ConsLocked, MemOrd::acq_rel, MemOrd::acquire)) {
                 return { this->shared_from_this(), current };
             }

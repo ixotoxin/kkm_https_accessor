@@ -17,8 +17,6 @@
 namespace Server::Static {
     using namespace std::string_view_literals;
 
-    using Basic::Failure;
-
     void redirectToIndex(Http::Request & request) {
         std::string newPath {};
         newPath.reserve(c_sStrSize);
@@ -119,9 +117,9 @@ namespace Server::Static {
         response->m_size = fileSize;
 
         {
-            auto ext = Text::lowered(Text::convert(path.extension().wstring()));
+            auto ext = Text::lowered(/*Text::convert(*/path.extension().wstring()/*)*/);
             if (!ext.empty() && s_mimeMap.contains(ext)) {
-                response->m_mimeType = s_mimeMap[ext].get<std::string>();
+                response->m_mimeType = s_mimeMap[ext];
             } else if (s_enableUnknownType) {
                 response->m_mimeType = c_defMimeType;
             } else {
@@ -143,7 +141,7 @@ namespace Server::Static {
             request.m_response.m_data = std::move(response);
         }
 
-    } catch (const Failure & e) {
+    } catch (const Basic::Failure & e) {
         fail(request, Http::Status::InternalServerError, Text::convert(e.what()), e.where());
     } catch (const std::exception & e) {
         fail(request, Http::Status::InternalServerError, e.what());

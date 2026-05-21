@@ -31,18 +31,20 @@ namespace Log {
 
     void asyncWriterFunc() {
         bool notEmpty {};
-        // while (s_queue.load(std::memory_order_acquire)->consuming() || notEmpty) {
-        //     auto slot = s_queue.load(std::memory_order_acquire)->consumerSlot();
-        //     notEmpty = static_cast<bool>(slot);
-        //     if (notEmpty) {
-        //         write(*slot);
-        //         slot.complete();
-        //     } else {
-        //         std::this_thread::yield();
-        //     }
-        // }
+        // CLEANUP
+        /*while (s_queue.load(std::memory_order_acquire)->consuming() || notEmpty) {
+            auto slot = s_queue.load(std::memory_order_acquire)->consumerSlot();
+            notEmpty = static_cast<bool>(slot);
+            if (notEmpty) {
+                write(*slot);
+                slot.complete();
+            } else {
+                std::this_thread::yield();
+            }
+        }*/
         for (;;) {
-            auto queue = s_queue.load(std::memory_order_acquire).get(); // NOLINT
+            // NOLINTNEXTLINE(misc-const-correctness)
+            auto queue = s_queue.load(std::memory_order_acquire).get();
             if (!queue || (!queue->consuming() && !notEmpty)) {
                 break;
             }
@@ -78,8 +80,10 @@ namespace Log {
 
     [[maybe_unused]]
     void disableAsync() noexcept {
-        // ISSUE: Во время вызова этой функции в других потоках случатся "фризы" при логировании, если в очереди
-        //  для асинхронного логирования слишком много записей. В данном проекте это не является проблемой.
+        /**
+         * ISSUE: Во время вызова этой функции в других потоках случатся "фризы" при логировании, если в очереди
+         *  для асинхронного логирования слишком много записей. В данном проекте это не является проблемой.
+         **/
         std::scoped_lock lock { s_mutex };
         if (!s_queue.load(std::memory_order_acquire)) {
             return;

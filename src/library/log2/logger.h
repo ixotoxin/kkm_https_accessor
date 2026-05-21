@@ -31,10 +31,10 @@ namespace Log {
         CategoryLogger(const Category category, Basic::Wcs::Message && prefix) noexcept
         : m_prefix { std::move(prefix.m_message) }, m_category { category } {}
 
-        explicit CategoryLogger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept // NOLINT
+        explicit CategoryLogger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept
         : m_prefix { Text::concat<c_xsStrSize>(parent.m_prefix, prefix) }, m_category { parent.m_category } {}
 
-        CategoryLogger(CategoryLogger & parent, const Category category, const std::wstring_view prefix = {}) noexcept // NOLINT
+        CategoryLogger(CategoryLogger & parent, const Category category, const std::wstring_view prefix = {}) noexcept
         : m_prefix { Text::concat<c_xsStrSize>(parent.m_prefix, prefix) }, m_category { category } {}
 
         virtual ~CategoryLogger() = default;
@@ -54,145 +54,109 @@ namespace Log {
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void debug(const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void debug(const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void debug(const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void debug(const SrcLoc::Point & location, const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void debug(const SrcLoc::Point & location, const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void debug(const SrcLoc::Point & location, const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Debug, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void info(const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void info(const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void info(const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void info(const SrcLoc::Point & location, const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void info(const SrcLoc::Point & location, const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void info(const SrcLoc::Point & location, const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Info, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void warning(const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void warning(const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void warning(const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void warning(const SrcLoc::Point & location, const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void warning(const SrcLoc::Point & location, const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void warning(const SrcLoc::Point & location, const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Warning, m_prefix, message, std::forward<Args>(args)...);
         }
 
         void warning(const Basic::Failure & e) const noexcept {
@@ -202,49 +166,37 @@ namespace Log {
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void error(const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void error(const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void error(const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::View T, typename ... Args>
         [[maybe_unused]]
         void error(const SrcLoc::Point & location, const T message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::Char T, typename ... Args>
         [[maybe_unused]]
         void error(const SrcLoc::Point & location, const T * message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...);
         }
 
         template<Meta::String T, typename ... Args>
         [[maybe_unused]]
         void error(const SrcLoc::Point & location, const T & message, Args && ... args) const noexcept {
-            write<typename Meta::TextTrait<T>::View>(
-                location, m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...
-            );
+            write<Text::View<T>>(location, m_category, Level::Error, m_prefix, message, std::forward<Args>(args)...);
         }
 
         void error(const Basic::Failure & e) const noexcept {

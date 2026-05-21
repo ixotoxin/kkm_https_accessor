@@ -24,21 +24,27 @@ namespace Basic {
             std::wstring && message,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(std::move(message)), m_location(std::move(location)), m_category(category) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : m_message { std::move(message) }, m_location { std::move(location) },
+            m_category { category } {}
 
         [[maybe_unused]]
         explicit Failure(
             const std::wstring_view message,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(message.data(), message.size()), m_location(std::move(location)), m_category(category) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : m_message { message.data() , message.size() }, m_location { std::move(location) },
+            m_category { category } {}
 
         [[maybe_unused]]
         explicit Failure(
             Wcs::Message && message,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : m_message(std::move(message.m_message)), m_location(std::move(location)), m_category(category) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : m_message { std::move(message.m_message) }, m_location { std::move(location) },
+            m_category { category } {}
 
         virtual ~Failure() = default;
 
@@ -83,6 +89,7 @@ namespace Basic {
     class DataError : public Failure {
     protected:
         std::wstring m_variable;
+        bool m_isPointer;
 
     public:
         DataError() = delete;
@@ -90,32 +97,78 @@ namespace Basic {
         DataError(DataError &&) = default;
 
         [[maybe_unused]]
-        explicit DataError(Failure && e, const std::wstring_view variable = {})
-        : Failure(std::move(e)), m_variable(variable) {}
+        explicit DataError(Failure && e, const std::wstring_view variable = {}, const bool isPointer = false)
+        : Failure(std::move(e)), m_variable { variable }, m_isPointer { isPointer } {}
+
+        [[maybe_unused]]
+        DataError(Failure && e, std::wstring && variable, const bool isPointer = false)
+        : Failure(std::move(e)), m_variable { std::move(variable) }, m_isPointer { isPointer } {}
 
         [[maybe_unused]]
         explicit DataError(
             std::wstring && message,
             const std::wstring_view variable = {},
+            const bool isPointer = false,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(std::move(message), category, std::move(location)), m_variable(variable) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : Failure(std::move(message), category, std::move(location)),
+            m_variable { variable }, m_isPointer { isPointer } {}
+
+        [[maybe_unused]]
+        explicit DataError(
+            std::wstring && message,
+            std::wstring && variable,
+            const bool isPointer = false,
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : Failure(std::move(message), category, std::move(location)),
+            m_variable { std::move(variable) }, m_isPointer { isPointer } {}
 
         [[maybe_unused]]
         explicit DataError(
             const std::wstring_view message,
             const std::wstring_view variable = {},
+            const bool isPointer = false,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(message, category, std::move(location)), m_variable(variable) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : Failure(message, category, std::move(location)),
+            m_variable { variable }, m_isPointer { isPointer } {}
+
+        [[maybe_unused]]
+        explicit DataError(
+            const std::wstring_view message,
+            std::wstring && variable,
+            const bool isPointer = false,
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : Failure(message, category, std::move(location)),
+            m_variable { std::move(variable) }, m_isPointer { isPointer } {}
 
         [[maybe_unused]]
         explicit DataError(
             Wcs::Message && message,
             const std::wstring_view variable = {},
+            const bool isPointer = false,
             const unsigned short category = 0,
             SrcLoc::Point && location = SrcLoc::Point::current()
-        ) : Failure(std::move(message.m_message), category, std::move(location)), m_variable(variable) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : Failure(std::move(message.m_message), category, std::move(location)),
+            m_variable { variable }, m_isPointer { isPointer } {}
+
+        [[maybe_unused]]
+        explicit DataError(
+            Wcs::Message && message,
+            std::wstring && variable,
+            const bool isPointer = false,
+            const unsigned short category = 0,
+            SrcLoc::Point && location = SrcLoc::Point::current()
+        // NOLINTNEXTLINE(*-move-const-arg)
+        ) : Failure(std::move(message.m_message), category, std::move(location)),
+            m_variable { std::move(variable) }, m_isPointer { isPointer } {}
 
         ~DataError() override = default;
 
@@ -123,9 +176,26 @@ namespace Basic {
         DataError & operator=(DataError &&) noexcept = default;
 
         [[maybe_unused]]
-        void variable(const std::wstring_view variable, const bool override = false) noexcept {
+        void variable(
+            const std::wstring_view variable,
+            const bool isPointer = false,
+            const bool override = false
+        ) noexcept {
             if (override || (m_variable.empty() && !variable.empty())) {
                 m_variable.assign(variable);
+                m_isPointer = isPointer;
+            }
+        }
+
+        [[maybe_unused]]
+        void variable(
+            std::wstring && variable,
+            const bool isPointer = false,
+            const bool override = false
+        ) noexcept {
+            if (override || (m_variable.empty() && !variable.empty())) {
+                m_variable.assign(std::move(variable));
+                m_isPointer = isPointer;
             }
         }
 
@@ -139,13 +209,15 @@ namespace Basic {
             if (m_variable.empty()) {
                 return m_message;
             }
+            const std::wstring_view typeName { m_isPointer ? Wcs::c_invalidPointer : Wcs::c_invalidVariable };
             std::wstring result {};
-            result.reserve(Wcs::c_dataError.size() + m_message.size() + m_variable.size());
-            std::vformat_to(
-                std::back_inserter(result),
-                Wcs::c_dataError,
-                std::make_wformat_args(m_message, m_variable)
-            );
+            result.reserve(typeName.size() + m_message.size() + m_variable.size() + 6);
+            result.assign(m_message);
+            result.append(L" (");
+            result.assign(typeName);
+            result.append(L" '");
+            result.assign(m_variable);
+            result.append(L"')");
             return result;
         }
 
@@ -154,15 +226,17 @@ namespace Basic {
             if (m_variable.empty()) {
                 output.append(m_message);
             } else {
-                const size_t size { output.size() + Wcs::c_dataError.size() + m_message.size() + m_variable.size() };
+                const std::wstring_view typeName { m_isPointer ? Wcs::c_invalidPointer : Wcs::c_invalidVariable };
+                const size_t size { output.size() + typeName.size() + m_message.size() + m_variable.size() + 6 };
                 if (output.capacity() < size) {
                     output.reserve(size);
                 }
-                std::vformat_to(
-                    std::back_inserter(output),
-                    Wcs::c_dataError,
-                    std::make_wformat_args(m_message, m_variable)
-                );
+                output.assign(m_message);
+                output.append(L" (");
+                output.assign(typeName);
+                output.append(L" '");
+                output.assign(m_variable);
+                output.append(L"')");
             }
         }
     };

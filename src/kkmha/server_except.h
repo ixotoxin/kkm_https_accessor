@@ -3,12 +3,14 @@
 
 #pragma once
 
+#include <lib/msgbuild.h>
 #include <lib/except.h>
 #include <log2/types.h>
 
 namespace Server {
     using Basic::Wcs::Cat;
     using Basic::Wcs::Fmt;
+    using Basic::DataError;
 
     class Failure final : public Basic::Failure {
     public:
@@ -17,13 +19,16 @@ namespace Server {
         Failure(Failure &&) noexcept = default;
 
         explicit Failure(const std::wstring_view message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(message, Log::c_catWebServer, std::move(location)) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(message, Log::c_catWebServer, std::move(location)) {}
 
         explicit Failure(std::wstring && message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(std::move(message), Log::c_catWebServer, std::move(location)) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(std::move(message), Log::c_catWebServer, std::move(location)) {}
 
         explicit Failure(Basic::Wcs::Message && message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(std::move(message), Log::c_catWebServer, std::move(location)) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(std::move(message), Log::c_catWebServer, std::move(location)) {}
 
         ~Failure() override = default;
 

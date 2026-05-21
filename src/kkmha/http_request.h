@@ -17,9 +17,11 @@ namespace Http {
     class Request {
         static SequenceType sequenceStep() { return 1 + (DateTime::windows() & 0xfff); }
 
-        // ISSUE: Разобраться, почему MSVC с LTCG эту переменную без явного указания выравнивания превращает в разных TU
-        //  в разные типы [ '__declspec(align(8)) struct (8 bytes)' and 'struct (8 bytes)' ] и, как следствие,
-        //  не может слинковать.
+        /**
+         * ISSUE: Разобраться, почему MSVC с LTCG эту переменную без явного указания выравнивания превращает в разных TU
+         *  в разные типы [ '__declspec(align(8)) struct (8 bytes)' and 'struct (8 bytes)' ] и, как следствие,
+         *  не может слинковать.
+         **/
         alignas(alignof(SequenceType)) static inline std::atomic<SequenceType> s_sequence { sequenceStep() };
 
     public:
@@ -50,14 +52,7 @@ namespace Http {
 
         [[nodiscard]]
         bool emptyResponse() const {
-            return std::visit(
-                Response::RenderOverloads {
-                    [] (const std::nullptr_t) -> bool { return true; },
-                    [] (const std::string_view data) -> bool { return data.empty(); },
-                    [] (const std::shared_ptr<ProtoResponse> data) -> bool { return !data /*|| !*data*/; }
-                },
-                m_response.m_data
-            );
+            return !m_response.m_data;
         }
     };
 }

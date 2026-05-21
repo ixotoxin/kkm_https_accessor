@@ -9,9 +9,11 @@
 #include <thread>
 #include <chrono>
 #if defined(__clang__)
-#   include <immintrin.h> // NOLINT
+// NOLINTNEXTLINE
+#   include <immintrin.h>
 #elif defined(_MSC_VER)
-#   include <intrin.h> // NOLINT
+// NOLINTNEXTLINE
+#   include <intrin.h>
 #else
 #   error Unsupported compiler
 #endif
@@ -51,7 +53,7 @@ namespace Ccy {
         StaticMpmcQueue & operator=(StaticMpmcQueue &&) = delete;
 
         [[nodiscard, maybe_unused]]
-        SizeType capacity() const noexcept { // NOLINT
+        SizeType capacity() const noexcept {
             return S;
         }
 

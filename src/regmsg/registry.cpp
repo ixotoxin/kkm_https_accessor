@@ -15,15 +15,16 @@ namespace Registry {
     constexpr size_t c_maxValueSize = 65'536;
 
     constexpr std::wstring_view c_securityDescriptor {
-        L"D:"                // Discretionary ACL
-        L"(D;OICI;GA;;;BG)"  // Deny access to Built-in Guests
-        L"(D;OICI;GA;;;AN)"  // Deny access to Anonymous logon
-        L"(A;OICI;KR;;;AU)"  // Allow KEY_READ to Authenticated Users
-        L"(A;OICI;KA;;;LS)"  // Allow KEY_ALL_ACCESS to Local Service account
-        L"(A;OICI;KA;;;BA)"  // Allow KEY_ALL_ACCESS to Built-in Administrators
+        L"D:"                /** Discretionary ACL **/
+        L"(D;OICI;GA;;;BG)"  /** Deny access to Built-in Guests **/
+        L"(D;OICI;GA;;;AN)"  /** Deny access to Anonymous logon **/
+        L"(A;OICI;KR;;;AU)"  /** Allow KEY_READ to Authenticated Users **/
+        L"(A;OICI;KA;;;LS)"  /** Allow KEY_ALL_ACCESS to Local Service account **/
+        L"(A;OICI;KA;;;BA)"  /** Allow KEY_ALL_ACCESS to Built-in Administrators **/
     };
 
-    void Key::createKey(HKEY key, const std::wstring_view subKey) {
+    // NOLINTNEXTLINE
+    void Key::createKey(::HKEY key, const std::wstring_view subKey) {
         ::SECURITY_ATTRIBUTES securityAttributes {};
         Deferred::LocalFree deferredLocalFree(securityAttributes.lpSecurityDescriptor);
         securityAttributes.nLength = sizeof(::SECURITY_ATTRIBUTES);
@@ -36,7 +37,7 @@ namespace Registry {
                 nullptr
             );
         if (!success) {
-            throw Failure(System::explainError(L"ConvertStringSecurityDescriptorToSecurityDescriptorW(...)")); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"ConvertStringSecurityDescriptorToSecurityDescriptorW(...)"));
         }
         const auto status = ::RegCreateKeyExW(
             key,
@@ -50,7 +51,7 @@ namespace Registry {
             nullptr
         );
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(L"RegCreateKeyExW(...)", status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"RegCreateKeyExW(...)", status));
         }
     }
 
@@ -68,7 +69,7 @@ namespace Registry {
         const auto status
             = ::RegQueryValueExW(m_key, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&result), &size);
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(L"RegQueryValueExW(...)", status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"RegQueryValueExW(...)", status));
         }
         return result;
     }
@@ -78,7 +79,7 @@ namespace Registry {
         const auto status
             = ::RegSetValueExW(m_key, name.data(), 0, REG_DWORD, reinterpret_cast<LPBYTE>(&value), sizeof(value));
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(L"RegSetValueExW(...)", status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"RegSetValueExW(...)", status));
         }
     }
 
@@ -111,7 +112,7 @@ namespace Registry {
         const auto status
             = ::RegQueryValueExW(m_key, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(buffer), &size);
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(L"RegQueryValueExW(...)", status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"RegQueryValueExW(...)", status));
         }
         if (size > 0) {
             return { buffer };
@@ -131,7 +132,7 @@ namespace Registry {
                 static_cast<DWORD>(value.length() * sizeof(wchar_t))
             );
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(L"RegSetValueExW(...)", status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"RegSetValueExW(...)", status));
         }
     }
 
@@ -217,7 +218,7 @@ namespace Registry {
     void Key::walk(const WalkerType & walker) const {
         auto [status, func] = realWalk(walker);
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(func, status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(func, status));
         }
     }
 
@@ -226,18 +227,21 @@ namespace Registry {
         return realWalk(walker).first == ERROR_SUCCESS;
     }
 
-    NewKey::NewKey(HKEY key, const std::wstring_view subKey) : Key() {
+    // NOLINTNEXTLINE
+    NewKey::NewKey(::HKEY key, const std::wstring_view subKey) : Key() {
         createKey(key, subKey);
     }
 
-    RoKey::RoKey(HKEY key, const std::wstring_view subKey) : Key() {
+    // NOLINTNEXTLINE
+    RoKey::RoKey(::HKEY key, const std::wstring_view subKey) : Key() {
         const auto status = ::RegOpenKeyExW(key, subKey.data(), 0, KEY_READ, &m_key);
         if (status != ERROR_SUCCESS) {
-            throw Failure(System::explainError(L"RegOpenKeyExW(...)", status)); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"RegOpenKeyExW(...)", status));
         }
     }
 
-    RwKey::RwKey(HKEY key, const std::wstring_view subKey, const REGSAM samDesired) : Key() {
+    // NOLINTNEXTLINE
+    RwKey::RwKey(::HKEY key, const std::wstring_view subKey, const REGSAM samDesired) : Key() {
         const auto status = ::RegOpenKeyExW(key, subKey.data(), 0, samDesired, &m_key);
         if (status != ERROR_SUCCESS) {
             createKey(key, subKey);

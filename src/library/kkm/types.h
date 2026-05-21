@@ -116,28 +116,28 @@ namespace Kkm {
         Vat107 = Atol::LIBFPTR_TAX_VAT107,
         Vat10 = Atol::LIBFPTR_TAX_VAT10,
         Vat110 = Atol::LIBFPTR_TAX_VAT110,
-        // Vat18 = Atol::LIBFPTR_TAX_VAT18,
-        // Vat118 = Atol::LIBFPTR_TAX_VAT118,
+        /*Vat18 = Atol::LIBFPTR_TAX_VAT18,*/
+        /*Vat118 = Atol::LIBFPTR_TAX_VAT118,*/
         Vat20 = Atol::LIBFPTR_TAX_VAT20,
         Vat120 = Atol::LIBFPTR_TAX_VAT120,
 #if VERSION_LIMIT >= VERSION_10108
         Vat22 = Atol::LIBFPTR_TAX_VAT22,
         Vat122 = Atol::LIBFPTR_TAX_VAT122,
 #endif
-        // Department = Atol::LIBFPTR_TAX_DEPARTMENT
+        /*Department = Atol::LIBFPTR_TAX_DEPARTMENT*/
     };
 
     enum class PaymentType : std::remove_cv_t<decltype(Atol::LIBFPTR_PT_CASH)> {
         Cash = Atol::LIBFPTR_PT_CASH,
         Electronically = Atol::LIBFPTR_PT_ELECTRONICALLY,
-        // Prepaid = Atol::LIBFPTR_PT_PREPAID,
-        // Credit = Atol::LIBFPTR_PT_CREDIT,
-        // Other = Atol::LIBFPTR_PT_OTHER,
-        // Pt6 = Atol::LIBFPTR_PT_6,
-        // Pt7 = Atol::LIBFPTR_PT_7,
-        // Pt8 = Atol::LIBFPTR_PT_8,
-        // Pt9 = Atol::LIBFPTR_PT_9,
-        // Pt10 = Atol::LIBFPTR_PT_10
+        /*Prepaid = Atol::LIBFPTR_PT_PREPAID,*/
+        /*Credit = Atol::LIBFPTR_PT_CREDIT,*/
+        /*Other = Atol::LIBFPTR_PT_OTHER,*/
+        /*Pt6 = Atol::LIBFPTR_PT_6,*/
+        /*Pt7 = Atol::LIBFPTR_PT_7,*/
+        /*Pt8 = Atol::LIBFPTR_PT_8,*/
+        /*Pt9 = Atol::LIBFPTR_PT_9,*/
+        /*Pt10 = Atol::LIBFPTR_PT_10*/
     };
 
     enum class TextPosition : std::remove_cv_t<decltype(Atol::LIBFPTR_DEFER_NONE)> {
@@ -148,13 +148,7 @@ namespace Kkm {
 
     template<typename T>
     requires std::is_scalar_v<T>
-    std::string_view safeGet(const std::unordered_map<T, std::string_view> & dictionary, const T key) {
-        return dictionary.contains(key) ? dictionary.at(key) : ""sv;
-    }
-
-    template<typename T>
-    requires std::is_scalar_v<T>
-    std::wstring wcsSafeGet(const std::unordered_map<T, std::string_view> & dictionary, const T key) {
-        return dictionary.contains(key) ? Text::convert(dictionary.at(key)) : L""s;
+    std::wstring_view safeGet(const std::unordered_map<T, std::wstring_view> & dictionary, const T key) {
+        return dictionary.contains(key) ? dictionary.at(key) : L""sv;
     }
 }

@@ -5,24 +5,28 @@
 
 #include "meta.h"
 #include <cassert>
-#include <cstdlib>
 #include <cwchar>
 #include <unordered_set>
 
 namespace Meta {
-    struct Mbs;
+    struct MbsText;
 
-    struct Wcs {
+    struct WcsText {
+        using Wideness = Wcs;
         using Char = wchar_t;
         using String = std::wstring;
         using View = std::wstring_view;
-        using Opposite = Mbs;
+        using Opposite = MbsText;
 
+        static constexpr View c_emptyStr [[maybe_unused]] { L"." };
+        static constexpr Char c_dot [[maybe_unused]] { L'.' };
+        static constexpr View c_dotStr [[maybe_unused]] { L"." };
         static constexpr Char c_minus [[maybe_unused]] { L'-' };
         static constexpr Char c_terminator [[maybe_unused]] { L'\0' };
         static constexpr View c_assignmentSigns [[maybe_unused]] { L"=:" };
         static constexpr Char c_quotationMark [[maybe_unused]] { L'"' };
         static constexpr Char c_solidus [[maybe_unused]] { L'/' };
+        static constexpr View c_solidusStr [[maybe_unused]] { L"/" };
         static constexpr Char c_reverseSolidus [[maybe_unused]] { L'\\' };
         static constexpr Char c_backspace [[maybe_unused]] { L'\b' };
         static constexpr Char c_backspaceLiteral [[maybe_unused]] { L'b' };
@@ -87,39 +91,44 @@ namespace Meta {
 
     template<>
     [[nodiscard, maybe_unused]]
-    signed long Wcs::toNumeric<signed long>(const Char * str, Char ** end);
+    signed long WcsText::toNumeric<signed long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    unsigned long Wcs::toNumeric<unsigned long>(const Char * str, Char ** end);
+    unsigned long WcsText::toNumeric<unsigned long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    signed long long Wcs::toNumeric<signed long long>(const Char * str, Char ** end);
+    signed long long WcsText::toNumeric<signed long long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    unsigned long long Wcs::toNumeric<unsigned long long>(const Char * str, Char ** end);
+    unsigned long long WcsText::toNumeric<unsigned long long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    double Wcs::toNumeric<double>(const Char * str, Char ** end);
+    double WcsText::toNumeric<double>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    long double Wcs::toNumeric<long double>(const Char * str, Char ** end);
+    long double WcsText::toNumeric<long double>(const Char * str, Char ** end);
 
-    struct Mbs {
+    struct MbsText {
+        using Wideness = Mbs;
         using Char = char;
         using String = std::string;
         using View = std::string_view;
-        using Opposite = Wcs;
+        using Opposite = WcsText;
 
+        static constexpr View c_emptyStr [[maybe_unused]] { "." };
+        static constexpr Char c_dot [[maybe_unused]] { '.' };
+        static constexpr View c_dotStr [[maybe_unused]] { "." };
         static constexpr Char c_minus [[maybe_unused]] { '-' };
         static constexpr Char c_terminator [[maybe_unused]] { '\0' };
         static constexpr View c_assignmentSigns [[maybe_unused]] { "=:" };
         static constexpr Char c_quotationMark [[maybe_unused]] { '"' };
         static constexpr Char c_solidus [[maybe_unused]] { '/' };
+        static constexpr View c_solidusStr [[maybe_unused]] { "/" };
         static constexpr Char c_reverseSolidus [[maybe_unused]] { '\\' };
         static constexpr Char c_backspace [[maybe_unused]] { '\b' };
         static constexpr Char c_backspaceLiteral [[maybe_unused]] { 'b' };
@@ -184,62 +193,103 @@ namespace Meta {
 
     template<>
     [[nodiscard, maybe_unused]]
-    signed long Mbs::toNumeric<signed long>(const Char * str, Char ** end);
+    signed long MbsText::toNumeric<signed long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    unsigned long Mbs::toNumeric<unsigned long>(const Char * str, Char ** end);
+    unsigned long MbsText::toNumeric<unsigned long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    signed long long Mbs::toNumeric<signed long long>(const Char * str, Char ** end);
+    signed long long MbsText::toNumeric<signed long long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    unsigned long long Mbs::toNumeric<unsigned long long>(const Char * str, Char ** end);
+    unsigned long long MbsText::toNumeric<unsigned long long>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    double Mbs::toNumeric<double>(const Char * str, Char ** end);
+    double MbsText::toNumeric<double>(const Char * str, Char ** end);
 
     template<>
     [[nodiscard, maybe_unused]]
-    long double Mbs::toNumeric<long double>(const Char * str, Char ** end);
+    long double MbsText::toNumeric<long double>(const Char * str, Char ** end);
 
-    template<>
-    struct WideTypes<Wcs> : std::true_type {};
+    template<typename> struct TextTrait {};
+    template<> struct TextTrait<Wcs> : WcsText {};
+    template<> struct TextTrait<Mbs> : MbsText {};
+    template<> struct TextTrait<WcsText::Char> : WcsText {};
+    template<> struct TextTrait<MbsText::Char> : MbsText {};
 
     template<typename T>
-    concept Wideness = std::is_same_v<T, Wcs> || std::is_same_v<T, Mbs>;
-
-    template<typename>
-    struct TextTrait {};
-
-    template<>
-    struct TextTrait<Wcs::Char> : Wcs { using Wideness = Wcs; };
-
-    template<>
-    struct TextTrait<Mbs::Char> : Mbs { using Wideness = Mbs; };
+    requires isChar<ValueType<T>>
+    struct TextTrait<T> : TextTrait<ValueType<T>> {};
 
     template<typename T>
-    requires std::is_same_v<ArrayElementType<T>, Wcs::Char> || std::is_same_v<ArrayElementType<T>, Mbs::Char>
-    struct TextTrait<T> : TextTrait<ArrayElementType<T>> {};
+    concept AnyText = std::convertible_to<T, WcsText::View> || std::convertible_to<T, MbsText::View>;
 
     template<typename T>
-    requires String<std::remove_cvref_t<T>> || View<std::remove_cvref_t<T>>
-    struct TextTrait<T> : TextTrait<ContainerElementType<T>> {};
+    concept AnyTextClass = AnyText<T> && !std::is_pointer_v<T> && !std::is_array_v<T>;
+
+    template<typename T, typename W>
+    concept Text = std::convertible_to<T, typename TextTrait<W>::View>;
+
+    template<typename T, typename W>
+    concept TextClass = Text<T, W> && !std::is_pointer_v<T> && !std::is_array_v<T>;
 
     template<typename T>
-    concept TextualContainer
-        = BackSideGrowingRange<T>
-          && (String<typename T::value_type> || View<typename T::value_type>)
-          && requires (
-                T t,
-                typename T::value_type u,
-                typename TextTrait<typename T::value_type>::View v,
-                typename TextTrait<typename T::value_type>::View::size_type z
-             ) {
-                t.emplace_back(u, z, z);
-                t.emplace_back(v, z, z);
-             };
+    concept TextualContainer = BackSideGrowingRange<T> && AnyText<ValueType<T>>;
+
+    template<typename T, typename W>
+    concept TextDomain = isSetOf<T, const typename TextTrait<W>::Char *> && TextClass<ValueType<T>, W>; // NOLINT
+
+    template<typename T, typename W, typename V>
+    concept FromTextCastMap = isMapOf<T, const typename TextTrait<W>::Char *, V> && TextClass<KeyType<T>, W>; // NOLINT
+
+    template<typename T, typename W>
+    concept CastFromText = FromTextCastMap<T, W, ValueType<T>>;
+
+    template<typename T, typename K, typename W>
+    concept ToTextCastMap = isMapOf<T, K, typename TextTrait<W>::View>;
+
+    template<typename T, typename W>
+    concept CastToText = ToTextCastMap<T, KeyType<T>, W>;
+}
+
+namespace Text {
+    template<typename T>
+    using Trait = Meta::TextTrait<Meta::UnderlyingType<T>>;
+
+    namespace Wcs {
+        using Char = Meta::WcsText::Char;
+        using String = Meta::WcsText::String;
+        using View = Meta::WcsText::View;
+    }
+
+    namespace Mbs {
+        using Char = Meta::MbsText::Char;
+        using String = Meta::MbsText::String;
+        using View = Meta::MbsText::View;
+    }
+
+    template<typename T>
+    using Wideness = Trait<T>::Wideness;
+
+    template<typename T>
+    using Char = Trait<T>::Char;
+
+    template<typename T>
+    using String = Trait<T>::String;
+
+    template<typename T>
+    using View = Trait<T>::View;
+
+    template<typename T>
+    using OppositeChar = Trait<T>::Opposite::Char;
+
+    template<typename T>
+    using OppositeString = Trait<T>::Opposite::String;
+
+    template<typename T>
+    using OppositeView = Trait<T>::Opposite::View;
 }

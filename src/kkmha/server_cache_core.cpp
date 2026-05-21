@@ -13,14 +13,13 @@
 namespace Server::Cache {
     static std::unordered_map<std::string, Entry> s_cache {};
     static std::mutex s_cacheMutex {};
-    static std::atomic<size_t> s_counter { 0 };
 
     [[maybe_unused]]
     void store(
         const Key & key,
         const DateTime::Point expiredAt,
         const Http::Status status,
-        std::shared_ptr<Http::ProtoResponse> data //NOLINT
+        std::shared_ptr<Http::ProtoResponse> data
     ) {
         std::scoped_lock cacheLock { s_cacheMutex };
         s_cache[key] = {
@@ -43,16 +42,15 @@ namespace Server::Cache {
 
     [[maybe_unused]]
     void maintain() {
-        if (++s_counter >= c_cacheCleanUpThreshold) {
-            std::scoped_lock cacheLock { s_cacheMutex };
-            if (const auto oldSize = s_cache.size(); oldSize) {
-                std::erase_if(
-                    s_cache,
-                    [] (const auto & item) { return item.second.m_expiredAt < DateTime::Clock::now(); }
-                );
-                log(Log::Level::Debug, Wcs::c_cacheMaintain, oldSize, s_cache.size());
+        std::scoped_lock cacheLock { s_cacheMutex };
+        if (const auto oldSize = s_cache.size(); oldSize) {
+            std::erase_if(
+                s_cache,
+                [] (const auto & item) { return item.second.m_expiredAt < DateTime::Clock::now(); }
+            );
+            if (const auto newSize = s_cache.size(); newSize != oldSize) {
+                log(Log::Level::Debug, Wcs::c_cacheMaintain, oldSize, newSize);
             }
-            s_counter = 0;
         }
     }
 }

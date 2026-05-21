@@ -14,26 +14,23 @@ namespace Ccy {
         U current { value.fetch_add(1, MemOrd::relaxed) };
         U next { current + 1 };
         if (next >= static_cast<U>(B)) {
-    // v1 {{{
-            // value.compare_exchange_weak(next, next % static_cast<U>(B), MemOrd::relaxed);
-    // }}} v1
-    // v2 {{{
-            // auto next2 = next - static_cast<U>(B);
-            // while (next2 >= static_cast<U>(B)) next2 -= static_cast<U>(B);
-            // value.compare_exchange_weak(next, next2, MemOrd::relaxed);
-    // }}} v2
-    // v3 {{{
+#if defined(ITERATE_POST_INC_V1)
+            value.compare_exchange_weak(next, next % static_cast<U>(B), MemOrd::relaxed);
+#elif defined(ITERATE_POST_INC_V2)
+            auto next2 = next - static_cast<U>(B);
+            while (next2 >= static_cast<U>(B)) next2 -= static_cast<U>(B);
+            value.compare_exchange_weak(next, next2, MemOrd::relaxed);
+#else
             value.compare_exchange_weak(next, next - static_cast<U>(B), MemOrd::relaxed);
-    // }}}
+#endif /** ITERATE_POST_INC_V3 **/
         }
-    // v1 {{{
-        // if (current >= static_cast<U>(B)) {
-        //     current = current % static_cast<U>(B);
-        // }
-    // }}} v1
-    // v2,3 {{{
+#if defined(ITERATE_POST_INC_V1)
+        if (current >= static_cast<U>(B)) {
+            current = current % static_cast<U>(B);
+        }
+#else /** ITERATE_POST_INC_V2, ITERATE_POST_INC_V3 **/
         while (current >= static_cast<U>(B)) current -= static_cast<U>(B);
-    // }}} v2,3
+#endif
         return current;
     }
 
@@ -44,26 +41,23 @@ namespace Ccy {
         U current { value.fetch_add(1, MemOrd::relaxed) };
         U next { current + 1 };
         if (next >= bound) {
-    // v1 {{{
-            // value.compare_exchange_weak(next, next % bound, MemOrd::relaxed);
-    // }}} v1
-    // v2 {{{
-            // auto next2 = next - bound;
-            // while (next2 >= bound) next2 -= bound;
-            // value.compare_exchange_weak(next, next2, MemOrd::relaxed);
-    // }}} v2
-    // v3 {{{
+#if defined(ITERATE_POST_INC_V1)
+            value.compare_exchange_weak(next, next % bound, MemOrd::relaxed);
+#elif defined(ITERATE_POST_INC_V2)
+            auto next2 = next - bound;
+            while (next2 >= bound) next2 -= bound;
+            value.compare_exchange_weak(next, next2, MemOrd::relaxed);
+#else /** ITERATE_POST_INC_V3 **/
             value.compare_exchange_weak(next, next - bound, MemOrd::relaxed);
-    // }}} v3
+#endif
         }
-    // v1 {{{
-        // if (current >= bound) {
-        //     current = current % bound;
-        // }
-    // }}} v1
-    // v2,3 {{{
+#if defined(ITERATE_POST_INC_V1)
+        if (current >= bound) {
+            current = current % bound;
+        }
+#else /** ITERATE_POST_INC_V2, ITERATE_POST_INC_V3 **/
         while (current >= bound) current -= bound;
-    // }}} v2,3
+#endif
         return current;
     }
 
@@ -75,13 +69,12 @@ namespace Ccy {
         U current { value.load(MemOrd::relaxed) };
         U next;
         do {
-    // v1 {{{
-            // next = (current + 1) % static_cast<U>(B);
-    // }}} v1
-    // v2 {{{
+#if defined(ITERATE_PRE_INC_V1)
+            next = (current + 1) % static_cast<U>(B);
+#else /** ITERATE_PRE_INC_V2 **/
             next = current + 1;
             while (next >= static_cast<U>(B)) next -= static_cast<U>(B);
-    // }}} v2
+#endif
         } while (!value.compare_exchange_weak(current, next, MemOrd::relaxed));
         return next;
     }
@@ -94,13 +87,12 @@ namespace Ccy {
         U current { value.load(MemOrd::relaxed) };
         U next;
         do {
-    // v1 {{{
-            // next = (current + 1) % bound;
-    // }}} v1
-    // v2 {{{
+#if defined(ITERATE_PRE_INC_V1)
+            next = (current + 1) % bound;
+#else /** ITERATE_PRE_INC_V2 **/
             next = current + 1;
             while (next >= bound) next -= bound;
-    // }}} v2
+#endif
         } while (!value.compare_exchange_weak(current, next, MemOrd::relaxed));
         return next;
     }

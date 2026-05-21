@@ -21,7 +21,7 @@ namespace Log {
         LoggerQueue & operator=(LoggerQueue &&) = delete;
 
     protected:
-        bool clear(Payload & record) noexcept(c_noExceptAccess) override { // NOLINT
+        bool clear(Payload & record) noexcept(c_noExceptAccess) override {
             record.m_message.clear();
             record.m_terseMsg1 = std::wstring_view {};
             record.m_terseMsg2 = std::wstring_view {};

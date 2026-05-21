@@ -6,9 +6,11 @@
 #include "types.h"
 #include <thread>
 #if defined(__clang__)
-#   include <immintrin.h> // NOLINT
+// NOLINTNEXTLINE
+#   include <immintrin.h>
 #elif defined(_MSC_VER)
-#   include <intrin.h> // NOLINT
+// NOLINTNEXTLINE
+#   include <intrin.h>
 #else
 #   error Unsupported compiler
 #endif

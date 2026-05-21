@@ -30,7 +30,7 @@ namespace Ccy {
         QueueAccessorAutoCompletion & operator=(QueueAccessorAutoCompletion &&) noexcept = default;
 
         [[maybe_unused]]
-        virtual void complete() noexcept final {} // NOLINT
+        virtual void complete() noexcept final {}
     };
 
     class QueueAccessorManualCompletion {

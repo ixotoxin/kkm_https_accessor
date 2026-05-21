@@ -8,7 +8,7 @@ if (WITH_SNTZ)
 endif()
 
 target_link_libraries(kkmjl PRIVATE stlib)
-target_link_libraries(kkmjl PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(kkmjl PRIVATE RapidJSON rapidjson)
 
 if (POLICY CMP0207)
     cmake_policy(SET CMP0207 NEW)

@@ -45,9 +45,11 @@ namespace DateTime {
     using Offset = std::chrono::seconds;
     using SleepUnit = std::chrono::milliseconds;
 
+    // NOLINTBEGIN(modernize-use-auto)
     constexpr SleepUnit c_basicSleep { 1'000ms };
     constexpr SleepUnit c_basicSleepQuantum { 200ms };
     constexpr size_t c_tsBufferSize { 31 };
+    // NOLINTEND(modernize-use-auto)
 
     [[nodiscard, maybe_unused]] int64_t windows();
     [[nodiscard, maybe_unused]] int64_t unix();
@@ -102,7 +104,7 @@ namespace DateTime {
         return
             [min] (const T value) -> T {
                 if (value < min) {
-                    throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                    throw DataError(Basic::Wcs::c_rangeError);
                 }
                 return value;
             };
@@ -114,7 +116,7 @@ namespace DateTime {
         return
             [max] (const T value) -> T {
                 if (value > max) {
-                    throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                    throw DataError(Basic::Wcs::c_rangeError);
                 }
                 return value;
             };
@@ -126,7 +128,7 @@ namespace DateTime {
         return
             [min, max] (const T value) -> T {
                 if (value < min || value > max) {
-                    throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                    throw DataError(Basic::Wcs::c_rangeError);
                 }
                 return value;
             };

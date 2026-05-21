@@ -5,6 +5,7 @@
 
 namespace System {
     std::optional<::DWORD> enableLowFragmentationHeap() {
+        // NOLINTNEXTLINE(misc-const-correctness)
         ::HANDLE heap { ::GetProcessHeap() };
         if (!heap) {
             return ::GetLastError();

@@ -15,9 +15,17 @@
 int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
     Config::initLogger();
+    /*if (!Json::Allocator::ready()) {
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, Json::Wcs::c_allocatorsPoolInitFailed);
+        return EXIT_FAILURE;
+    }*/
     Config::initProfiler();
 
     try {
+        if (!Json::Allocator::ready()) {
+            throw Basic::Failure(Json::Wcs::c_allocatorsPoolInitFailed);
+        }
+
         if (argc == 3) {
             Config::setBaseVars(envp);
             Config::readJson(Config::s_file, Log::setVars, Kkm::setVars);
@@ -28,8 +36,8 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
 #if WITH_CRTD || WITH_SNTZ
             L"    \"" MEMORY_PROFILING_FLAG_KEY "\": \"" MEMORY_PROFILING_FLAG_VALUE "\",\n"
 #endif
-            L"    \"" << Json::Wcs::c_successKey << L"\": false,\n"
-            L"    \"" << Json::Wcs::c_messageKey << L"\": \"Неверное использование\",\n"
+            L"    \"" << Json::Wcs::c_successKeyEsc << L"\": false,\n"
+            L"    \"" << Json::Wcs::c_messageKeyEsc << L"\": \"Неверное использование\",\n"
             L"    \"!version\": \"" << BUILD_VERSION << L"\",\n"
             L"    \"!usage\": \"" << Json::escapeBasic(argv[0]) << L" {сн} {вф}\"\n"
             L"}";

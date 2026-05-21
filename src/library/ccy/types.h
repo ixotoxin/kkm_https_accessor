@@ -5,8 +5,8 @@
 
 #include <type_traits>
 #include <new>
-// #include <algorithm>
-// #include <bit>
+/*#include <algorithm>
+#include <bit>*/
 #include <atomic>
 
 namespace Ccy {
@@ -47,12 +47,12 @@ namespace Ccy {
 
     class Discard : public std::exception {};
 
-    // template<size_t A, size_t C>
-    // requires (A > 0) && (C > 0)
-    // struct alignas(std::bit_ceil(A)) AlignedPadding {
-    //     char m_padding[std::bit_ceil(A) * C] {};
-    // };
-    //
-    // template<typename T, size_t C>
-    // using TypeAlignedPadding = AlignedPadding<std::max({sizeof(T), alignof(T)}), C>;
+    /*template<size_t A, size_t C>
+    requires (A > 0) && (C > 0)
+    struct alignas(std::bit_ceil(A)) AlignedPadding {
+        char m_padding[std::bit_ceil(A) * C] {};
+    };
+
+    template<typename T, size_t C>
+    using TypeAlignedPadding = AlignedPadding<std::max({sizeof(T), alignof(T)}), C>;*/
 }

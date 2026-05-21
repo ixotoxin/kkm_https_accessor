@@ -3,58 +3,38 @@
 
 #pragma once
 
+#include "json.h"
 #include "device.h"
-#include <lib/json.h>
 #include <concepts>
 
 namespace Kkm {
-    using OptionalResult = std::optional<Nln::Json>;
+    bool assign(JsonDoc &, const Result &);
+    bool assign(JsonDoc &, const StatusResult &);
+    bool assign(JsonDoc &, const ShiftStateResult &);
+    bool assign(JsonDoc &, const ReceiptStateResult &);
+    bool assign(JsonDoc &, const CashStatResult &);
+    bool assign(JsonDoc &, const FndtOfdExchangeStatusResult &);
+    bool assign(JsonDoc &, const FndtFnInfoResult &);
+    bool assign(JsonDoc &, const FndtRegistrationInfoResult &);
+    bool assign(JsonDoc &, const FndtLastRegistrationResult &);
+    bool assign(JsonDoc &, const FndtLastReceiptResult &);
+    bool assign(JsonDoc &, const FndtLastDocumentResult &);
+    bool assign(JsonDoc &, const FndtErrorsResult &);
+    bool assign(JsonDoc &, const FfdVersionsResult &);
+    bool assign(JsonDoc &, const FwVersionsResult &);
+    void assign(Details &, const JsonDoc &);
+    void assign(PrintDetails &, const JsonDoc &);
+    void assign(OperatorDetails &, const JsonDoc &);
+    void assign(CashDetails &, const JsonDoc &);
+    void assign(ReceiptDetails &, const JsonDoc &);
+    void assign(CloseDetails &, const JsonDoc &);
 
-    bool assign(Nln::Json &, const Result &);
-    bool assign(Nln::Json &, const StatusResult &);
-    bool assign(Nln::Json &, const ShiftStateResult &);
-    bool assign(Nln::Json &, const ReceiptStateResult &);
-    bool assign(Nln::Json &, const CashStatResult &);
-    bool assign(Nln::Json &, const FndtOfdExchangeStatusResult &);
-    bool assign(Nln::Json &, const FndtFnInfoResult &);
-    bool assign(Nln::Json &, const FndtRegistrationInfoResult &);
-    bool assign(Nln::Json &, const FndtLastRegistrationResult &);
-    bool assign(Nln::Json &, const FndtLastReceiptResult &);
-    bool assign(Nln::Json &, const FndtLastDocumentResult &);
-    bool assign(Nln::Json &, const FndtErrorsResult &);
-    bool assign(Nln::Json &, const FfdVersionsResult &);
-    bool assign(Nln::Json &, const FwVersionsResult &);
-    void assign(Details &, const Nln::Json &);
-    void assign(PrintDetails &, const Nln::Json &);
-    void assign(OperatorDetails &, const Nln::Json &);
-    void assign(CashDetails &, const Nln::Json &);
-    void assign(ReceiptDetails &, const Nln::Json &);
-    void assign(CloseDetails &, const Nln::Json &);
-
-    Nln::Json & operator<<(Nln::Json & json, const std::derived_from<Result> auto & result) {
+    JsonDoc & operator<<=(JsonDoc & json, const std::derived_from<Result> auto & result) {
         assign(json, result);
         return json;
     }
 
-    template<std::derived_from<Result> R>
-    OptionalResult & operator<<(OptionalResult & optionalResult, const R & result) {
-        if constexpr (std::is_same_v<R, Result>) {
-            if (!result.m_success || !(result.m_message.empty() || result.m_message == Basic::Wcs::c_ok)) {
-                if (!optionalResult.has_value()) {
-                    optionalResult.emplace(Nln::EmptyJsonObject);
-                }
-                assign(optionalResult.value(), result);
-             }
-        } else {
-            if (!optionalResult.has_value()) {
-                optionalResult.emplace(Nln::EmptyJsonObject);
-            }
-            assign(optionalResult.value(), result);
-        }
-        return optionalResult;
-    }
-
-    const Nln::Json & operator>>(const Nln::Json & json, std::derived_from<Details> auto & details) {
+    const JsonDoc & operator>>=(const JsonDoc & json, std::derived_from<Details> auto & details) {
         assign(details, json);
         return json;
     }

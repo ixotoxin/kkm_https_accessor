@@ -30,7 +30,7 @@ endif()
 target_link_libraries(kkmha PRIVATE mtlib)
 target_link_libraries(kkmha PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(kkmha PRIVATE asio::asio)
-target_link_libraries(kkmha PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(kkmha PRIVATE RapidJSON rapidjson)
 
 if (POLICY CMP0207)
     cmake_policy(SET CMP0207 NEW)

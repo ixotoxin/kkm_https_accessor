@@ -22,7 +22,7 @@ namespace Kkm {
         explicit Logger(Basic::Wcs::Message && prefix) noexcept
         : CategoryLogger(Log::Category::CashRegister, std::move(prefix)) {}
 
-        explicit Logger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept // NOLINT
+        explicit Logger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept
         : CategoryLogger(parent, Log::Category::CashRegister, prefix) {}
 
         ~Logger() override = default;
@@ -34,25 +34,19 @@ namespace Kkm {
     template<Meta::View T, typename ... Args>
     [[maybe_unused]]
     void log(const Log::Level level, const T message, Args && ... args) noexcept {
-        Log::write<typename Meta::TextTrait<T>::View>(
-            Log::Category::CashRegister, level, {}, message, std::forward<Args>(args)...
-        );
+        Log::write<Text::View<T>>(Log::Category::CashRegister, level, {}, message, std::forward<Args>(args)...);
     }
 
     template<Meta::Char T, typename ... Args>
     [[maybe_unused]]
     void log(const Log::Level level, const T * message, Args && ... args) noexcept {
-        Log::write<typename Meta::TextTrait<T>::View>(
-            Log::Category::CashRegister, level, {}, message, std::forward<Args>(args)...
-        );
+        Log::write<Text::View<T>>(Log::Category::CashRegister, level, {}, message, std::forward<Args>(args)...);
     }
 
     template<Meta::String T, typename ... Args>
     [[maybe_unused]]
     void log(const Log::Level level, const T & message, Args && ... args) noexcept {
-        Log::write<typename Meta::TextTrait<T>::View>(
-            Log::Category::CashRegister, level, {}, message, std::forward<Args>(args)...
-        );
+        Log::write<Text::View<T>>(Log::Category::CashRegister, level, {}, message, std::forward<Args>(args)...);
     }
 
     [[maybe_unused]]

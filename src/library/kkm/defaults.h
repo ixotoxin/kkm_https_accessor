@@ -9,7 +9,7 @@
 #include <string_view>
 
 namespace Kkm {
-    KKM_CONST(DateTime::SleepUnit, c_sleepQuantum, DateTime::c_basicSleepQuantum); // Миллисекунды
+    KKM_CONST(DateTime::SleepUnit, c_sleepQuantum, DateTime::c_basicSleepQuantum); /** Миллисекунды **/
     KKM_CONST(std::wstring_view, c_serialNumberChars, L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_");
     KKM_CONST(std::wstring_view, c_connParamsSeparator, L",");
     KKM_CONST(wchar_t, c_separatorChar, L'-');
@@ -22,8 +22,8 @@ namespace Kkm {
     KKM_CONST(FfdVersion, c_fallbackFfdVersionDef, FfdVersion::V_1_0_5);
     KKM_CONST(FfdVersionDetect, c_ffdVersionDetectDef, FfdVersionDetect::Once);
     KKM_CONST(DateTime::SleepUnit, c_documentClosingTimeoutDef, DateTime::c_basicSleep);
-    KKM_CONST(DateTime::SleepUnit, c_documentClosingTimeoutMin, DateTime::c_basicSleepQuantum); // Миллисекунды
-    KKM_CONST(DateTime::SleepUnit, c_documentClosingTimeoutMax, 10 * DateTime::c_basicSleep); // Миллисекунды
+    KKM_CONST(DateTime::SleepUnit, c_documentClosingTimeoutMin, DateTime::c_basicSleepQuantum); /** Миллисекунды **/
+    KKM_CONST(DateTime::SleepUnit, c_documentClosingTimeoutMax, 10 * DateTime::c_basicSleep); /** Миллисекунды **/
     KKM_CONST(std::wstring_view, c_cliOperatorNameDef, L"Оператор");
     KKM_CONST(std::wstring_view, c_cliOperatorInnDef, );
     KKM_CONST(std::wstring_view, c_customerAccountFieldDef, L"Лицевой счёт (идентификатор для оплаты):");

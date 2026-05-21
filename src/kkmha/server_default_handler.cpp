@@ -11,8 +11,6 @@
 #include <cassert>
 
 namespace Server::Default {
-    using Basic::Failure;
-
     bool Handler::asyncReady() const noexcept {
         return false;
     }
@@ -41,7 +39,7 @@ namespace Server::Default {
             fail(request, Http::Status::MethodNotAllowed, Server::Mbs::c_methodNotAllowed);
         }
 
-    } catch (const Failure & e) {
+    } catch (const Basic::Failure & e) {
         fail(request, Http::Status::InternalServerError, Text::convert(e.what()), e.where());
     } catch (const std::exception & e) {
         fail(request, Http::Status::InternalServerError, e.what());

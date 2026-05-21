@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(kkm_https_accessor VERSION 1.10.4 LANGUAGES CXX RC)
+project(kkm_https_accessor VERSION 1.11.1 LANGUAGES CXX RC)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_FIND_DEBUG_MODE ON)
@@ -50,15 +50,12 @@ set(OPENSSL_ROOT_DIR ${KKMHA_DEPS_VCPKG})
 
 find_package(OpenSSL REQUIRED PATHS "${KKMHA_DEPS_VCPKG}")
 find_package(asio REQUIRED PATHS "${KKMHA_DEPS_VCPKG}")
-find_package(nlohmann_json REQUIRED PATHS "${KKMHA_DEPS_VCPKG}")
-
-set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
-set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
+find_package(RapidJSON CONFIG REQUIRED PATHS "${KKMHA_DEPS_VCPKG}")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /OPT:REF /OPT:ICF")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /GL /Gy /DNDEBUG")
-#    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /Gy /DNDEBUG")
+    #set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob2 /Gy /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "/Od /Ob0 /Oy- /RTC1 /Zi /DDEBUG /D_DEBUG")
     add_compile_options(/W4 /WX /EHsc /Zc:preprocessor /utf-8 /await:strict)
     add_compile_options(/wd4068 /wd4244 /wd4267 /wd4310 /wd4996 /wd4324)

@@ -23,6 +23,7 @@
         "ipv4Only": false,
         "port": 5757,
         "requestTimeout": 180,
+        "poolSize": 2,
         "concurrencyLimit": 10,
         "enableLegacyTls": "yes",
         "securityLevel": 5,

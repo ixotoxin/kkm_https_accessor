@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "kkmop_except.h"
 #include "kkmop_strings.h"
 #include <main/shortcut.h>
 #include <kkm/variables.h>
@@ -34,10 +35,7 @@ namespace KkmOperator {
         Log::Console::ScopedLevelDown scopeLevel { Log::Level::Info };
 
         for (int i = 0, n = 1; i < connParamCount; ++i, ++n) {
-            Log::CategoryLogger genLogger {
-                Log::Category::Generic,
-                Basic::Wcs::Fmt<c_xsStrSize>(Wcs::c_commandPrefix, n)
-            };
+            Log::CategoryLogger genLogger { Log::Category::Generic, Fmt<c_xsStrSize>(Wcs::c_commandPrefix, n) };
             try {
                 auto kkmLogger { std::make_shared<Logger>(genLogger) };
                 const auto connParams = Registry::make(connParamItems[i]);
@@ -47,7 +45,7 @@ namespace KkmOperator {
                 Registry::save(connParams, kkm);
                 kkm.printHello();
                 genLogger.info(Wcs::c_connParamsSaved, serialNumber);
-            } catch (const Basic::Failure & e) {
+            } catch (const Failure & e) {
                 genLogger.warning(e);
             }
         }
@@ -66,7 +64,7 @@ namespace KkmOperator {
         if (result.m_success) {
             log(Log::Level::Info, L"Done");
         } else {
-            throw Basic::Failure(result.m_message); // NOLINT(*-exception-baseclass)
+            throw Failure(result.m_message);
         }
     }
 
@@ -81,7 +79,7 @@ namespace KkmOperator {
         if (result.m_success) {
             log(Log::Level::Info, L"Done");
         } else {
-            throw Basic::Failure(result.m_message); // NOLINT(*-exception-baseclass)
+            throw Failure(result.m_message);
         }
     }
 
@@ -117,7 +115,7 @@ namespace KkmOperator {
                 Log::Console::ScopedSolo solo {};
                 Log::Console::ScopedLevelDown scopeLevel { Log::Level::Info };
 
-                // KKM_LOG(status, Wcs::c_fmtModel, wcsSafeGet(Mbs::c_models, status.m_model));
+                /*logResult(status, Wcs::c_fmtModel, safeGet(Wcs::c_models, status.m_model));*/
                 logResult(status, Wcs::c_fmtModel, status.m_modelName);
                 logResult(status, Wcs::c_fmtSerialNumber, status.m_serialNumber);
                 logResult(status, Wcs::c_fmtBlocked, Text::Wcs::daNet(status.m_blocked));
@@ -135,10 +133,10 @@ namespace KkmOperator {
                 logResult(status, Wcs::c_fmtPrinterOverheat, Text::Wcs::daNet(status.m_printerOverheat));
                 logResult(status, Wcs::c_fmtReceiptLineLength, status.m_receiptLineLength);
                 logResult(status, Wcs::c_fmtReceiptLineLengthPix, status.m_receiptLineLengthPix);
-                logResult(shift, Wcs::c_fmtShiftState, wcsSafeGet(Mbs::c_shiftStateLabels, shift.m_shiftState));
+                logResult(shift, Wcs::c_fmtShiftState, safeGet(Kkm::Wcs::c_shiftStateLabels, shift.m_shiftState));
                 logResult(shift, Wcs::c_fmtShiftExpiration, DateTime::cast<std::wstring>(shift.m_expirationDateTime));
-                logResult(status, Wcs::c_fmtReceiptType, wcsSafeGet(Mbs::c_receiptTypeLabels, status.m_receiptType));
-                logResult(status, Wcs::c_fmtDocumentType, wcsSafeGet(Mbs::c_documentTypeLabels, status.m_documentType));
+                logResult(status, Wcs::c_fmtReceiptType, safeGet(Kkm::Wcs::c_receiptTypeLabels, status.m_receiptType));
+                logResult(status, Wcs::c_fmtDocumentType, safeGet(Kkm::Wcs::c_documentTypeLabels, status.m_documentType));
 
                 logResult(cash, Wcs::c_fmtCashInCount, cash.m_cashInCount);
                 logResult(cash, Wcs::c_fmtCashInSum, cash.m_cashInSum);
@@ -181,12 +179,12 @@ namespace KkmOperator {
                 logResult(errors, Wcs::c_fmtCommandCode, errors.m_commandCode);
                 logResult(errors, Wcs::c_fmtDataForSendIsEmpty, Text::Wcs::daNet(errors.m_dataForSendIsEmpty));
 
-                logResult(ffdVers, Wcs::c_fmtDeviceFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_deviceFfdVersion));
-                logResult(ffdVers, Wcs::c_fmtDevMinFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_devMinFfdVersion));
-                logResult(ffdVers, Wcs::c_fmtDevMaxFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_devMaxFfdVersion));
-                logResult(ffdVers, Wcs::c_fmtFnFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_fnFfdVersion));
-                logResult(ffdVers, Wcs::c_fmtFnMaxFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_fnMaxFfdVersion));
-                logResult(ffdVers, Wcs::c_fmtFfdVersion, wcsSafeGet(Mbs::c_ffdVersions, ffdVers.m_ffdVersion));
+                logResult(ffdVers, Wcs::c_fmtDeviceFfdVersion, safeGet(Kkm::Wcs::c_ffdVersions, ffdVers.m_deviceFfdVersion));
+                logResult(ffdVers, Wcs::c_fmtDevMinFfdVersion, safeGet(Kkm::Wcs::c_ffdVersions, ffdVers.m_devMinFfdVersion));
+                logResult(ffdVers, Wcs::c_fmtDevMaxFfdVersion, safeGet(Kkm::Wcs::c_ffdVersions, ffdVers.m_devMaxFfdVersion));
+                logResult(ffdVers, Wcs::c_fmtFnFfdVersion, safeGet(Kkm::Wcs::c_ffdVersions, ffdVers.m_fnFfdVersion));
+                logResult(ffdVers, Wcs::c_fmtFnMaxFfdVersion, safeGet(Kkm::Wcs::c_ffdVersions, ffdVers.m_fnMaxFfdVersion));
+                logResult(ffdVers, Wcs::c_fmtFfdVersion, safeGet(Kkm::Wcs::c_ffdVersions, ffdVers.m_ffdVersion));
 
                 logResult(fwVers, Wcs::c_fmtFirmwareVersion, fwVers.m_firmwareVersion);
                 logResult(fwVers, Wcs::c_fmtConfigurationVersion, fwVers.m_configurationVersion);

@@ -22,7 +22,7 @@ namespace Http {
         explicit Logger(Basic::Wcs::Message && prefix) noexcept
         : CategoryLogger(Log::Category::WebServer, std::move(prefix)) {}
 
-        explicit Logger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept // NOLINT
+        explicit Logger(CategoryLogger & parent, const std::wstring_view prefix = {}) noexcept
         : CategoryLogger(parent, Log::Category::WebServer, prefix) {}
 
         ~Logger() override = default;

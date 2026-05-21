@@ -4,7 +4,7 @@
 #pragma once
 
 #include "types.h"
-#include <lib/json.h>
+#include "json.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 namespace Kkm {
     using ConnParamString = std::wstring;
     using ConnParamVector = std::vector<std::wstring>;
-    using ConnParamJson = Nln::Json;
+    using ConnParamJson = JsonDoc;
 
     class BaseConnParams {
     public:

@@ -4,8 +4,8 @@
 #include "registry.h"
 #include "strings.h"
 #include "except.h"
+#include "json.h"
 #include <filesystem>
-#include <fstream>
 
 namespace Kkm::Registry {
     [[nodiscard]]
@@ -20,7 +20,7 @@ namespace Kkm::Registry {
             if (!std::filesystem::is_directory(path)) {
                 std::filesystem::create_directories(path);
                 if (!std::filesystem::is_directory(path)) {
-                    throw Failure(Wcs::c_registryError); // NOLINT(*-exception-baseclass)
+                    throw Failure(Wcs::c_registryError);
                 }
             }
         }
@@ -31,7 +31,7 @@ namespace Kkm::Registry {
     [[nodiscard]]
     const std::wstring & filterSerialNumber(const std::wstring & serialNumber) {
         if (serialNumber.empty() || std::string::npos != serialNumber.find_first_not_of(c_serialNumberChars)) {
-            throw Failure(Wcs::c_invalidSerialNumber); // NOLINT(*-exception-baseclass)
+            throw Failure(Wcs::c_invalidSerialNumber);
         }
         return serialNumber;
     }
@@ -53,7 +53,7 @@ namespace Kkm::Registry {
         if (type == L"bluetooth"s || type == L"bt"s) {
             return std::make_shared<BluetoothConnParams>(params);
         }
-        throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+        throw Failure(Wcs::c_invalidConnParams);
     }
 
     [[nodiscard]]
@@ -61,54 +61,48 @@ namespace Kkm::Registry {
         ConnParamVector paramVector {};
         Text::splitTo(paramVector, paramString, c_connParamsSeparator);
         if (paramVector.size() < 2) {
-            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+            throw Failure(Wcs::c_invalidConnParams);
         }
         return make(paramVector[0], paramVector);
     }
 
     [[nodiscard]]
     ConnParams load(const std::wstring & serialNumber) {
-        return read(filePath(filterSerialNumber(serialNumber)), serialNumber);
+        return read(filePath(filterSerialNumber(serialNumber)));
     }
 
     [[nodiscard]]
-    ConnParams read(const std::filesystem::path & path, const std::wstring & serialNumber) {
-        const std::ifstream file { path };
-        if (!file.is_open() || !file.good()) {
-            // CLEANUP
-            // throw Failure(KKM_WFMT(Wcs::c_loadingError, serialNumber)); // NOLINT(*-exception-baseclass)
-            throw Failure(Fmt<c_sStrSize>(Wcs::c_loadingError, serialNumber)); // NOLINT(*-exception-baseclass)
-        }
-        const Nln::Json paramJson(Nln::Json::parse(std::ifstream(path)));
-        if (paramJson.is_array()) {
+    ConnParams read(const std::filesystem::path & path) {
+        JsonDoc paramJson { Json::Type::Object };
+        paramJson <<= path;
+
+        if (paramJson.IsArray()) {
             ConnParamVector paramVector {};
             Json::handle(paramJson, paramVector);
             if (paramVector.size() < 2) {
-                throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+                throw Failure(Wcs::c_invalidConnParams);
             }
             return make(paramVector[0], paramVector);
         }
-        if (!paramJson.is_object()) {
-            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+        if (!paramJson.IsObject()) {
+            throw Failure(Wcs::c_invalidConnParams);
         }
-        if (!paramJson.contains("type")) {
-            throw Failure(Wcs::c_invalidConnParams); // NOLINT(*-exception-baseclass)
+        if (!paramJson.HasMember(L"type"_key)) {
+            throw Failure(Wcs::c_invalidConnParams);
         }
-        return make(Json::cast<std::wstring>(paramJson["type"]), paramJson);
+        return make(Json::cast<std::wstring>(paramJson[kv(L"type"_key)]), paramJson);
     }
 
     void save(const ConnParams & params, Device & kkm) {
-        const auto & path = filePath(filterSerialNumber(kkm.serialNumber()), true);
-        std::ofstream file { path };
+        const auto serialNumber = kkm.serialNumber();
+        const auto path = filePath(filterSerialNumber(serialNumber), true);
         auto paramJson = static_cast<ConnParamJson>(*params);
-        paramJson["serialNumber"] = Text::convert(kkm.serialNumber());
-        paramJson["ffdVersion"] = kkm.ffdVersion(true);
-        file << paramJson.dump();
-        file.close();
+        JsonObj paramObj { paramJson };
+        paramObj[L"serialNumber"_key] <<= serialNumber;
+        paramObj[L"ffdVersion"_key] <<= kkm.ffdVersion(true);
+        paramJson >>= path;
         if (!std::filesystem::is_regular_file(path)) {
-            // CLEANUP
-            // throw Failure(KKM_WFMT(Wcs::c_savingError, kkm.serialNumber())); // NOLINT(*-exception-baseclass)
-            throw Failure(Fmt<c_sStrSize>(Wcs::c_savingError, kkm.serialNumber())); // NOLINT(*-exception-baseclass)
+            throw Failure(Fmt<c_sStrSize>(Wcs::c_savingError, serialNumber));
         }
     }
 }

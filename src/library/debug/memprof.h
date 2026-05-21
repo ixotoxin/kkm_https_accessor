@@ -16,7 +16,8 @@
 #   undef WITH_SNTZ
 #   define WITH_SNTZ 0
 #   ifndef _CRTDBG_MAP_ALLOC
-#       define _CRTDBG_MAP_ALLOC 1 /* NOLINT(*-reserved-identifier) */
+// NOLINTNEXTLINE(reserved-identifier)
+#       define _CRTDBG_MAP_ALLOC 1
 #   endif
 #   include <lib/winapi.h>
 #   include <stdlib.h>
@@ -42,24 +43,24 @@
 #   define FORCE_MEMORY_LEAK do {} while (false)
 #endif
 
-#define MEMORY_PROFILING_FLAG_KEY "!debug"
+#define MEMORY_PROFILING_FLAG_KEY L"!debug"
 
 #if WITH_CRTD
-#   define MEMORY_PROFILING_FLAG_VALUE "Memory profiling enabled (CRT Debug)"
+#   define MEMORY_PROFILING_FLAG_VALUE L"Memory profiling enabled (CRT Debug)"
 #elif WITH_SNTZ
-#   define MEMORY_PROFILING_FLAG_VALUE "Sanitizers enabled"
-    // namespace __coe_win {
-    //     bool ContinueOnError();
-    //     void RawWrite(const char *);
-    // }
+#   define MEMORY_PROFILING_FLAG_VALUE L"Sanitizers enabled"
+    /*namespace __coe_win {
+        bool ContinueOnError();
+        void RawWrite(const char *);
+    }*/
     extern "C" {
-        // bool __coe_win_ContinueOnError();
-        // void __coe_win_RawWrite(const char *);
+        /*bool __coe_win_ContinueOnError();
+        void __coe_win_RawWrite(const char *);*/
         const char * __asan_default_options();
         const char * __ubsan_default_options();
     }
 #else
-#   define MEMORY_PROFILING_FLAG_VALUE ""
+#   define MEMORY_PROFILING_FLAG_VALUE L""
 #endif
 
 namespace Config {

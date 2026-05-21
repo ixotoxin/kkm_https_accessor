@@ -9,9 +9,6 @@ namespace Server {
     namespace Wcs {
         using Csv = const std::wstring_view;
 
-        constexpr Csv c_forbidden { L"Сбой авторизации" };
-        constexpr Csv c_redirectToStatic { L"Перенаправляем в /static/" };
-
         constexpr Csv c_starting { L"Запуск сервера..." };
         constexpr Csv c_startingFailed { L"Не удалось запустить сервер" };
         constexpr Csv c_started { L"Сервер запущен" };
@@ -20,12 +17,28 @@ namespace Server {
         constexpr Csv c_stopped { L"Сервер остановлен" };
         constexpr Csv c_servicingFailed { L"Сбой сервера" };
         constexpr Csv c_socketOpeningError { L"Ошибка открытия сокета" };
+        constexpr Csv c_poolNotInitialized { L"Пул потоков для обработки тяжёлых запросов не создан" };
         constexpr Csv c_maximumIsExceeded { L"Превышено разрешенное количество одновременных запросов" };
         constexpr Csv c_timeoutExpired { L"Превышена разрешенная длительность выполнения запроса" };
         constexpr Csv c_fromCache { L"Данные взяты из кеша" };
         constexpr Csv c_processingSuccess { L"Запрос успешно обработан" };
         constexpr Csv c_processingFailed { L"Не удалось обработать запрос" };
         constexpr Csv c_cacheMaintain { L"Обслуживание кэша (размер {} => {})" };
+
+        constexpr Csv c_badRequest { L"Некорректный запрос" };
+        constexpr Csv c_methodNotAllowed { L"Невозможно выполнить данный запрос" };
+        constexpr Csv c_unknownMethod { L"Неизвестный метод" };
+        constexpr Csv c_notImplemented { L"Не реализовано" };
+        constexpr Csv c_forbidden { L"Сбой авторизации" };
+        constexpr Csv c_badPath { L"Некорректный путь" };
+        constexpr Csv c_notFound { L"Документ не найден" };
+        /*constexpr Csv c_invalidContentType { L"Заголовок 'Content-Type' отсутствует или некорректен" };*/
+        /*constexpr Csv c_invalidXSecret { L"Заголовок 'X-Secret' отсутствует или некорректен" };*/
+        /*constexpr Csv c_invalidXIdempotencyKey { L"Заголовок 'X-Idempotency-Key' отсутствует или некорректен" };*/
+        /*constexpr Csv c_connectionWith { L"Установлено соединение с [{}]" };*/
+        /*constexpr Csv c_requestedMethod { L"От клиента [{}] поступил запрос [{} {}]" };*/
+        constexpr Csv c_redirectToStatic { L"Перенаправляем в /static/" };
+        constexpr Csv c_allocatorsInUse { L"Текущее количество используемых аллокаторов для Json-объектов {} (пиковое {})" };
     }
 
     namespace Mbs {

@@ -1,0 +1,217 @@
+cmake_minimum_required(VERSION 3.28)
+
+add_library(jsonlib OBJECT ${TEST_LIBRARY_SOURCE_FILES})
+target_link_libraries(jsonlib PUBLIC Catch2::Catch2WithMain)
+target_link_libraries(jsonlib PUBLIC RapidJSON rapidjson)
+
+add_executable(test_json_escape escape.cpp test_data.cpp)
+target_link_libraries(test_json_escape PRIVATE jsonlib)
+add_test(NAME test_json_escape COMMAND test_json_escape)
+
+add_executable(test_json_inout_s_wcs inout_s_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_inout_s_wcs PRIVATE jsonlib)
+add_test(NAME test_json_inout_s_wcs COMMAND test_json_inout_s_wcs)
+
+add_executable(test_json_inout_s_mbs inout_s_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_inout_s_mbs PRIVATE jsonlib)
+add_test(NAME test_json_inout_s_mbs COMMAND test_json_inout_s_mbs)
+
+add_executable(test_json_inout_p_wcs inout_p_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_inout_p_wcs PRIVATE jsonlib)
+add_test(NAME test_json_inout_p_wcs COMMAND test_json_inout_p_wcs)
+
+add_executable(test_json_inout_p_mbs inout_p_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_inout_p_mbs PRIVATE jsonlib)
+add_test(NAME test_json_inout_p_mbs COMMAND test_json_inout_p_mbs)
+
+add_executable(test_json_inout_o_wcs inout_o_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_inout_o_wcs PRIVATE jsonlib)
+add_test(NAME test_json_inout_o_wcs COMMAND test_json_inout_o_wcs)
+
+add_executable(test_json_inout_o_mbs inout_o_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_inout_o_mbs PRIVATE jsonlib)
+add_test(NAME test_json_inout_o_mbs COMMAND test_json_inout_o_mbs)
+
+add_executable(test_json_cast_a_wcs cast_a_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_a_wcs PRIVATE jsonlib)
+add_test(NAME test_json_cast_a_wcs COMMAND test_json_cast_a_wcs)
+
+add_executable(test_json_cast_a_mbs cast_a_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_a_mbs PRIVATE jsonlib)
+add_test(NAME test_json_cast_a_mbs COMMAND test_json_cast_a_mbs)
+
+add_executable(test_json_cast_s_wcs cast_s_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_s_wcs PRIVATE jsonlib)
+add_test(NAME test_json_cast_s_wcs COMMAND test_json_cast_s_wcs)
+
+add_executable(test_json_cast_s_mbs cast_s_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_s_mbs PRIVATE jsonlib)
+add_test(NAME test_json_cast_s_mbs COMMAND test_json_cast_s_mbs)
+
+add_executable(test_json_cast_d_wcs cast_d_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_d_wcs PRIVATE jsonlib)
+add_test(NAME test_json_cast_d_wcs COMMAND test_json_cast_d_wcs)
+
+add_executable(test_json_cast_d_mbs cast_d_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_d_mbs PRIVATE jsonlib)
+add_test(NAME test_json_cast_d_mbs COMMAND test_json_cast_d_mbs)
+
+add_executable(test_json_cast_m_wcs cast_m_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_m_wcs PRIVATE jsonlib)
+add_test(NAME test_json_cast_m_wcs COMMAND test_json_cast_m_wcs)
+
+add_executable(test_json_cast_m_mbs cast_m_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_cast_m_mbs PRIVATE jsonlib)
+add_test(NAME test_json_cast_m_mbs COMMAND test_json_cast_m_mbs)
+
+add_executable(test_json_require_wcs require_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_require_wcs PRIVATE jsonlib)
+add_test(NAME test_json_require_wcs COMMAND test_json_require_wcs)
+
+add_executable(test_json_require_mbs require_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_require_mbs PRIVATE jsonlib)
+add_test(NAME test_json_require_mbs COMMAND test_json_require_mbs)
+
+add_executable(test_json_handle_h_wcs handle_h_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_h_wcs PRIVATE jsonlib)
+add_test(NAME test_json_handle_h_wcs COMMAND test_json_handle_h_wcs)
+
+add_executable(test_json_handle_h_mbs handle_h_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_h_mbs PRIVATE jsonlib)
+add_test(NAME test_json_handle_h_mbs COMMAND test_json_handle_h_mbs)
+
+add_executable(test_json_handle_v_wcs handle_v_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_v_wcs PRIVATE jsonlib)
+add_test(NAME test_json_handle_v_wcs COMMAND test_json_handle_v_wcs)
+
+add_executable(test_json_handle_v_mbs handle_v_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_v_mbs PRIVATE jsonlib)
+add_test(NAME test_json_handle_v_mbs COMMAND test_json_handle_v_mbs)
+
+add_executable(test_json_handle_d_wcs handle_d_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_d_wcs PRIVATE jsonlib)
+add_test(NAME test_json_handle_d_wcs COMMAND test_json_handle_d_wcs)
+
+add_executable(test_json_handle_d_mbs handle_d_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_d_mbs PRIVATE jsonlib)
+add_test(NAME test_json_handle_d_mbs COMMAND test_json_handle_d_mbs)
+
+add_executable(test_json_handle_m_wcs handle_m_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_m_wcs PRIVATE jsonlib)
+add_test(NAME test_json_handle_m_wcs COMMAND test_json_handle_m_wcs)
+
+add_executable(test_json_handle_m_mbs handle_m_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_m_mbs PRIVATE jsonlib)
+add_test(NAME test_json_handle_m_mbs COMMAND test_json_handle_m_mbs)
+
+add_executable(test_json_handle_r_wcs handle_r_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_r_wcs PRIVATE jsonlib)
+add_test(NAME test_json_handle_r_wcs COMMAND test_json_handle_r_wcs)
+
+add_executable(test_json_handle_r_mbs handle_r_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_handle_r_mbs PRIVATE jsonlib)
+add_test(NAME test_json_handle_r_mbs COMMAND test_json_handle_r_mbs)
+
+add_executable(test_json_get_key_v_wcs get_key_v_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_get_key_v_wcs PRIVATE jsonlib)
+add_test(NAME test_json_get_key_v_wcs COMMAND test_json_get_key_v_wcs)
+
+add_executable(test_json_get_key_v_mbs get_key_v_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_get_key_v_mbs PRIVATE jsonlib)
+add_test(NAME test_json_get_key_v_mbs COMMAND test_json_get_key_v_mbs)
+
+add_executable(test_json_get_key_d_wcs get_key_d_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_get_key_d_wcs PRIVATE jsonlib)
+add_test(NAME test_json_get_key_d_wcs COMMAND test_json_get_key_d_wcs)
+
+add_executable(test_json_get_key_d_mbs get_key_d_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_get_key_d_mbs PRIVATE jsonlib)
+add_test(NAME test_json_get_key_d_mbs COMMAND test_json_get_key_d_mbs)
+
+add_executable(test_json_get_key_m_wcs get_key_m_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_get_key_m_wcs PRIVATE jsonlib)
+add_test(NAME test_json_get_key_m_wcs COMMAND test_json_get_key_m_wcs)
+
+add_executable(test_json_get_key_m_mbs get_key_m_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_get_key_m_mbs PRIVATE jsonlib)
+add_test(NAME test_json_get_key_m_mbs COMMAND test_json_get_key_m_mbs)
+
+add_executable(test_json_set_key_v_wcs set_key_v_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_v_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_v_wcs COMMAND test_json_set_key_v_wcs)
+
+add_executable(test_json_set_key_v_mbs set_key_v_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_v_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_v_mbs COMMAND test_json_set_key_v_mbs)
+
+add_executable(test_json_set_key_b_wcs set_key_b_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_b_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_b_wcs COMMAND test_json_set_key_b_wcs)
+
+add_executable(test_json_set_key_b_mbs set_key_b_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_b_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_b_mbs COMMAND test_json_set_key_b_mbs)
+
+add_executable(test_json_set_key_n_wcs set_key_n_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_n_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_n_wcs COMMAND test_json_set_key_n_wcs)
+
+add_executable(test_json_set_key_n_mbs set_key_n_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_n_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_n_mbs COMMAND test_json_set_key_n_mbs)
+
+add_executable(test_json_set_key_s_wcs set_key_s_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_s_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_s_wcs COMMAND test_json_set_key_s_wcs)
+
+add_executable(test_json_set_key_s_mbs set_key_s_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_s_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_s_mbs COMMAND test_json_set_key_s_mbs)
+
+add_executable(test_json_set_key_t_wcs set_key_t_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_t_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_t_wcs COMMAND test_json_set_key_t_wcs)
+
+add_executable(test_json_set_key_t_mbs set_key_t_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_t_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_t_mbs COMMAND test_json_set_key_t_mbs)
+
+add_executable(test_json_set_key_d_wcs set_key_d_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_d_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_d_wcs COMMAND test_json_set_key_d_wcs)
+
+add_executable(test_json_set_key_d_mbs set_key_d_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_d_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_d_mbs COMMAND test_json_set_key_d_mbs)
+
+add_executable(test_json_set_key_m_wcs set_key_m_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_m_wcs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_m_wcs COMMAND test_json_set_key_m_wcs)
+
+add_executable(test_json_set_key_m_mbs set_key_m_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_set_key_m_mbs PRIVATE jsonlib)
+add_test(NAME test_json_set_key_m_mbs COMMAND test_json_set_key_m_mbs)
+
+add_executable(test_json_object_t_wcs object_t_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_object_t_wcs PRIVATE jsonlib)
+add_test(NAME test_json_object_t_wcs COMMAND test_json_object_t_wcs)
+
+add_executable(test_json_object_t_mbs object_t_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_object_t_mbs PRIVATE jsonlib)
+add_test(NAME test_json_object_t_mbs COMMAND test_json_object_t_mbs)
+
+add_executable(test_json_object_g_wcs object_g_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_object_g_wcs PRIVATE jsonlib)
+add_test(NAME test_json_object_g_wcs COMMAND test_json_object_g_wcs)
+
+add_executable(test_json_object_g_mbs object_g_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_object_g_mbs PRIVATE jsonlib)
+add_test(NAME test_json_object_g_mbs COMMAND test_json_object_g_mbs)
+
+add_executable(test_json_object_s_wcs object_s_wcs.cpp test_data.cpp)
+target_link_libraries(test_json_object_s_wcs PRIVATE jsonlib)
+add_test(NAME test_json_object_s_wcs COMMAND test_json_object_s_wcs)
+
+add_executable(test_json_object_s_mbs object_s_mbs.cpp test_data.cpp)
+target_link_libraries(test_json_object_s_mbs PRIVATE jsonlib)
+add_test(NAME test_json_object_s_mbs COMMAND test_json_object_s_mbs)

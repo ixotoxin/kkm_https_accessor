@@ -32,6 +32,7 @@ void registerResources(const std::wstring_view application) {
 
 void writeToPipe(const std::wstring_view message) {
     std::wcerr << message << std::endl;
+    // NOLINTNEXTLINE(misc-const-correctness)
     ::HANDLE pipe { ::CreateFileW(c_pipeName, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr) };
     if (pipe != INVALID_HANDLE_VALUE) {
         ::DWORD bytesWrite;
@@ -47,7 +48,7 @@ int wmain() {
     try {
         std::wstring wsBinaryFile;
         if (!::GetModuleFileNameW(nullptr, s_binaryFile, ARRAYSIZE(s_binaryFile))) {
-            throw Failure(System::explainError(L"GetModuleFileName(...)")); // NOLINT(*-exception-baseclass)
+            throw Failure(System::explainError(L"GetModuleFileName(...)"));
         }
 
         bool isElevated { false };
@@ -64,13 +65,14 @@ int wmain() {
         if (!isElevated) {
             std::wcout << L"WRN: Недостаточно прав.\nINF: Запрашиваем повышение..." << std::endl;
 
+            // NOLINTNEXTLINE(misc-const-correctness)
             ::HANDLE pipe {
                 ::CreateNamedPipeW(
                     c_pipeName, PIPE_ACCESS_INBOUND,  PIPE_TYPE_BYTE | PIPE_WAIT, 1, 1024, 1024, 0, nullptr
                 )
             };
             if (pipe == INVALID_HANDLE_VALUE) {
-                throw Failure(System::explainError(L"CreateNamedPipeW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"CreateNamedPipeW(...)"));
             }
 
             ::SHELLEXECUTEINFOW sei {};

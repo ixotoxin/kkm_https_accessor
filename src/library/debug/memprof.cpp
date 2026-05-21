@@ -8,10 +8,11 @@
 #endif
 
 #if WITH_CRTD
-// #   define _CRTDBG_MAP_ALLOC // NOLINT(*-reserved-identifier)
-// #   include <lib/winapi.h>
-// #   include <crtdbg.h>
-// #   include <cstdlib>
+// NOLINTNEXTLINE(reserved-identifier)
+/*#   define _CRTDBG_MAP_ALLOC
+#   include <lib/winapi.h>
+#   include <crtdbg.h>
+#   include <cstdlib>*/
 #   include <format>
 #endif
 
@@ -61,13 +62,13 @@ namespace Debug {
 }
 
 #if WITH_SNTZ
-    // namespace __coe_win {
-    //     bool ContinueOnError() { return false; }
-    //     void RawWrite(const char*) {}
-    // }
+    /*namespace __coe_win {
+        bool ContinueOnError() { return false; }
+        void RawWrite(const char*) {}
+    }*/
     extern "C" {
-        // bool __coe_win_ContinueOnError() { return false; }
-        // void __coe_win_RawWrite(const char*) {}
+        /*bool __coe_win_ContinueOnError() { return false; }
+        void __coe_win_RawWrite(const char*) {}*/
         const char * __asan_default_options() {
             return
                 "halt_on_error=0"
