@@ -35,12 +35,12 @@ namespace Registry {
         [[nodiscard, maybe_unused]] bool tryWalk(const WalkerType &) const;
 
     protected:
-        HKEY m_key {};
+        ::HKEY m_key {};
 
         Key() = default;
 
         [[nodiscard, maybe_unused]] std::pair<LSTATUS, std::wstring_view> realWalk(const WalkerType &) const;
-        void createKey(HKEY, std::wstring_view);
+        void createKey(::HKEY, std::wstring_view);
     };
 
     class NewKey final : public Key {
@@ -48,7 +48,7 @@ namespace Registry {
         NewKey() = delete;
         NewKey(const NewKey &) = delete;
         NewKey(NewKey &&) = delete;
-        NewKey(HKEY, std::wstring_view);
+        NewKey(::HKEY, std::wstring_view);
         ~NewKey() override = default;
 
         NewKey & operator=(const NewKey &) = delete;
@@ -60,7 +60,7 @@ namespace Registry {
         RoKey() = delete;
         RoKey(const RoKey &) = delete;
         RoKey(RoKey &&) = delete;
-        RoKey(HKEY, std::wstring_view/*, REGSAM = KEY_READ*/);
+        RoKey(::HKEY, std::wstring_view/*, ::REGSAM = KEY_READ*/);
         ~RoKey() override = default;
 
         RoKey & operator=(const RoKey &) = delete;
@@ -72,7 +72,7 @@ namespace Registry {
         RwKey() = delete;
         RwKey(const RwKey &) = delete;
         RwKey(RwKey &&) = delete;
-        RwKey(HKEY, std::wstring_view, REGSAM = KEY_ALL_ACCESS);
+        RwKey(::HKEY, std::wstring_view, ::REGSAM = KEY_ALL_ACCESS);
         ~RwKey() override = default;
 
         RwKey & operator=(const RwKey &) = delete;

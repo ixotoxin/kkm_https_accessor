@@ -36,6 +36,7 @@ namespace Server {
     constexpr auto c_dummyJob = [] {};
 
     static std::atomic s_state { State::Initial };
+    static std::unique_ptr<asio::thread_pool> s_threadPool { nullptr };
     static Counter::Type s_concurrentRequestsCounter { 0 };
     static Counter::Type s_delayedSocketsCounter { 0 };
     static std::mutex s_hitmanJobMutex {};
@@ -113,17 +114,37 @@ namespace Server {
         return s_defaultHandler;
     }
 
-    template<typename CompletionToken>
+    // CLEANUP
+    /*template<typename CompletionToken>
     auto performAsync(const ProtoHandler & handler, Http::Request & request, CompletionToken && token) {
         return
             asio::async_compose<CompletionToken, void()>(
                 [& handler, & request] (auto && self) {
                     std::thread(
-                        [task = std::move(self), & handler, & request] () mutable { // NOLINT(*-move-forwarding-reference)
+                        // NOLINTNEXTLINE(move-forwarding-reference)
+                        [task = std::move(self), & handler, & request] () mutable {
                             handler(request);
                             task.complete();
                         }
                     ).detach();
+                },
+                std::forward<CompletionToken>(token)
+            );
+    }*/
+
+    template<typename CompletionToken>
+    auto performAsync(const ProtoHandler & handler, Http::Request & request, CompletionToken && token) {
+        return
+            asio::async_compose<CompletionToken, void()>(
+                [& handler, & request] (auto && self) {
+                    asio::post(
+                        *s_threadPool,
+                        // NOLINTNEXTLINE(*-move-forwarding-reference)
+                        [task = std::move(self), & handler, & request] () mutable {
+                            handler(request);
+                            task.complete();
+                        }
+                    );
                 },
                 std::forward<CompletionToken>(token)
             );
@@ -165,7 +186,7 @@ namespace Server {
                     )
                 );
                 if (error) {
-                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslHandshakeOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslHandshakeOperation, ": "sv, error.message()));
                 }
             }
 
@@ -181,7 +202,7 @@ namespace Server {
                     )
                 );
                 if (error) {
-                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslReadOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslReadOperation, ": "sv, error.message()));
                 }
 
                 Http::Parser parser(request);
@@ -199,7 +220,7 @@ namespace Server {
                             )
                         );
                         if (error) {
-                            throw Failure(Cat<c_xsStrSize>(Mbs::c_sslReadOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
+                            throw Failure(Cat<c_xsStrSize>(Mbs::c_sslReadOperation, ": "sv, error.message()));
                         }
                         parser(buffer);
                         expecting = parser.expecting();
@@ -224,7 +245,7 @@ namespace Server {
                     auto it = request.m_header.find("x-secret");
                     if (it == request.m_header.end() || it->second.empty() || it->second != s_secret) {
                         request.m_response.m_status = Http::Status::Forbidden;
-                        request.m_response.m_data.emplace<std::string>(Mbs::c_forbidden);
+                        request.m_response.m_data = std::make_shared<Http::TextResponse>(false, Mbs::c_forbidden);
                         request.m_logger->error(Wcs::c_forbidden);
                     }
                 }
@@ -250,7 +271,7 @@ namespace Server {
                     )
                 );
                 if (error) {
-                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslWriteOperation, ": "sv, error.message())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Cat<c_xsStrSize>(Mbs::c_sslWriteOperation, ": "sv, error.message()));
                 }
             }
 
@@ -278,7 +299,7 @@ namespace Server {
 
             if (streamLowestLayer.is_open()) {
                 error.clear();
-                stream.shutdown(error); // NOLINT(*-unused-return-value)
+                stream.shutdown(error);
                 if (error) {
                     if (error.category() == asio::error::get_ssl_category()) {
                         auto sslError = ERR_GET_REASON(error.value());
@@ -287,11 +308,11 @@ namespace Server {
                         }
                     }
                     if (
-                        error != asio::ssl::error::stream_truncated // <= обязательно игнорируем
+                        error != asio::ssl::error::stream_truncated /** <= обязательно игнорируем **/
                         && error != asio::error::eof
-                        && error != asio::error::connection_aborted // <= обязательно игнорируем
+                        && error != asio::error::connection_aborted /** <= обязательно игнорируем **/
                         && error != asio::error::connection_refused
-                        && error != asio::error::connection_reset   // <= обязательно игнорируем
+                        && error != asio::error::connection_reset   /** <= обязательно игнорируем **/
                         && error != asio::error::not_connected
                     ) {
                         request.m_logger->error(
@@ -303,7 +324,7 @@ namespace Server {
 
             if (streamLowestLayer.is_open()) {
                 error.clear();
-                streamLowestLayer.close(error); // NOLINT(*-unused-return-value)
+                streamLowestLayer.close(error);
                 if (error) {
                     request.m_logger->error(
                         SrcLoc::Point::current(), Text::concat<c_xsStrSize>(Mbs::c_socketCloseOperation, ": "sv, error.message())
@@ -374,13 +395,13 @@ namespace Server {
             {
                 Asio::Error error {};
 
-                acceptor.cancel(error); // NOLINT(*-unused-return-value)
+                acceptor.cancel(error);
                 if (error) {
                     log(Log::Level::Warning, Mbs::c_acceptorCancelStatus, error.message());
                 }
 
                 error.clear();
-                acceptor.close(error); // NOLINT(*-unused-return-value)
+                acceptor.close(error);
                 if (error) {
                     log(Log::Level::Warning, Mbs::c_acceptorCloseStatus, error.message());
                 }
@@ -404,10 +425,21 @@ namespace Server {
     }
 
     void watchdog() noexcept {
+        using Ccy::MemOrd;
+        size_t cacheMaintenanceInterval { c_cacheMaintenanceInterval };
+        size_t allocPoolStatReportInterval { c_allocPoolStatReportInterval };
         while (s_state.load() < State::Shutdown) {
             try {
                 /** Сюда добавляем полезную фоновую нагрузку {{{ **/
-                Cache::maintain();
+                if (!--cacheMaintenanceInterval) {
+                    Cache::maintain();
+                    cacheMaintenanceInterval = c_cacheMaintenanceInterval;
+                }
+                if (!--allocPoolStatReportInterval) {
+                    const auto [inUse, peakInUse] = Json::Allocator::poolStat();
+                    log(Log::Level::Debug, Wcs::c_allocatorsInUse, inUse, peakInUse);
+                    allocPoolStatReportInterval = c_allocPoolStatReportInterval;
+                }
                 /** }}} **/
                 std::this_thread::sleep_for(c_watchdogSleep);
             } catch (const Basic::Failure & e) {
@@ -436,11 +468,18 @@ namespace Server {
         }
 
         s_shutdownSync.arrive_and_wait();
+        s_threadPool->join();
+        s_threadPool.reset();
         s_state.store(State::Stopped);
     }
 
     void listen(Asio::SslStreamConfig config) noexcept try {
         assert(s_state.load() == State::Starting);
+
+        s_threadPool = std::make_unique<asio::thread_pool>(s_poolSize);
+        if (!s_threadPool) {
+            throw Failure(Wcs::c_poolNotInitialized);
+        }
 
         Asio::IoContext ioContext { std::clamp(static_cast<int>(std::thread::hardware_concurrency()), 1, 4) };
         Asio::SignalSet signals(ioContext, SIGINT, SIGTERM);

@@ -33,7 +33,7 @@ namespace System {
                     FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
                     nullptr,
                     error,
-                    LANG_SYSTEM_DEFAULT, // MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                    LANG_SYSTEM_DEFAULT, /*MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),*/
                     reinterpret_cast<::LPWSTR>(&text),
                     0,
                     nullptr

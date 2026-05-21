@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <lib/json.h>
+#include "json.h"
 #include <ostream>
 
 namespace Log {
-    void setVars(const Nln::Json &);
+    void setVars(const JsonVal &);
     std::wostream & vars(std::wostream &);
 }

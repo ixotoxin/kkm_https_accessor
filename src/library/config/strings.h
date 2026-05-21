@@ -7,6 +7,5 @@
 #include <string_view>
 
 namespace Config::Wcs {
-    CONF_WSTRI(c_cantReadConfig, L"Не удалось прочитать конфигурационный файл '{}'");
     CONF_WSTRI(c_invalidConfig, L"Ошибка чтения конфигурации");
 }

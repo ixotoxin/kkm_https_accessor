@@ -19,8 +19,10 @@ namespace Basic {
 
         explicit Message(const size_t size)
         : m_reserveSize { size } {
-            assert(m_reserveSize >= 31);
-            m_message.reserve(m_reserveSize);
+            /*assert(m_reserveSize >= 31);*/
+            if (m_reserveSize > 7) {
+                m_message.reserve(m_reserveSize);
+            }
         }
 
         Message(const Message &) = delete;
@@ -38,21 +40,21 @@ namespace Basic {
         struct Cat : Message {
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::wstring_view> && ...)
-            Cat(Args && ... args) // NOLINT
+            explicit Cat(Args && ... args)
             : Message(S) {
                 (m_message.append(args), ...);
             }
 
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::wstring_view> && ...)
-            Cat(const size_t size, Args && ... args) // NOLINT
+            explicit Cat(const size_t size, Args && ... args)
             : Message(std::max(S, size)) {
                 (m_message.append(args), ...);
             }
 
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::string_view> && ...)
-            Cat(Args && ... args) // NOLINT
+            explicit Cat(Args && ... args)
             : Message(S) {
                 std::string temp {};
                 temp.reserve(m_reserveSize);
@@ -62,7 +64,7 @@ namespace Basic {
 
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::string_view> && ...)
-            Cat(const size_t size, Args && ... args) // NOLINT
+            explicit Cat(const size_t size, Args && ... args)
             : Message(std::max(S, size)) {
                 std::string temp {};
                 temp.reserve(m_reserveSize);
@@ -82,7 +84,7 @@ namespace Basic {
         struct Fmt : Message {
             template<typename ... Args>
             requires (sizeof...(Args) > 0)
-            Fmt(const std::wstring_view fmt, Args && ... args) // NOLINT
+            explicit Fmt(const std::wstring_view fmt, Args && ... args)
             : Message(S) {
                 std::vformat_to(std::back_inserter(m_message), fmt, std::make_wformat_args(args...));
             }
@@ -96,7 +98,7 @@ namespace Basic {
 
             template<typename ... Args>
             requires (sizeof...(Args) > 0)
-            Fmt(const std::string_view fmt, Args && ... args) // NOLINT
+            explicit Fmt(const std::string_view fmt, Args && ... args)
             : Message(S) {
                 std::string temp {};
                 temp.reserve(m_reserveSize);
@@ -130,21 +132,21 @@ namespace Basic {
         struct Cat : Message {
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::string_view> && ...)
-            Cat(Args && ... args) // NOLINT
+            explicit Cat(Args && ... args)
             : Message(S) {
                 (m_message.append(args), ...);
             }
 
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::string_view> && ...)
-            Cat(const size_t size, Args && ... args) // NOLINT
+            explicit Cat(const size_t size, Args && ... args)
             : Message(std::max(S, size)) {
                 (m_message.append(args), ...);
             }
 
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::wstring_view> && ...)
-            Cat(Args && ... args) // NOLINT
+            explicit Cat(Args && ... args)
             : Message(S) {
                 std::wstring temp {};
                 temp.reserve(m_reserveSize);
@@ -154,7 +156,7 @@ namespace Basic {
 
             template<typename ... Args>
             requires (sizeof...(Args) > 1) && (std::is_convertible_v<Args, std::wstring_view> && ...)
-            Cat(const size_t size, Args && ... args) // NOLINT
+            explicit Cat(const size_t size, Args && ... args)
             : Message(std::max(S, size)) {
                 std::wstring temp {};
                 temp.reserve(m_reserveSize);
@@ -174,7 +176,7 @@ namespace Basic {
         struct Fmt : Message {
             template<typename ... Args>
             requires (sizeof...(Args) > 0)
-            Fmt(const std::string_view fmt, Args && ... args) // NOLINT
+            explicit Fmt(const std::string_view fmt, Args && ... args)
             : Message(S) {
                 std::vformat_to(std::back_inserter(m_message), fmt, std::make_format_args(args...));
             }
@@ -188,7 +190,7 @@ namespace Basic {
 
             template<typename ... Args>
             requires (sizeof...(Args) > 0)
-            Fmt(const std::wstring_view fmt, Args && ... args) // NOLINT
+            explicit Fmt(const std::wstring_view fmt, Args && ... args)
             : Message(S) {
                 std::wstring temp {};
                 temp.reserve(m_reserveSize);

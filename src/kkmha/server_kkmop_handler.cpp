@@ -4,13 +4,14 @@
 #include "server_kkmop_handler.h"
 #include "server_kkmop_defauls.h"
 #include "server_kkmop_strings.h"
+#include "server_except.h"
+#include "server_json.h"
 #include "server_strings.h"
 #include "server_cache_core.h"
 #include "http_constant_response.h"
-#include "http_json_response.h"
+#include "http_text_response.h"
 #include <constants.h>
 #include <debug/memprof.h>
-#include <kkm/strings.h>
 #include <kkm/logger.h>
 #include <kkm/device.h>
 #include <kkm/registry.h>
@@ -28,23 +29,26 @@ namespace Server::KkmOp {
     static std::mutex s_registryMutex {};
 
     struct Payload {
-        const std::string m_serialNumber;
-        const Nln::Json m_details;
-        OptionalResult m_result;
         LoggerPtr m_logger;
-        DateTime::Offset m_expiresAfter;
-        Http::Status m_status { Http::Status::Ok };
+        const std::wstring & m_serialNumber;
+        const JsonDoc & m_details;
+        JsonDoc & m_result;
+        Http::Status & m_status;
+        DateTime::Offset & m_expiresAfter;
 
         Payload() = delete;
 
         Payload(
-            std::string && serialNumber,
-            Nln::Json && details,
-            LoggerPtr logger, // NOLINT
-            const DateTime::Offset expiresAfter = 0s
-        ) : m_serialNumber(std::move(serialNumber)), m_details(std::move(details)), m_result(std::nullopt),
-            m_logger(std::move(logger)), m_expiresAfter(expiresAfter) {
-            assert(m_details.is_object());
+            std::wstring & serialNumber,
+            JsonDoc & details,
+            JsonDoc & result,
+            Http::Status & status,
+            DateTime::Offset & expiresAfter,
+            LoggerPtr logger
+        ) : m_logger(std::move(logger)), m_serialNumber { serialNumber }, m_details { details },
+            m_result { result }, m_status { status }, m_expiresAfter { expiresAfter } {
+            assert(m_details.IsObject());
+            assert(m_result.IsObject());
         }
 
         Payload(const Payload &) = delete;
@@ -57,71 +61,50 @@ namespace Server::KkmOp {
         [[maybe_unused]]
         void fail(
             const Http::Status status,
-            std::string && message,
+            const std::wstring_view message,
             const SrcLoc::Point & location = SrcLoc::Point::current()
-        ) {
+        ) const {
             assert(Meta::toUnderlying(status) >= 400);
             m_logger->error(location, message);
             m_status = status;
-            if (!m_result.has_value()) {
-                m_result.emplace(Nln::EmptyJsonObject);
-            }
-            m_result.value()[Json::Mbs::c_successKey] = false;
-            m_result.value()[Json::Mbs::c_messageKey] = std::move(message);
+            Json::Object result { m_result };
+            result[Json::Wcs::c_successKey] <<= false;
+            result[Json::Wcs::c_messageKey] <<= message;
         }
 
         [[maybe_unused]]
         void fail(
             const Http::Status status,
-            const std::string_view message,
+            Basic::Wcs::Message && message,
             const SrcLoc::Point & location = SrcLoc::Point::current()
-        ) {
-            assert(Meta::toUnderlying(status) >= 400);
-            m_logger->error(location, message);
-            m_status = status;
-            if (!m_result.has_value()) {
-                m_result.emplace(Nln::EmptyJsonObject);
-            }
-            m_result.value()[Json::Mbs::c_successKey] = false;
-            m_result.value()[Json::Mbs::c_messageKey] = message;
-        }
-
-        [[maybe_unused]]
-        void fail(
-            const Http::Status status,
-            Basic::Mbs::Message && message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
-        ) {
+        ) const {
             assert(Meta::toUnderlying(status) >= 400);
             m_logger->error(location, message.m_message);
             m_status = status;
-            if (!m_result.has_value()) {
-                m_result.emplace(Nln::EmptyJsonObject);
-            }
-            m_result.value()[Json::Mbs::c_successKey] = false;
-            m_result.value()[Json::Mbs::c_messageKey] = std::move(message.m_message);
+            Json::Object result { m_result };
+            result[Json::Wcs::c_successKey] <<= false;
+            result[Json::Wcs::c_messageKey] <<= message.m_message;
         }
     };
 
-    ConnParams resolveConnParams(Payload & payload) {
+    ConnParams resolveConnParams(const Payload & payload) {
         if (payload.m_serialNumber.empty()) {
-            payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
+            payload.fail(Http::Status::BadRequest, Server::Wcs::c_badRequest);
             return nullptr;
         }
-        const std::wstring wcSerialNumber { Text::convert(payload.m_serialNumber) };
         std::scoped_lock registryLock(s_registryMutex);
-        if (s_connParamsRegistry.contains(wcSerialNumber)) {
-            auto & params = s_connParamsRegistry.at(wcSerialNumber);
-            payload.m_logger->debug(Wcs::c_selectKkm, wcSerialNumber, static_cast<std::wstring>(*params));
+        if (s_connParamsRegistry.contains(payload.m_serialNumber)) {
+            auto & params = s_connParamsRegistry.at(payload.m_serialNumber);
+            payload.m_logger->debug(Wcs::c_selectKkm, payload.m_serialNumber, static_cast<std::wstring>(*params));
             return params;
         }
         auto [it, insert]
-            = s_connParamsRegistry.try_emplace(wcSerialNumber, Registry::load(wcSerialNumber));
+            = s_connParamsRegistry.try_emplace(payload.m_serialNumber, Registry::load(payload.m_serialNumber));
         if (insert) {
-            payload.m_logger->debug(Wcs::c_selectKkm, wcSerialNumber, static_cast<std::wstring>(*it->second));
+            payload.m_logger->debug(Wcs::c_selectKkm, payload.m_serialNumber, static_cast<std::wstring>(*it->second));
             return it->second;
         }
-        payload.fail(Http::Status::NotFound, std::format(Mbs::c_notFound, payload.m_serialNumber));
+        payload.fail(Http::Status::NotFound, Fmt<c_xsStrSize>(Wcs::c_notFound, payload.m_serialNumber));
         return nullptr;
     }
 
@@ -149,17 +132,13 @@ namespace Server::KkmOp {
 
     void learn(Payload & payload) {
         if (!payload.m_serialNumber.empty()) {
-            return payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
+            return payload.fail(Http::Status::BadRequest, Server::Wcs::c_badRequest);
         }
 
         std::wstring connString;
-        const bool found { Json::handleKey(payload.m_details, "connParams", connString) };
+        const bool found { Json::handleKey(payload.m_details, L"connParams"_key, connString) };
         if (!found) {
-            // return payload.fail(Http::Status::BadRequest, KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"));
-            return payload.fail(
-                Http::Status::BadRequest,
-                Basic::Mbs::Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, "connParams")
-            );
+            return payload.fail(Http::Status::BadRequest, Fmt<c_sStrSize>(Json::Wcs::c_requiresProperty, L"connParams"));
         }
 
         const auto connParams = Registry::make(connString);
@@ -177,16 +156,17 @@ namespace Server::KkmOp {
         StatusResult result;
         kkm.getStatus(result);
         kkm.printHello();
-        payload.m_result << result;
+        payload.m_result <<= result;
 
         payload.m_logger->info(Wcs::c_connParamsSaved, serialNumber);
     }
 
+    // NOLINTNEXTLINE(readability-non-const-parameter)
     void resetRegistry(Payload & payload) {
         std::scoped_lock registryLock(s_registryMutex);
         s_connParamsRegistry.clear();
         if (!s_connParamsRegistry.empty()) {
-            payload.fail(Http::Status::InternalServerError, Mbs::c_cantClearRegistry);
+            payload.fail(Http::Status::InternalServerError, Wcs::c_cantClearRegistry);
         }
         payload.m_expiresAfter = c_reportCacheLifeTime;
     }
@@ -197,10 +177,11 @@ namespace Server::KkmOp {
         payload.m_expiresAfter = c_reportCacheLifeTime;
     }
 
+    // NOLINTNEXTLINE(readability-non-const-parameter)
     void status(Payload & payload) {
         FORCE_MEMORY_LEAK;
         if (payload.m_serialNumber.empty()) {
-            return payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
+            return payload.fail(Http::Status::BadRequest, Server::Wcs::c_badRequest);
         }
         if (const auto connParams = resolveConnParams(payload); connParams) {
             collectDataFromMethods(
@@ -215,10 +196,11 @@ namespace Server::KkmOp {
         payload.m_expiresAfter = c_reportCacheLifeTime;
     }
 
+    // NOLINTNEXTLINE(readability-non-const-parameter)
     void fullStatus(Payload & payload) {
         FORCE_MEMORY_LEAK;
         if (payload.m_serialNumber.empty()) {
-            return payload.fail(Http::Status::BadRequest, Server::Mbs::c_badRequest);
+            return payload.fail(Http::Status::BadRequest, Server::Wcs::c_badRequest);
         }
         if (const auto connParams = resolveConnParams(payload); connParams) {
             collectDataFromMethods(
@@ -408,12 +390,13 @@ namespace Server::KkmOp {
             }
         }
 
-        std::string handlerKey, serialNumber;
+        std::wstring serialNumber {};
+        std::string handlerKey {};
         handlerKey.reserve(c_xsStrSize);
 
         if (request.m_hint.size() == 4) {
             Text::concatTo(handlerKey, request.m_hint[0], "/", request.m_hint[1], "/", request.m_hint[3]);
-            serialNumber.assign(request.m_hint[2]);
+            serialNumber = Text::convert(request.m_hint[2]);
         } else if (request.m_hint.size() == 3) {
             Text::joinTo(handlerKey, request.m_hint, "/");
         } else {
@@ -425,44 +408,53 @@ namespace Server::KkmOp {
             return fail(request, Http::Status::NotFound, Server::Mbs::c_notFound);
         }
 
-        Nln::Json details(Nln::EmptyJsonObject);
-        assert(details.is_object());
+        JsonAlloc allocator {};
+        JsonDoc details { &allocator };
+        JsonDoc result { Json::Type::Object, &allocator };
+
         if (request.m_method == Http::Method::Post && !request.m_body.empty()) {
-            details = Nln::Json::parse(request.m_body);
-            if (!details.is_object()) {
+            details <<= request.m_body;
+            if (!details.IsObject()) {
                 return fail(request, Http::Status::BadRequest, Server::Mbs::c_badRequest);
             }
+        } else {
+            details.SetObject();
         }
 
-        Payload payload {
-            std::move(serialNumber), std::move(details), request.m_logger,
+        DateTime::Offset expiresAfter {
             request.m_method == Http::Method::Get ? c_reportCacheLifeTime : c_receiptCacheLifeTime
         };
 
-        handler->second.first(payload);
+        {
+            Payload payload {
+                serialNumber, details, result, request.m_response.m_status, expiresAfter, request.m_logger
+            };
 
-        assert(!payload.m_result.has_value() || payload.m_result.value().is_object());
-        assert(request.m_response.m_status == Http::Status::Ok);
+            handler->second.first(payload);
+        }
 
-        if (!payload.m_result.has_value() && payload.m_status == Http::Status::Ok) {
-            if (!cacheKey.empty()) {
-                Cache::store(
-                    cacheKey,
-                    Cache::expiresAfter(payload.m_expiresAfter),
-                    Http::Status::Ok,
-                    Http::ConstantResponse::s_okResponse
-                );
-            }
-            if (request.m_response.m_status == Http::Status::Ok) {
-                request.m_response.m_data = Http::ConstantResponse::s_okResponse;
-            }
-        } else {
-            auto response = std::make_shared<Http::JsonResponse>(std::move(payload.m_result), handler->second.second);
-            if (!cacheKey.empty()) {
-                Cache::store(cacheKey, Cache::expiresAfter(payload.m_expiresAfter), payload.m_status, response);
-            }
-            if (request.m_response.m_status == Http::Status::Ok) {
-                request.m_response.m_status = payload.m_status;
+        if (request.m_response.m_status == Http::Status::Ok) {
+            assert(result.IsObject());
+            if (result.ObjectEmpty()) {
+                if (!cacheKey.empty()) {
+                    Cache::store(
+                        cacheKey,
+                        Cache::expiresAfter(expiresAfter),
+                        Http::Status::Ok,
+                        Http::ConstantResponse::s_okResponse
+                    );
+                }
+                if (request.m_response.m_status == Http::Status::Ok) {
+                    request.m_response.m_data = Http::ConstantResponse::s_okResponse;
+                }
+            } else {
+                auto response = std::make_shared<Http::TextResponse>();
+                response->m_mimeType = Http::Mbs::c_jsonMimeType;
+                response->m_data.reserve(handler->second.second);
+                result >>= response->m_data;
+                if (!cacheKey.empty()) {
+                    Cache::store(cacheKey, Cache::expiresAfter(expiresAfter), request.m_response.m_status, response);
+                }
                 request.m_response.m_data = std::move(response);
             }
         }

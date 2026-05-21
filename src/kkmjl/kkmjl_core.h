@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "kkmjl_strings.h"
-#include <lib/except.h>
-#include <lib/text.h>
+#include "kkmjl_except.h"
+#include "kkmjl_json.h"
 #include <kkm/strings.h>
 #include <kkm/device.h>
 #include <kkm/registry.h>
@@ -21,50 +20,43 @@ namespace KkmJsonLoader {
 
     [[nodiscard]]
     inline int exec(wchar_t * serialNumber, const wchar_t * fileName) {
-        using Basic::Wcs::Fmt;
-
         Log::asBackgroundProcess();
         const std::filesystem::path path { fileName };
         std::ifstream file { path };
         if (!file.is_open() || !file.good()) {
-            // CLEANUP
-            // throw Basic::Failure(LIB_WFMT(Basic::Wcs::c_couldntReadFile, path.filename().wstring())); // NOLINT(*-exception-baseclass)
-            throw Basic::Failure(Fmt<c_sStrSize>(Basic::Wcs::c_couldntReadFile, path.filename().wstring())); // NOLINT(*-exception-baseclass)
+            throw Failure(Fmt<c_sStrSize>(Basic::Wcs::c_couldntReadFile, path.filename().wstring()));
         }
 
-        const Nln::Json details(Nln::Json::parse(file));
-        if (!details.is_object()) {
-            throw Basic::Failure(Json::Wcs::c_jsonObjectWasExpected); // NOLINT(*-exception-baseclass)
-        }
+        JsonAlloc allocator {};
+        JsonDoc details { Json::Type::Object, &allocator };
+        details <<= path;
 
         std::wstring serial { serialNumber };
         if (serial == L"-") {
             serial.clear();
         } else if (serial == L"+") {
-            if (details.contains(Mbs::c_id)) {
-                serial.assign(Text::convert(details.at(Mbs::c_id).get<std::string>()));
-            } else {
+            if (!Json::handleKey(details, Wcs::c_id, serial)) {
                 serial.clear();
             }
         }
 
         std::wstring query {};
-        if (details.contains(Mbs::c_query)) {
-            query.assign(Text::convert(Text::lowered(details.at(Mbs::c_query).get<std::string>())));
-        } else {
-            // CLEANUP
-            // throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
-            throw Basic::Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
+        if (!Json::handleKey(details, Wcs::c_query, query)) {
+            throw Failure(
+                Fmt<c_sStrSize>(
+                    Json::Wcs::c_requiresProperty,
+                    std::wstring_view { Wcs::c_query.s, Wcs::c_query.length }
+                )
+            );
         }
 
-        Nln::Json result(Nln::EmptyJsonObject);
+        JsonDoc result { Json::Type::Object, &allocator };
+
         if (query == L"learn") {
             std::wstring connString;
-            const bool found { Json::handleKey(details, "connParams", connString) };
+            const bool found { Json::handleKey(details, L"connParams"_key, connString) };
             if (!found) {
-                // CLEANUP
-                // throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, "connParams"))); // NOLINT(*-exception-baseclass)
-                throw Basic::Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, "connParams")); // NOLINT(*-exception-baseclass)
+                throw Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, "connParams"));
             }
             const auto connParams = Registry::make(connString);
             NewDevice kkm { connParams };
@@ -72,7 +64,7 @@ namespace KkmJsonLoader {
             StatusResult statusResult {};
             kkm.getStatus(statusResult);
             kkm.printHello();
-            result << statusResult;
+            result <<= statusResult;
         } else if (query == L"base-status") {
             callMethod(Device { Registry::load(serial) }, &Device::getStatus, result);
         } else if (query == L"status") {
@@ -135,13 +127,16 @@ namespace KkmJsonLoader {
         } else if (query == L"reset-state") {
             callMethod(Device { Registry::load(serial) }, &Device::resetState, details, result);
         } else {
-            // CLEANUP
-            // throw Basic::Failure(Text::convert(KKM_FMT(Kkm::Mbs::c_requiresProperty, Mbs::c_query))); // NOLINT(*-exception-baseclass)
-            throw Basic::Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, Mbs::c_query)); // NOLINT(*-exception-baseclass)
+            throw Failure(
+                Fmt<c_sStrSize>(
+                    Json::Wcs::c_requiresProperty,
+                    std::wstring_view { Wcs::c_query.s, Wcs::c_query.length }
+                )
+            );
         }
 
 #if WITH_CRTD || WITH_SNTZ
-        result[MEMORY_PROFILING_FLAG_KEY] = MEMORY_PROFILING_FLAG_VALUE;
+        result.AddMember(JsonStr(MEMORY_PROFILING_FLAG_KEY), JsonVal(MEMORY_PROFILING_FLAG_VALUE, allocator), allocator);
 #endif
 
         std::wcout << result;
@@ -154,15 +149,15 @@ namespace KkmJsonLoader {
 #if WITH_CRTD || WITH_SNTZ
             L"    \"" MEMORY_PROFILING_FLAG_KEY "\": \"" MEMORY_PROFILING_FLAG_VALUE "\",\n"
 #endif
-            L"    \"" << Json::Wcs::c_successKey << L"\": false,\n"
-            L"    \"" << Json::Wcs::c_messageKey << L"\": \"" << Json::escapeBasic(error) << L"\"\n"
+            L"    \"" << Json::Wcs::c_successKeyEsc << L"\": false,\n"
+            L"    \"" << Json::Wcs::c_messageKeyEsc << L"\": \"" << Json::escapeBasic(error) << L"\"\n"
             L"}";
     }
 
     [[nodiscard, maybe_unused]]
     inline int safeExec(wchar_t * serialNumber, const wchar_t * fileName) noexcept try {
         return exec(serialNumber, fileName);
-    } catch (const Basic::Failure & e) {
+    } catch (const Failure & e) {
         printError(e.explain()); // TODO: Подумать, есть ли необходимость в выводе источника исключения
         return EXIT_FAILURE;
     } catch (const std::exception & e) {

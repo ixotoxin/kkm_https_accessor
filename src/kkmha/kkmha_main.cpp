@@ -70,11 +70,19 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
         Log::write(Log::Category::Generic, Log::Level::Error, {}, System::explainError(*lfhError));
         return EXIT_FAILURE;
     }
+    /*if (!Json::Allocator::ready()) {
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, Json::Wcs::c_allocatorsPoolInitFailed);
+        return EXIT_FAILURE;
+    }*/
     Config::initProfiler();
 
     FORCE_MEMORY_LEAK;
 
     try {
+        if (!Json::Allocator::ready()) {
+            throw Basic::Failure(Json::Wcs::c_allocatorsPoolInitFailed);
+        }
+
         if (argc > 1) {
             const std::wstring command { Text::lowered(argv[1]) };
             const bool isService { command == L"service" };

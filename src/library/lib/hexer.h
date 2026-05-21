@@ -24,9 +24,9 @@ namespace Bin {
         requires (N > 0) && (N + O <= S)
         [[maybe_unused]]
         void writeTo(Meta::String auto & output) const {
-            // static_assert(N > 0);
-            // static_assert(N + O <= S);
-            using Txt = Meta::TextTrait<decltype(output)>;
+            /*static_assert(N > 0);*/
+            /*static_assert(N + O <= S);*/
+            using Txt = Text::Trait<decltype(output)>;
             for (size_t count { N }, offset { O + N - 1 }; count; --count) {
                 output.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
                 output.push_back(Txt::c_hexDigits[m_bytes[offset--].m_l]);
@@ -37,9 +37,9 @@ namespace Bin {
         requires (N > 0) && (N + O <= S)
         [[maybe_unused]]
         void writeTo(Meta::String auto & output, size_t & pos) const {
-            // static_assert(N > 0);
-            // static_assert(N + O <= S);
-            using Txt = Meta::TextTrait<decltype(output)>;
+            /*static_assert(N > 0);*/
+            /*static_assert(N + O <= S);*/
+            using Txt = Text::Trait<decltype(output)>;
             if (output.size() < pos + N * 2) {
                 output.resize(pos + N * 2, Txt::c_defaultPadding);
             }
@@ -53,7 +53,7 @@ namespace Bin {
         void appendTo(Meta::String auto & output, size_t count = S, size_t offset = 0) const {
             assert(count > 0);
             assert(count + offset <= S);
-            using Txt = Meta::TextTrait<decltype(output)>;
+            using Txt = Text::Trait<decltype(output)>;
             offset += count - 1;
             while (count--) {
                 output.push_back(Txt::c_hexDigits[m_bytes[offset].m_h]);
@@ -65,7 +65,7 @@ namespace Bin {
         void rewriteIn(Meta::String auto & output, size_t pos, size_t count = S, size_t offset = 0) const {
             assert(count > 0);
             assert(count + offset <= S);
-            using Txt = Meta::TextTrait<decltype(output)>;
+            using Txt = Text::Trait<decltype(output)>;
             if (output.size() < pos + count * 2) {
                 output.resize(pos + count * 2, Txt::c_defaultPadding);
             }

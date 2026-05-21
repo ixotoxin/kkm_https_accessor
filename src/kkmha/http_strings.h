@@ -44,16 +44,16 @@ namespace Http {
             { Status::Ok, { Basic::Mbs::c_ok.data(), Basic::Mbs::c_ok.size() } },
             { Status::MovedTemporarily, "Moved Temporarily" },
             { Status::BadRequest, "Bad Request" },
-            // { Status::Unauthorized, "Unauthorized" },
+            /*{ Status::Unauthorized, "Unauthorized" },*/
             { Status::Forbidden, "Forbidden" },
             { Status::NotFound, "Not Found" },
             { Status::MethodNotAllowed, "Method Not Allowed" },
-            // { Status::RequestTimeout, "Request Timeout" },
-            // { Status::ImATeapot, "I’m a teapot" },
+            /*{ Status::RequestTimeout, "Request Timeout" },*/
+            /*{ Status::ImATeapot, "I’m a teapot" },*/
             { Status::InternalServerError, "Internal Server Error" },
             { Status::NotImplemented, "Not Implemented" },
-            // { Status::ServiceUnavailable, "Service Unavailable" },
-            // { Status::UnknownError, "Unknown Error" },
+            /*{ Status::ServiceUnavailable, "Service Unavailable" },*/
+            /*{ Status::UnknownError, "Unknown Error" },*/
         };
     }
 }

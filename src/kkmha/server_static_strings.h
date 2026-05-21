@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Vitaly Anasenko
+// Copyright (c) 2025-2026 Vitaly Anasenko
 // Distributed under the MIT License, see accompanying file LICENSE.txt
 
 #pragma once
@@ -7,9 +7,7 @@
 
 namespace Server::Static {
     namespace Wcs {
-        using Csv = const std::wstring_view;
-
-        constexpr Csv c_incorrectStructure { L"Конфигурационный файл '{}' содержит ошибки" };
+        constexpr std::wstring_view c_invalidMimeMap { L"Карта MIME-типов содержит ошибки" };
     }
 
     namespace Mbs {

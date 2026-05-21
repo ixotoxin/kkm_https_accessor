@@ -13,7 +13,8 @@ namespace Kkm {
     Device::Device(LoggerPtr logger) noexcept
     : m_logger { std::move(logger) }, m_drvVersion { versionStrToInt(m_kkm.version()) } {}
 
-    Device::Device(const ConnParams connParams, LoggerPtr logger) // NOLINT
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    Device::Device(const ConnParams connParams, LoggerPtr logger)
     : Device(std::move(logger)) {
         connect(connParams);
         switch (s_ffdVersionDetect) {
@@ -29,15 +30,18 @@ namespace Kkm {
         }
     }
 
-    Device::Device(const ConnParams connParams) // NOLINT
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    Device::Device(const ConnParams connParams)
     : Device(connParams, LoggerPtr { nullptr }) {}
 
-    NewDevice::NewDevice(const ConnParams connParams, LoggerPtr logger) // NOLINT
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    NewDevice::NewDevice(const ConnParams connParams, LoggerPtr logger)
     : Device(std::move(logger)) {
         connect(connParams);
     }
 
-    NewDevice::NewDevice(const ConnParams connParams) // NOLINT
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    NewDevice::NewDevice(const ConnParams connParams)
     : NewDevice(connParams, LoggerPtr { nullptr }) {}
 
     Device::~Device() {
@@ -48,7 +52,8 @@ namespace Kkm {
         m_kkm.close();
     }
 
-    void Device::connect(const ConnParams connParams) { // NOLINT
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void Device::connect(const ConnParams connParams) {
         connParams->apply(m_kkm);
         m_kkm.setSingleSetting(Atol::LIBFPTR_SETTING_MODEL, std::to_wstring(Atol::LIBFPTR_MODEL_ATOL_AUTO));
 #if VERSION_LIMIT >= VERSION_10107
@@ -57,31 +62,33 @@ namespace Kkm {
         }
 #endif
         m_kkm.setSingleSetting(Atol::LIBFPTR_SETTING_OFD_CHANNEL, std::to_wstring(Atol::LIBFPTR_OFD_CHANNEL_AUTO));
-        // ISSUE: Из документации не ясно, что передавать в качестве значения параметра.
-        //  Но нам этот параметр не очень нужен, потому как при формировании чека единицы у нас
-        //  всегда передаются и проблем с ФФД 1.2+ не должно возникнуть.
-        // kkm.setSingleSetting(Atol::LIBFPTR_SETTING_AUTO_MEASUREMENT_UNIT, ???);
+        /**
+         * ISSUE: Из документации не ясно, что передавать в качестве значения параметра.
+         *  Но нам этот параметр не очень нужен, потому как при формировании чека единицы у нас
+         *  всегда передаются и проблем с ФФД 1.2+ не должно возникнуть.
+         **/
+        /*kkm.setSingleSetting(Atol::LIBFPTR_SETTING_AUTO_MEASUREMENT_UNIT, ???);*/
         if (m_kkm.applySingleSettings() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
         if (m_kkm.open() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
         if (!m_kkm.isOpened()) {
-            throw Failure(Wcs::c_notAvailable); // NOLINT(*-exception-baseclass)
+            throw Failure(Wcs::c_notAvailable);
         }
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_SERIAL_NUMBER);
         if (m_kkm.queryData() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
         m_serialNumber = m_kkm.getParamString(Atol::LIBFPTR_PARAM_SERIAL_NUMBER);
         if (m_serialNumber.empty()) {
-            throw Failure(Wcs::c_exchangeError); // NOLINT(*-exception-baseclass)
+            throw Failure(Wcs::c_exchangeError);
         }
         m_logger->appendPrefix(Wcs::c_kkmPrefix, m_serialNumber);
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DATA_TYPE, Atol::LIBFPTR_DT_RECEIPT_LINE_LENGTH);
         if (m_kkm.queryData() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
         m_lineLength = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_RECEIPT_LINE_LENGTH);
         if (m_lineLength < 1) {
@@ -98,7 +105,7 @@ namespace Kkm {
         return message;
     }
 
-    void Device::fail(Result & result, const std::wstring_view message, const SrcLoc::Point & location) const { // NOLINT
+    void Device::fail(Result & result, const std::wstring_view message, const SrcLoc::Point & location) const {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
@@ -106,7 +113,7 @@ namespace Kkm {
         }
     }
 
-    void Device::fail(Result & result, const std::wstring & message, const SrcLoc::Point & location) const { // NOLINT
+    void Device::fail(Result & result, const std::wstring & message, const SrcLoc::Point & location) const {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
@@ -114,7 +121,7 @@ namespace Kkm {
         }
     }
 
-    void Device::fail(Result & result, std::wstring && message, const SrcLoc::Point & location) const { // NOLINT
+    void Device::fail(Result & result, std::wstring && message, const SrcLoc::Point & location) const {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
@@ -244,7 +251,7 @@ namespace Kkm {
         m_kkm.setParam(Atol::LIBFPTR_PARAM_TEXT, separator);
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DEFER, Atol::LIBFPTR_DEFER_NONE);
         if (m_kkm.printText() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
     }
 
@@ -280,7 +287,7 @@ namespace Kkm {
         /** Печать текста **/
         if (magnified) {
             m_kkm.setParam(Atol::LIBFPTR_PARAM_FONT_DOUBLE_WIDTH, true);
-            // m_kkm.setParam(Atol::LIBFPTR_PARAM_FONT_DOUBLE_HEIGHT, true);
+            /*m_kkm.setParam(Atol::LIBFPTR_PARAM_FONT_DOUBLE_HEIGHT, true);*/
         }
         if (center) {
             m_kkm.setParam(Atol::LIBFPTR_PARAM_ALIGNMENT, Atol::LIBFPTR_ALIGNMENT_CENTER);
@@ -289,7 +296,7 @@ namespace Kkm {
         m_kkm.setParam(Atol::LIBFPTR_PARAM_TEXT, text);
         m_kkm.setParam(Atol::LIBFPTR_PARAM_DEFER, Meta::toUnderlying(position));
         if (m_kkm.printText() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
     }
 
@@ -302,9 +309,11 @@ namespace Kkm {
 
     void Device::subCheckDocumentClosed(Result & result) {
         assert(s_documentClosingTimeout >= c_sleepQuantum);
-        // ISSUE: Из документации не очень понятно как работать с методом checkDocumentClosed() - описания нет,
-        //  приведенный пример выглядит странно и рассчитан скорее всего на интерактивное взаимодействие с ККМ.
-        //  В нашем случае интерактивность невозможна. Будем ждать чуда. Если чуда не произойдет, отменяем чек.
+        /**
+         * ISSUE: Из документации не очень понятно как работать с методом checkDocumentClosed() - описания нет,
+         *  приведенный пример выглядит странно и рассчитан скорее всего на интерактивное взаимодействие с ККМ.
+         *  В нашем случае интерактивность невозможна. Будем ждать чуда. Если чуда не произойдет, отменяем чек.
+         **/
         DateTime::SleepUnit::rep i;
         for (i = s_documentClosingTimeout / c_sleepQuantum; m_kkm.checkDocumentClosed() < 0 && i; --i) {
             m_logger->warning(Wcs::c_closingError, m_kkm.errorDescription());
@@ -678,7 +687,7 @@ namespace Kkm {
 
         /** Открытие нефискального документа **/
         if (m_kkm.beginNonfiscalDocument() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
 
         subPrintSeparator(0, 1);
@@ -690,7 +699,7 @@ namespace Kkm {
 
         /** Закрытие нефискального документа без печати подвала **/
         if (m_kkm.endNonfiscalDocument() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
     }
 
@@ -807,7 +816,7 @@ namespace Kkm {
             m_kkm.setParam(1203, details.m_operatorInn);
         }
         if (m_kkm.operatorLogin() < 0) {
-            throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+            throw Failure(m_kkm);
         }
     }
 
@@ -887,7 +896,7 @@ namespace Kkm {
             }
             if (hasRequisite1256) {
                 if (m_kkm.utilFormTlv() < 0) {
-                    throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+                    throw Failure(m_kkm);
                 }
                 const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
                 m_kkm.setParam(1256, clientInfo);
@@ -898,10 +907,10 @@ namespace Kkm {
         if (!details.m_customerAccount.empty()) {
             std::wstring customerAccount { L"  " };
             customerAccount.append(details.m_customerAccount);
-            m_kkm.setParam(1085, s_customerAccountField); // Наименование дополнительного реквизита пользователя
-            m_kkm.setParam(1086, customerAccount); // Значение дополнительного реквизита пользователя
+            m_kkm.setParam(1085, s_customerAccountField); /** Наименование дополнительного реквизита пользователя **/
+            m_kkm.setParam(1086, customerAccount); /** Значение дополнительного реквизита пользователя **/
             if (m_kkm.utilFormTlv() < 0) {
-                throw Failure(m_kkm); // NOLINT(*-exception-baseclass)
+                throw Failure(m_kkm);
             }
             const std::vector<uchar> clientInfo = m_kkm.getParamByteArray(Atol::LIBFPTR_PARAM_TAG_VALUE);
             m_kkm.setParam(1084, clientInfo);
@@ -928,11 +937,11 @@ namespace Kkm {
         Result & result
     ) {
         if (type != ReceiptType::Sell && type != ReceiptType::SellReturn) {
-            throw Failure(Wcs::c_notImplemented); // NOLINT(*-exception-baseclass)
+            throw Failure(Wcs::c_notImplemented);
         }
 
         if (details.m_items.empty()) {
-            throw Failure(Wcs::c_requiresItems); // NOLINT(*-exception-baseclass)
+            throw Failure(Wcs::c_requiresItems);
         }
 
         /** Печать текста после клише **/
@@ -949,7 +958,7 @@ namespace Kkm {
             subSetSeller(details);
         }
         m_kkm.setParam(Atol::LIBFPTR_PARAM_RECEIPT_TYPE, Meta::toUnderlying(type));
-        m_kkm.setParam(Atol::LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, details.m_electronically); // Открытие электрочека
+        m_kkm.setParam(Atol::LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, details.m_electronically); /** Открытие электрочека **/
         if (m_kkm.openReceipt() < 0) {
             return fail(result);
         }
@@ -999,8 +1008,8 @@ namespace Kkm {
             if (m_kkm.payment() < 0) {
                 return fail(result);
             }
-            // result.m_remainder = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_REMAINDER); // Неоплаченный остаток чека
-            // result.m_change = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_CHANGE); // Сдача по чеку
+            /*result.m_remainder = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_REMAINDER);*/ /** Неоплаченный остаток чека **/
+            /*result.m_change = m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_CHANGE);*/ /** Сдача по чеку **/
 #if VERSION_LIMIT >= VERSION_10107
             if (m_drvVersion >= VERSION_10107) {
                 /**
@@ -1078,7 +1087,7 @@ namespace Kkm {
         } else {
             subSetOperator(details);
             m_logger->debug(Wcs::c_subCloseShift);
-            // m_logger->debug(Wcs::c_subPrint);
+            /*m_logger->debug(Wcs::c_subPrint);*/
             /** Закрытие смены **/
             m_kkm.setParam(Atol::LIBFPTR_PARAM_REPORT_TYPE, Atol::LIBFPTR_RT_CLOSE_SHIFT);
             if (m_kkm.report() < 0) {

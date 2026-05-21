@@ -10,6 +10,7 @@
 namespace Kkm {
     using Basic::Wcs::Cat;
     using Basic::Wcs::Fmt;
+    using Basic::DataError;
 
     class Failure final : public Basic::Failure {
     public:
@@ -18,18 +19,22 @@ namespace Kkm {
         Failure(Failure &&) noexcept = default;
 
         explicit Failure(const std::wstring_view message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(message, Log::c_catCashRegister, std::move(location)) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(message, Log::c_catCashRegister, std::move(location)) {}
 
         explicit Failure(std::wstring && message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(std::move(message), Log::c_catCashRegister, std::move(location)) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(std::move(message), Log::c_catCashRegister, std::move(location)) {}
 
         explicit Failure(Atol::Fptr & kkm, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(kkm.errorDescription(), Log::c_catCashRegister, std::move(location)) { // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(kkm.errorDescription(), Log::c_catCashRegister, std::move(location)) {
             kkm.resetError();
         }
 
         explicit Failure(Basic::Wcs::Message && message, SrcLoc::Point && location = SrcLoc::Point::current())
-        : Basic::Failure(std::move(message), Log::c_catCashRegister, std::move(location)) {} // NOLINT
+        // NOLINTNEXTLINE(*-move-const-arg)
+        : Basic::Failure(std::move(message), Log::c_catCashRegister, std::move(location)) {}
 
         ~Failure() override = default;
 

@@ -18,15 +18,15 @@ namespace Http {
         Ok = 200,
         MovedTemporarily = 302,
         BadRequest = 400,
-        // Unauthorized,
+        /*Unauthorized,*/
         Forbidden = 403,
         NotFound,
         MethodNotAllowed,
-        // RequestTimeout = 408,
-        // ImATeapot = 418,
+        /*RequestTimeout = 408,*/
+        /*ImATeapot = 418,*/
         InternalServerError = 500,
         NotImplemented,
-        // ServiceUnavailable = 503,
-        // UnknownError = 520,
+        /*ServiceUnavailable = 503,*/
+        /*UnknownError = 520,*/
     };
 }

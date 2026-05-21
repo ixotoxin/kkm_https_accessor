@@ -11,6 +11,6 @@ namespace Kkm::Registry {
     [[nodiscard]] std::filesystem::path filePath(const std::wstring &, bool = false);
     [[nodiscard]] ConnParams make(const std::wstring &);
     [[nodiscard]] ConnParams load(const std::wstring &);
-    [[nodiscard]] ConnParams read(const std::filesystem::path &, const std::wstring &);
+    [[nodiscard]] ConnParams read(const std::filesystem::path &);
     void save(const ConnParams &, Device &);
 }

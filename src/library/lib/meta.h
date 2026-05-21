@@ -9,6 +9,9 @@
 #include <string>
 
 namespace Meta {
+    template<typename T>
+    using UnderlyingType = std::remove_cvref_t<T>;
+
     #define classTplt template<typename ...> class
 
     template<classTplt, classTplt> struct templatesComparing : std::false_type {};
@@ -21,179 +24,187 @@ namespace Meta {
     template<class T, classTplt U>
     concept fromTemplate = requires(T t) { [] <typename ... V>(U<V ...> &) {} (t); };
 
+    namespace Detail {
+        template<typename ...>
+        struct Rebind;
+
+        template<template<typename ...> class Tmpl, typename ... SrcArgs>
+        struct Rebind<Tmpl<SrcArgs...>> {
+            template<typename ... NewArgs>
+            using With = Tmpl<NewArgs...>;
+        };
+    }
+
+    template<class T, typename ... NewTypes>
+    using Rebind = Detail::Rebind<T>::template With<NewTypes...>;
+
     template<class T>
     constexpr std::underlying_type_t<T> toUnderlying(T e) noexcept {
         return static_cast<std::underlying_type_t<T>>(e);
     }
 
-    template<typename>
-    struct ArrayElement {};
+    namespace Detail {
+        template<typename>
+        struct ValueType {};
+
+        template<typename T>
+        requires std::is_array_v<T>
+        struct ValueType<T> { using Type = std::remove_all_extents_t<T>; };
+
+        template<typename T>
+        requires std::is_pointer_v<T>
+        struct ValueType<T> { using Type = std::remove_pointer_t<T>; };
+
+        template<typename T>
+        requires (requires { typename T::value_type; } && !requires { typename T::mapped_type; })
+        struct ValueType<T> { using Type = T::value_type; };
+
+        template<typename T>
+        requires requires { typename T::mapped_type; }
+        struct ValueType<T> { using Type = T::mapped_type; };
+    }
 
     template<typename T>
-    requires std::is_array_v<T>
-    struct ArrayElement<T> { using Type = std::remove_cv_t<std::remove_extent_t<T>>; };
+    requires requires { typename T::size_type; }
+    using SizeType = UnderlyingType<typename UnderlyingType<T>::size_type>;
 
     template<typename T>
-    requires std::is_pointer_v<T>
-    struct ArrayElement<T> { using Type = std::remove_cv_t<std::remove_pointer_t<T>>; };
+    using ValueType = UnderlyingType<typename Detail::ValueType<UnderlyingType<T>>::Type>;
 
     template<typename T>
-    using ArrayElementType = ArrayElement<T>::Type;
+    requires requires { typename T::key_type; }
+    using KeyType = UnderlyingType<typename UnderlyingType<T>::key_type>;
 
     template<typename T>
-    using ContainerElementType = std::remove_cvref_t<T>::value_type;
-
-    template<typename ...>
-    struct Rebind;
-
-    template<template<typename ...> class Tmpl, typename ... SrcArgs>
-    struct Rebind<Tmpl<SrcArgs...>> {
-        template<typename ... NewArgs>
-        using With = Tmpl<NewArgs...>;
-    };
+    constexpr bool isBool = std::is_same_v<T, bool>;
 
     template<typename T>
-    concept BackSideGrowingRange
-        = std::ranges::range<T>
-          && requires (T t, typename T::value_type u) { t.emplace_back(u); t.push_back(u); };
-
-    template<typename T, typename U>
-    concept Filter
-        = std::is_invocable_r_v<
-            U, T, std::conditional_t<
-                std::is_scalar_v<U>,
-                std::conditional_t<std::is_volatile_v<U>, const volatile U, const U>,
-                std::conditional_t<std::is_volatile_v<U>, const volatile U &, const U &>
-            >
-        >;
-
-    template<typename T, typename U, typename V>
-    concept EnumCastStrictMap
-        = std::ranges::range<T>
-          && requires {
-                typename T::key_type;
-                typename T::mapped_type;
-                typename T::iterator;
-             }
-          && std::is_same_v<U, typename T::key_type>
-          && std::is_same_v<V, typename T::mapped_type>
-          && requires (T r, U k) {
-                { r.find(k) } -> std::same_as<typename T::iterator>;
-                { r.find(k)->second } -> std::same_as<V &>;
-             };
-
-    template<typename T, typename U>
-    concept EnumCastMap
-        = std::ranges::range<T>
-          && requires {
-                typename T::key_type;
-                typename T::mapped_type;
-                typename T::iterator;
-             }
-          && std::is_same_v<std::remove_cvref_t<U>, typename T::mapped_type>
-          && requires (T r, typename T::key_type k) {
-                { r.find(k) } -> std::same_as<typename T::iterator>;
-                { r.find(k)->second } -> std::same_as<std::remove_cvref_t<U> &>;
-             };
-
-    template<typename T, typename U>
-    concept EnumDomain
-        = std::ranges::range<T>
-          && requires {
-                typename T::value_type;
-                typename T::iterator;
-             }
-          && std::is_same_v<std::remove_cvref_t<U>, typename T::value_type>
-          && requires (T r, U k) {
-                { std::ranges::find(r, k) } -> std::same_as<typename T::iterator>;
-                { *std::ranges::find(r, k) } -> std::same_as<std::remove_cvref_t<U> &>;
-             };
+    concept Bool = isBool<UnderlyingType<T>>;
 
     template<typename T>
-    struct CastTypeTrait { using CastType = T; };
-
-    template<typename>
-    struct CastTrait {};
+    constexpr bool isInt8 = !std::is_same_v<T, bool> && std::integral<T> && sizeof(T) == 1;
 
     template<typename T>
-    concept Int8 = !std::is_same_v<T, bool> && std::integral<T> && sizeof(T) == 1;
+    concept Int8 = isInt8<UnderlyingType<T>>;
 
     template<typename T>
-    concept Int8Relying = Int8<std::remove_cvref_t<T>>;
+    constexpr bool isInt16 = !std::is_same_v<T, bool> && std::integral<T> && sizeof(T) == 2;
 
     template<typename T>
-    concept Int16 = std::integral<T> && sizeof(T) == 2;
+    concept Int16 = isInt16<UnderlyingType<T>>;
 
     template<typename T>
-    concept Int16Relying = Int16<std::remove_cvref_t<T>>;
+    constexpr bool isInt32 = !std::is_same_v<T, bool> && std::integral<T> && sizeof(T) == 4;
 
     template<typename T>
-    concept Int32 = std::integral<T> && sizeof(T) == 4;
+    concept Int32 = isInt32<UnderlyingType<T>>;
 
     template<typename T>
-    concept Int32Relying = Int32<std::remove_cvref_t<T>>;
+    constexpr bool isInt64 = !std::is_same_v<T, bool> && std::integral<T> && sizeof(T) == 8;
 
     template<typename T>
-    concept Int64 = std::integral<T> && sizeof(T) == 8;
+    concept Int64 = isInt64<UnderlyingType<T>>;
 
     template<typename T>
-    concept Int64Relying = Int64<std::remove_cvref_t<T>>;
+    constexpr bool isIntegral = !std::is_same_v<T, bool> && std::integral<T>;
 
     template<typename T>
-    concept Bool = std::is_same_v<T, bool>;
+    concept Integral = isIntegral<UnderlyingType<T>>;
 
     template<typename T>
-    concept BoolRelying = Bool<std::remove_cvref_t<T>>;
+    constexpr bool isFloatingPoint = std::is_same_v<T, double> || std::is_same_v<T, long double>;
 
     template<typename T>
-    concept Integral = std::integral<T> && !Bool<T>;
-
-    template<typename T>
-    concept IntegralRelying = Integral<std::remove_cvref_t<T>>;
-
-    template<typename T>
-    concept FloatingPoint = std::is_same_v<T, double> || std::is_same_v<T, long double>;
-
-    template<typename T>
-    concept FloatingPointRelying = FloatingPoint<std::remove_cvref_t<T>>;
+    concept FloatingPoint = isFloatingPoint<UnderlyingType<T>>;
 
     template<typename T>
     concept Numeric = Integral<T> || FloatingPoint<T>;
 
     template<typename T>
-    concept NumericRelying = Numeric<std::remove_cvref_t<T>>;
-
-    template<> struct CastTrait<signed char> : CastTypeTrait<signed long> {};
-    template<> struct CastTrait<unsigned char> : CastTypeTrait<unsigned long> {};
-    template<> struct CastTrait<signed short> : CastTypeTrait<signed long> {};
-    template<> struct CastTrait<unsigned short> : CastTypeTrait<unsigned long> {};
-    template<> struct CastTrait<signed int> : CastTypeTrait<signed long> {};
-    template<> struct CastTrait<unsigned int> : CastTypeTrait<unsigned long> {};
-    template<> struct CastTrait<signed long> : CastTypeTrait<signed long> {};
-    template<> struct CastTrait<unsigned long> : CastTypeTrait<unsigned long> {};
-    template<> struct CastTrait<signed long long> : CastTypeTrait<signed long long> {};
-    template<> struct CastTrait<unsigned long long> : CastTypeTrait<unsigned long long> {};
+    concept Arithmetic = Bool<T> || Numeric<T>;
 
     template<typename T>
-    concept Char = std::is_same_v<T, wchar_t> || std::is_same_v<T, char>;
+    constexpr bool isChar = std::is_same_v<T, wchar_t> || std::is_same_v<std::remove_cvref_t<T>, char>;
 
     template<typename T>
-    concept CharRelying = Char<std::remove_cvref_t<T>>;
+    concept Char = isChar<UnderlyingType<T>>;
 
     template<typename T>
-    concept String = std::is_same_v<T, std::wstring> || std::is_same_v<T, std::string>;
+    constexpr bool isString = std::is_same_v<T, std::wstring> || std::is_same_v<T, std::string>;
 
     template<typename T>
-    concept StringRelying = String<std::remove_cvref_t<T>>;
+    concept String = isString<UnderlyingType<T>>;
 
     template<typename T>
-    concept View = std::is_same_v<T, std::wstring_view> || std::is_same_v<T, std::string_view>;
+    constexpr bool isView = std::is_same_v<T, std::wstring_view> || std::is_same_v<T, std::string_view>;
 
     template<typename T>
-    concept ViewRelying = View<std::remove_cvref_t<T>>;
+    concept View = isView<UnderlyingType<T>>;
+
+    template<typename T>
+    constexpr bool isCString
+        = (std::is_array_v<T> && isChar<std::remove_cv_t<std::remove_extent_t<T>>>)
+          || (std::is_pointer_v<T> && isChar<std::remove_cv_t<std::remove_pointer_t<T>>>);
+
+    template<typename T>
+    constexpr bool isCppString = isString<T> || isView<T>;
+
+    /*template<typename T>
+    constexpr bool isNotTextClass
+        = !requires (T t) {
+            t.substr();
+        };*/
+
+    template<typename T>
+    constexpr bool isNotText = !isCString<T> && !isCppString<T>;
+
+    template<typename T>
+    concept NotText = isNotText<UnderlyingType<T>>;
+
+    template<typename>
+    struct CastTrait { using Type = void; };
+
+    template<>
+    struct CastTrait<signed char> { using Type = signed long; };
+
+    template<>
+    struct CastTrait<unsigned char> { using Type = unsigned long; };
+
+    template<>
+    struct CastTrait<signed short> { using Type = signed long; };
+
+    template<>
+    struct CastTrait<unsigned short> { using Type = unsigned long; };
+
+    template<>
+    struct CastTrait<signed int> { using Type = signed long; };
+
+    template<>
+    struct CastTrait<unsigned int> { using Type = unsigned long; };
+
+    template<>
+    struct CastTrait<signed long> { using Type = signed long; };
+
+    template<>
+    struct CastTrait<unsigned long> { using Type = unsigned long; };
+
+    template<>
+    struct CastTrait<signed long long> { using Type = signed long long; };
+
+    template<>
+    struct CastTrait<unsigned long long> { using Type = unsigned long long; };
+
+    struct Wcs {};
+    struct Mbs {};
+
+    template<typename T>
+    concept Wideness = std::is_same_v<T, Wcs> || std::is_same_v<T, Mbs>;
 
     template<typename>
     struct WideTypes : std::false_type {};
+
+    template<>
+    struct WideTypes<Wcs> : std::true_type {};
 
     template<>
     struct WideTypes<wchar_t> : std::true_type {};
@@ -202,13 +213,16 @@ namespace Meta {
     struct WideTypes<wchar_t *> : std::true_type {};
 
     template<>
+    struct WideTypes<const wchar_t *> : std::true_type {};
+
+    template<>
     struct WideTypes<std::wstring> : std::true_type {};
 
     template<>
     struct WideTypes<std::wstring_view> : std::true_type {};
 
     template<typename T>
-    constexpr bool isWide = WideTypes<std::remove_cvref_t<T>>::value;
+    constexpr bool isWide = WideTypes<UnderlyingType<T>>::value;
 
     struct DaNet {};
     struct YesNo {};
@@ -216,10 +230,64 @@ namespace Meta {
     struct TrueFalse {};
 
     template<typename T>
-    concept BooleanLabels
+    concept BoolTag
         = std::is_same_v<T, DaNet> || std::is_same_v<T, YesNo>
           || std::is_same_v<T, EnaDis> || std::is_same_v<T, TrueFalse>;
 
-    template<View, BooleanLabels>
+    template<Wideness, BoolTag>
     struct BoolLabels {};
+
+    template<typename T>
+    concept BackSideGrowingRange
+        = std::ranges::range<T>
+          && requires (T t, ValueType<T> v, SizeType<T> s) {
+                t.clear();
+                t.emplace_back(v);
+                t.push_back(v);
+             };
+
+    template<typename T>
+    constexpr bool isReservingRange
+        = requires (T t, SizeType<T> s) {
+            t.reserve(s);
+          };
+
+    template<typename T, typename V>
+    constexpr bool isSetOf
+        = requires (T t, V v) {
+            { std::ranges::find(t, v) == t.end() } -> std::same_as<bool>;
+          }
+          && isNotText/*Class*/<T>;
+
+    template<typename T, typename K, typename V>
+    constexpr bool isMapOf
+        = requires (T t, K k, V v) {
+            { t.find(k) == t.end() } -> std::same_as<bool>;
+            V(t.find(k)->second);
+            v = t.find(k)->second;
+          }
+          && isNotText/*Class*/<T>;
+
+    template<typename T, typename I>
+    concept Domain = isSetOf<T, I>;
+
+    template<typename T, typename K, typename V>
+    concept CastMap = isMapOf<T, K, V>;
+
+    template<typename T, typename V>
+    concept CastTo = CastMap<T, KeyType<T>, V>;
+
+    template<typename T, typename K>
+    concept CastFrom = CastMap<T, K, ValueType<T>>;
+
+    template<typename T, typename U>
+    concept Filter
+        = std::is_invocable_r_v<
+            U, T,
+            std::conditional_t<
+                std::is_scalar_v<U>,
+                std::conditional_t<std::is_volatile_v<U>, const volatile U, const U>,
+                std::conditional_t<std::is_volatile_v<U>, const volatile U &, const U &>
+            >
+          >;
 }

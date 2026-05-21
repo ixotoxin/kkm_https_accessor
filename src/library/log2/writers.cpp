@@ -149,15 +149,15 @@ namespace Log {
             const wchar_t * strings[1] { message };
 
             ::ReportEventW(
-                s_sourceHandle,                 // Event log handle
-                c_types.at(level),              // Event type
-                static_cast<::WORD>(category),  // Event category
-                c_event1Id.at(level),           // Event identifier
-                nullptr,                        // No security identifier
-                1,                              // Size of strings array
-                0,                              // No binary data
-                strings,                        // Array of strings
-                nullptr                         // No binary data
+                s_sourceHandle,                 /** Event log handle **/
+                c_types.at(level),              /** Event type **/
+                static_cast<::WORD>(category),  /** Event category **/
+                c_event1Id.at(level),           /** Event identifier **/
+                nullptr,                        /** No security identifier **/
+                1,                              /** Size of strings array **/
+                0,                              /** No binary data **/
+                strings,                        /** Array of strings **/
+                nullptr                         /** No binary data **/
             );
         } catch (...) {
             close();
@@ -176,15 +176,15 @@ namespace Log {
             const wchar_t * strings[2] { message, location };
 
             ::ReportEventW(
-                s_sourceHandle,                 // Event log handle
-                c_types.at(level),              // Event type
-                static_cast<::WORD>(category),  // Event category
-                c_event2Id.at(level),           // Event identifier
-                nullptr,                        // No security identifier
-                2,                              // Size of strings array
-                0,                              // No binary data
-                strings,                        // Array of strings
-                nullptr                         // No binary data
+                s_sourceHandle,                 /** Event log handle **/
+                c_types.at(level),              /** Event type **/
+                static_cast<::WORD>(category),  /** Event category **/
+                c_event2Id.at(level),           /** Event identifier **/
+                nullptr,                        /** No security identifier **/
+                2,                              /** Size of strings array **/
+                0,                              /** No binary data **/
+                strings,                        /** Array of strings **/
+                nullptr                         /** No binary data **/
             );
         } catch (...) {
             close();
@@ -195,9 +195,9 @@ namespace Log {
 
     [[maybe_unused]]
     void initWriters() {
-        // ISSUE: а так ли это необходимо?
-        // std::ios_base::sync_with_stdio(false);
-        // std::cin.tie(nullptr);
+        /** ISSUE: а так ли это необходимо? **/
+        /*std::ios_base::sync_with_stdio(false);*/
+        /*std::cin.tie(nullptr);*/
         if (!s_atExitCloseWriters) {
             s_atExitCloseWriters = true;
             std::atexit([] {

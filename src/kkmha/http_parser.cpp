@@ -3,11 +3,10 @@
 
 #include "http_parser.h"
 #include "http_defaults.h"
+#include "http_text_response.h"
 #include <lib/text.h>
 
 namespace Http {
-    using Basic::Failure;
-
     void Parser::parseMethod(std::istream & stream) {
         std::getline(stream, m_line);
 
@@ -28,7 +27,7 @@ namespace Http {
         }
         m_request.m_path.reserve(pos2 - pos1);
         // CLEANUP
-        // m_request.m_path.assign(m_line.data() + pos1, m_line.data() + pos2);
+        /*m_request.m_path.assign(m_line.data() + pos1, m_line.data() + pos2);*/
         m_request.m_path.assign(m_line.data() + pos1, pos2 - pos1);
 
         Text::splitTo(m_request.m_hint, Text::lowered<std::string>({ m_line.c_str(), pos2 }), " /\\");
@@ -74,7 +73,7 @@ namespace Http {
                 m_request.m_logger->error(Wcs::c_bodySizeLimitExceeded);
                 m_expectedBodySize = 0;
                 m_request.m_response.m_status = Status::BadRequest;
-                m_request.m_response.m_data.emplace<std::string>(Mbs::c_bodySizeLimitExceeded);
+                m_request.m_response.m_data = std::make_shared<TextResponse>(false, Mbs::c_bodySizeLimitExceeded);
                 m_reader = &Parser::dummyReader;
             } else {
                 m_request.m_body.reserve(m_expectedBodySize + 1);
@@ -82,7 +81,8 @@ namespace Http {
         }
     }
 
-    void Parser::parseBody(std::istream & stream) { // NOLINT
+    // NOLINTNEXTLINE(readability-make-member-function-const)
+    void Parser::parseBody(std::istream & stream) {
         char buffer[c_parserBufferSize];
         while (stream.read(buffer, sizeof(buffer))) {
             m_request.m_body.append(buffer, sizeof(buffer));
@@ -90,7 +90,8 @@ namespace Http {
         m_request.m_body.append(buffer, stream.gcount());
     }
 
-    void Parser::dummyReader(std::istream & stream) { // NOLINT // NOLINT(*-convert-member-functions-to-static)
+    // NOLINTNEXTLINE(readability-make-member-function-const)
+    void Parser::dummyReader(std::istream & stream) {
         stream.ignore(std::numeric_limits<std::streamsize>::max());
     }
 
@@ -102,7 +103,7 @@ namespace Http {
                 (this->*m_reader)(input);
             }
             return;
-        } catch (const Failure & e) {
+        } catch (const Basic::Failure & e) {
             m_request.m_logger->error(e);
         } catch (const std::exception & e) {
             m_request.m_logger->error(e.what());

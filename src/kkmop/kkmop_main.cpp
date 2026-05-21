@@ -33,11 +33,19 @@ void usage(std::wostream & stream, const std::filesystem::path & path) {
 int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
     Config::initLogger();
+    /*if (!Json::Allocator::ready()) {
+        Log::write(Log::Category::Generic, Log::Level::Error, {}, Json::Wcs::c_allocatorsPoolInitFailed);
+        return EXIT_FAILURE;
+    }*/
     Config::initProfiler();
 
     FORCE_MEMORY_LEAK;
 
     try {
+        if (!Json::Allocator::ready()) {
+            throw Basic::Failure(Json::Wcs::c_allocatorsPoolInitFailed);
+        }
+
         if (argc > 1) {
             const std::wstring command { Text::lowered(argv[1]) };
 

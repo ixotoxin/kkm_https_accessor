@@ -19,8 +19,10 @@ namespace Log {
     }
 
     namespace EventLog {
+        // NOLINTBEGIN(modernize-use-auto)
         constexpr const wchar_t * c_kkmHttpAccessor { L"KKM HTTPS Accessor" };
         constexpr const wchar_t * c_kkmOperator { L"KKM Operator" };
         constexpr const wchar_t * c_kkmJsonLoader { L"KKM JSON Loader" };
+        // NOLINTEND(modernize-use-auto)
     }
 }

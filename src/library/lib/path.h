@@ -97,7 +97,7 @@ namespace Path {
         return
             [] (const std::filesystem::path & value) -> std::filesystem::path {
                 if (value.empty()) {
-                    throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                    throw DataError(Basic::Wcs::c_rangeError);
                 }
                 return value;
             };
@@ -111,7 +111,7 @@ namespace Path {
             (const std::filesystem::path & value) -> std::filesystem::path {
                 std::filesystem::path filtered { subFilter(value) };
                 if (filtered.empty()) {
-                    throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                    throw DataError(Basic::Wcs::c_rangeError);
                 }
                 return filtered;
             };
@@ -124,7 +124,7 @@ namespace Path {
                 if (isGood(value.wstring())) {
                     return value;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -138,7 +138,7 @@ namespace Path {
                 if (isGood(filtered.wstring())) {
                     return filtered;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -150,7 +150,7 @@ namespace Path {
                 if (isGood(value)) {
                     return value;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -164,7 +164,7 @@ namespace Path {
                 if (isGood(filtered)) {
                     return filtered;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -175,7 +175,7 @@ namespace Path {
                 if (isGoodFileName(value.wstring())) {
                     return value;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -189,7 +189,7 @@ namespace Path {
                 if (isGoodFileName(filtered.wstring())) {
                     return filtered;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -201,7 +201,7 @@ namespace Path {
                 if (isGoodFileName(value)) {
                     return value;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -215,7 +215,7 @@ namespace Path {
                 if (isGoodFileName(filtered)) {
                     return filtered;
                 }
-                throw DataError(Basic::Wcs::c_rangeError); // NOLINT(*-exception-baseclass)
+                throw DataError(Basic::Wcs::c_rangeError);
             };
     }
 
@@ -268,9 +268,7 @@ namespace Path {
         return
             [] (const std::filesystem::path & value) -> std::filesystem::path {
                 if (!std::filesystem::is_directory(value)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_directoryNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, value.wstring()));
                 }
                 return value;
             };
@@ -284,9 +282,7 @@ namespace Path {
             (const std::filesystem::path & value) -> std::filesystem::path {
                 std::filesystem::path filtered { subFilter(value) };
                 if (!std::filesystem::is_directory(filtered)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_directoryNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, filtered.wstring()));
                 }
                 return filtered;
             };
@@ -297,9 +293,7 @@ namespace Path {
         return
             [] (const std::filesystem::path & value) -> std::filesystem::path {
                 if (!std::filesystem::is_regular_file(value)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_fileNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, value.wstring()));
                 }
                 return value;
             };
@@ -313,9 +307,7 @@ namespace Path {
             (const std::filesystem::path & value) -> std::filesystem::path {
                 std::filesystem::path filtered { subFilter(value) };
                 if (!std::filesystem::is_regular_file(filtered)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_fileNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, filtered.wstring()));
                 }
                 return filtered;
             };
@@ -326,9 +318,7 @@ namespace Path {
         return
             [& test] (const std::filesystem::path & value) -> std::filesystem::path {
                 if (test && !std::filesystem::is_directory(value)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_directoryNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, value.wstring()));
                 }
                 return value;
             };
@@ -342,9 +332,7 @@ namespace Path {
             (const std::filesystem::path & value) -> std::filesystem::path {
                 std::filesystem::path filtered { subFilter(value) };
                 if (test && !std::filesystem::is_directory(filtered)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_directoryNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, filtered.wstring()));
                 }
                 return filtered;
             };
@@ -355,9 +343,7 @@ namespace Path {
         return
             [& test] (const std::filesystem::path & value) -> std::filesystem::path {
                 if (test && !std::filesystem::is_regular_file(value)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_fileNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, value.wstring()));
                 }
                 return value;
             };
@@ -371,9 +357,7 @@ namespace Path {
             (const std::filesystem::path & value) -> std::filesystem::path {
                 std::filesystem::path filtered { subFilter(value) };
                 if (test && !std::filesystem::is_regular_file(filtered)) {
-                    // CLEANUP
-                    // throw Failure(LIB_WFMT(Basic::Wcs::c_fileNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
-                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
+                    throw Failure(Fmt(Basic::Wcs::c_fileNotFound, filtered.wstring()));
                 }
                 return filtered;
             };
@@ -386,9 +370,7 @@ namespace Path {
                 if (!std::filesystem::is_directory(value)) {
                     std::filesystem::create_directories(value);
                     if (!std::filesystem::is_directory(value)) {
-                        // CLEANUP
-                        // throw Failure(LIB_WFMT(Basic::Wcs::c_directoryNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
-                        throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, value.wstring())); // NOLINT(*-exception-baseclass)
+                        throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, value.wstring()));
                     }
                 }
                 return value;
@@ -405,9 +387,7 @@ namespace Path {
                 if (!std::filesystem::is_directory(filtered)) {
                     std::filesystem::create_directories(filtered);
                     if (!std::filesystem::is_directory(filtered)) {
-                        // CLEANUP
-                        // throw Failure(LIB_WFMT(Basic::Wcs::c_directoryNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
-                        throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, filtered.wstring())); // NOLINT(*-exception-baseclass)
+                        throw Failure(Fmt(Basic::Wcs::c_directoryNotFound, filtered.wstring()));
                     }
                 }
                 return filtered;

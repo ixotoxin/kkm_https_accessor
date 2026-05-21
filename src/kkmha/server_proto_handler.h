@@ -4,6 +4,7 @@
 #pragma once
 
 #include "http_request.h"
+#include "http_text_response.h"
 #include <cassert>
 
 namespace Server {
@@ -20,31 +21,6 @@ namespace Server {
         [[nodiscard]] virtual bool asyncReady() const noexcept = 0;
         virtual void operator()(Http::Request &) const noexcept = 0;
 
-        // CLEANUP
-        /*static void fail(
-            Http::Request & request,
-            const Http::Status status,
-            const std::string & message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
-        ) {
-            assert(Meta::toUnderlying(status) >= 400);
-            request.m_logger->error(location, message);
-            request.m_response.m_status = status;
-            request.m_response.m_data = message;
-        }*/
-
-        static void fail(
-            Http::Request & request,
-            const Http::Status status,
-            std::string && message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
-        ) {
-            assert(Meta::toUnderlying(status) >= 400);
-            request.m_logger->error(location, message);
-            request.m_response.m_status = status;
-            request.m_response.m_data.emplace<std::string>(std::move(message));
-        }
-
         static void fail(
             Http::Request & request,
             const Http::Status status,
@@ -54,19 +30,7 @@ namespace Server {
             assert(Meta::toUnderlying(status) >= 400);
             request.m_logger->error(location, message);
             request.m_response.m_status = status;
-            request.m_response.m_data.emplace<std::string>(message);
-        }
-
-        static void fail(
-            Http::Request & request,
-            const Http::Status status,
-            const char * message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
-        ) {
-            assert(Meta::toUnderlying(status) >= 400);
-            request.m_logger->error(location, message);
-            request.m_response.m_status = status;
-            request.m_response.m_data.emplace<std::string>(message);
+            request.m_response.m_data = std::make_shared<Http::TextResponse>(false, message);
         }
     };
 }

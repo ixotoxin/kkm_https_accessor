@@ -106,7 +106,7 @@ namespace Service {
             };
 
             if (!::StartServiceCtrlDispatcherW(serviceTable)) {
-                throw Failure(System::explainError(L"StartServiceCtrlDispatcherW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"StartServiceCtrlDispatcherW(...)"));
             }
         }
     }
@@ -125,7 +125,7 @@ namespace Service {
                 );
 
             if (!result) {
-                throw Failure(System::explainError(L"QueryServiceStatusEx(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"QueryServiceStatusEx(...)"));
             }
         }
 
@@ -191,18 +191,18 @@ namespace Service {
             constexpr auto scmPermission = SC_MANAGER_ALL_ACCESS;
             manager = ::OpenSCManagerW(nullptr, nullptr, scmPermission);
             if (!manager) {
-                throw Failure(System::explainError(L"OpenSCManagerW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenSCManagerW(...)"));
             }
 
             constexpr auto svcPermission = SERVICE_ALL_ACCESS;
             service = ::OpenServiceW(manager, c_systemName, svcPermission);
             if (!service) {
-                throw Failure(System::explainError(L"OpenServiceW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenServiceW(...)"));
             }
 
             auto state = waitNewState(service, SERVICE_STOP_PENDING, Wcs::c_stopping);
             if (state == SERVICE_STOP_PENDING) {
-                throw Failure(Wcs::c_stoppingTimeout); // NOLINT(*-exception-baseclass)
+                throw Failure(Wcs::c_stoppingTimeout);
             }
             if (state != SERVICE_STOPPED) {
                 log(Log::Level::Warning, Wcs::c_alreadyStarted);
@@ -210,17 +210,18 @@ namespace Service {
             }
 
             if (!::StartServiceW(service, 0, nullptr)) {
-                throw Failure(System::explainError(L"StartServiceW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"StartServiceW(...)"));
             }
 
             state = waitNewState(service, SERVICE_START_PENDING, Wcs::c_starting);
             if (state != SERVICE_RUNNING) {
-                throw Failure(Wcs::c_startingFailed); // NOLINT(*-exception-baseclass)
+                throw Failure(Wcs::c_startingFailed);
             }
 
             log(Log::Level::Info, Wcs::c_started);
         }
 
+        // NOLINTNEXTLINE(readability-non-const-parameter)
         void stop(::SC_HANDLE & service, const bool logAlreadyStopped = true) {
             Log::Console::ScopedSolo solo {};
             ::SERVICE_STATUS_PROCESS status {};
@@ -235,17 +236,19 @@ namespace Service {
             }
 
             if (status.dwCurrentState != SERVICE_STOP_PENDING) {
-                // ISSUE: Возможно стоит реализовать остановку зависимых служб, вдруг что-нибудь захочет позависеть.
-                //  Тогда нам сюда:
-                //      https://learn.microsoft.com/en-us/windows/win32/services/service-control-program-tasks
-                //      https://learn.microsoft.com/en-us/windows/win32/services/svccontrol-cpp
+                /**
+                 * ISSUE: Возможно стоит реализовать остановку зависимых служб, вдруг что-нибудь захочет позависеть.
+                 *  Тогда нам сюда:
+                 *      https://learn.microsoft.com/en-us/windows/win32/services/service-control-program-tasks
+                 *      https://learn.microsoft.com/en-us/windows/win32/services/svccontrol-cpp
+                 **/
                 if (!::ControlService(service, SERVICE_CONTROL_STOP, reinterpret_cast<::LPSERVICE_STATUS>(&status))) {
-                    throw Failure(System::explainError(L"ControlService(...)")); // NOLINT(*-exception-baseclass)
+                    throw Failure(System::explainError(L"ControlService(...)"));
                 }
             }
 
             if (waitNewState(service, status, SERVICE_STOP_PENDING, Wcs::c_stopping) != SERVICE_STOPPED) {
-                throw Failure(Wcs::c_stoppingTimeout); // NOLINT(*-exception-baseclass)
+                throw Failure(Wcs::c_stoppingTimeout);
             }
 
             log(Log::Level::Info, Wcs::c_stopped);
@@ -269,13 +272,13 @@ namespace Service {
             constexpr auto scmPermission = SC_MANAGER_ALL_ACCESS;
             manager = ::OpenSCManagerW(nullptr, nullptr, scmPermission);
             if (!manager) {
-                throw Failure(System::explainError(L"OpenSCManagerW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenSCManagerW(...)"));
             }
 
             constexpr auto svcPermission = SERVICE_STOP | SERVICE_QUERY_STATUS | SERVICE_ENUMERATE_DEPENDENTS;
             service = ::OpenServiceW(manager, c_systemName, svcPermission);
             if (!service) {
-                throw Failure(System::explainError(L"OpenServiceW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenServiceW(...)"));
             }
 
             stop(service);
@@ -300,28 +303,28 @@ namespace Service {
             constexpr auto scmPermission = SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE;
             manager = ::OpenSCManagerW(nullptr, nullptr, scmPermission);
             if (!manager) {
-                throw Failure(System::explainError(L"OpenSCManagerW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenSCManagerW(...)"));
             }
 
             service
                 = ::CreateServiceW(
-                    manager,                    // SCManager database
-                    c_systemName,               // Name of service
-                    c_displayName,              // Name to display
-                    SERVICE_QUERY_STATUS,       // Desired access
-                    SERVICE_WIN32_OWN_PROCESS,  // Service type
-                    c_startType,                // Service start type
-                    SERVICE_ERROR_NORMAL,       // Error control type
-                    command.c_str(),            // Service's binary / command
-                    nullptr,                    // No load ordering group
-                    nullptr,                    // No tag identifier
-                    c_dependencies,             // Dependencies
-                    c_account,                  // Service running account
-                    c_password                  // Password of the account
+                    manager,                    /** SCManager database **/
+                    c_systemName,               /** Name of service **/
+                    c_displayName,              /** Name to display **/
+                    SERVICE_QUERY_STATUS,       /** Desired access **/
+                    SERVICE_WIN32_OWN_PROCESS,  /** Service type **/
+                    c_startType,                /** Service start type **/
+                    SERVICE_ERROR_NORMAL,       /** Error control type **/
+                    command.c_str(),            /** Service's binary / command **/
+                    nullptr,                    /** No load ordering group **/
+                    nullptr,                    /** No tag identifier **/
+                    c_dependencies,             /** Dependencies **/
+                    c_account,                  /** Service running account **/
+                    c_password                  /** Password of the account **/
                 );
 
             if (!service) {
-                throw Failure(System::explainError(L"CreateServiceW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"CreateServiceW(...)"));
             }
 
             log(Log::Level::Info, Wcs::c_installed);
@@ -346,19 +349,19 @@ namespace Service {
             constexpr auto scmPermission = SC_MANAGER_CONNECT;
             manager = ::OpenSCManagerW(nullptr, nullptr, scmPermission);
             if (!manager) {
-                throw Failure(System::explainError(L"OpenSCManagerW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenSCManagerW(...)"));
             }
 
             constexpr auto svcPermission = SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE;
             service = ::OpenServiceW(manager, c_systemName, svcPermission);
             if (!service) {
-                throw Failure(System::explainError(L"OpenServiceW(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"OpenServiceW(...)"));
             }
 
             stop(service, false);
 
             if (!::DeleteService(service)) {
-                throw Failure(System::explainError(L"DeleteService(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"DeleteService(...)"));
             }
 
             log(Log::Level::Info, Wcs::c_uninstalled);

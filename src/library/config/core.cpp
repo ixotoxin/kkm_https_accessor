@@ -16,7 +16,7 @@ namespace Config {
                 Main::s_directory = Main::s_file.parent_path();
                 std::filesystem::current_path(Main::s_directory);
             } else {
-                throw Failure(System::explainError(L"GetModuleFileName(...)")); // NOLINT(*-exception-baseclass)
+                throw Failure(System::explainError(L"GetModuleFileName(...)"));
             }
         }
 
@@ -28,7 +28,7 @@ namespace Config {
                 Text::splitVariable(*envp, variable, value, true);
                 if (variable == c_directoryEnv) {
                     confDirectory.assign(std::move(value));
-                }/* else if (variable == Log::File::c_directoryEnv) {
+                }/*else if (variable == Log::File::c_directoryEnv) { // CLEANUP
                     logsDirectory.assign(std::move(value));
                 }*/
             }

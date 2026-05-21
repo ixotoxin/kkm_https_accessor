@@ -38,6 +38,7 @@
         "ipv4Only": false,
         "port": 5757,
         "requestTimeout": 180,
+        "poolSize": 2,
         "concurrencyLimit": 10,
         "enableLegacyTls": "no",
         "securityLevel": 5,
@@ -90,6 +91,7 @@
 | `server.ipv4Only`               | Bool: true, false, "yes", "no"                                                       | Включить/выключить поддержку IPv6.                                                                                    |
 | `server.port`                   | Interger: 1 - 65'535                                                                 | Порт, который будет слушать сервер.                                                                                   |
 | `server.requestTimeout`         | Seconds (integer): 6 - 1'800                                                         | Таймаут (в секундах).                                                                                                 |
+| `server.poolSize`               | Interger: 2 - 16                                                                     | Размер пула потоков для выполнения "долгих" запросов.                                                                 |
 | `server.concurrencyLimit`       | Interger: 2 - 100                                                                    | Ограничение максимального количества одновременных соединений.                                                        |
 | `server.enableLegacyTls`        | Bool: true, false, "yes", "no"                                                       | Разрешить/запретить поддержку TLS 1.0 и TLS 1.1.                                                                      |
 | `server.securityLevel`          | Interger: 0 - 5                                                                      | Уровень безопасности устанавливаемый в библиотеке OpenSSL (0 - 5). Только для `"enableLegacyTls": false`.             |

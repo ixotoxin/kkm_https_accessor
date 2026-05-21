@@ -142,7 +142,7 @@ namespace Log {
         const T * message,
         Args && ... args
     ) noexcept {
-        write<typename Meta::TextTrait<T>::View>(category, level, prefix, message, std::forward<Args>(args)...);
+        write<Text::View<T>>(category, level, prefix, message, std::forward<Args>(args)...);
     }
 
     template<Meta::String T, typename ... Args>
@@ -154,7 +154,7 @@ namespace Log {
         const T & message,
         Args && ... args
     ) noexcept {
-        write<typename Meta::TextTrait<T>::View>(category, level, prefix, message, std::forward<Args>(args)...);
+        write<Text::View<T>>(category, level, prefix, message, std::forward<Args>(args)...);
     }
 
     template<Meta::View T, typename ... Args>
@@ -234,9 +234,7 @@ namespace Log {
         const T * message,
         Args && ... args
     ) noexcept {
-        write<typename Meta::TextTrait<T>::View>(
-            location, category, level, prefix, message, std::forward<Args>(args)...
-        );
+        write<Text::View<T>>(location, category, level, prefix, message, std::forward<Args>(args)...);
     }
 
     template<Meta::String T, typename ... Args>
@@ -249,9 +247,7 @@ namespace Log {
         const T & message,
         Args && ... args
     ) noexcept {
-        write<typename Meta::TextTrait<T>::View>(
-            location, category, level, prefix, message, std::forward<Args>(args)...
-        );
+        write<Text::View<T>>(location, category, level, prefix, message, std::forward<Args>(args)...);
     }
 
     [[maybe_unused]]

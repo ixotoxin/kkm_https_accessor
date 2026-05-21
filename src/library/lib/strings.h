@@ -14,7 +14,8 @@ namespace Basic {
         LIB_WSTRI(c_fallbackErrorMessage, L"[ error ]");
         LIB_WSTRI(c_invalidValue, L"Недопустимое значение");
         LIB_WSTRI(c_rangeError, L"Значение вне диапазона");
-        LIB_WSTRI(c_dataError, L"{0} (свойство '{1}')");
+        LIB_WSTRI(c_invalidVariable, L"переменная");
+        LIB_WSTRI(c_invalidPointer, L"указатель");
         LIB_WSTRI(c_source, L"источник");
         LIB_WSTRI(c_directoryNotFound, L"Директория '{}' не найдена");
         LIB_WSTRI(c_fileNotFound, L"Файл '{}' не найден");
@@ -26,69 +27,55 @@ namespace Basic {
         LIB_STRI(c_ok, "OK");
         LIB_STRI(c_somethingWrong, "Что-то пошло не так!");
         LIB_STRI(c_fallbackErrorMessage, "[ error ]");
-        // LIB_STRI(c_source, "источник"); // CLEANUP
     }
 }
 
 namespace Meta {
     template<>
-    struct BoolLabels<std::wstring_view, DaNet> {
+    struct BoolLabels<Wcs, DaNet> {
         static constexpr std::wstring_view c_true [[maybe_unused]] { L"Да" };
         static constexpr std::wstring_view c_false [[maybe_unused]] { L"Нет" };
     };
 
     template<>
-    struct BoolLabels<std::string_view, DaNet> {
+    struct BoolLabels<Mbs, DaNet> {
         static constexpr std::string_view c_true [[maybe_unused]] { "Да" };
         static constexpr std::string_view c_false [[maybe_unused]] { "Нет" };
     };
 
     template<>
-    struct BoolLabels<std::wstring_view, YesNo> {
+    struct BoolLabels<Wcs, YesNo> {
         static constexpr std::wstring_view c_true [[maybe_unused]] { L"yes" };
         static constexpr std::wstring_view c_false [[maybe_unused]] { L"no" };
     };
 
     template<>
-    struct BoolLabels<std::string_view, YesNo> {
+    struct BoolLabels<Mbs, YesNo> {
         static constexpr std::string_view c_true [[maybe_unused]] { "yes" };
         static constexpr std::string_view c_false [[maybe_unused]] { "no" };
     };
 
     template<>
-    struct BoolLabels<std::wstring_view, EnaDis> {
+    struct BoolLabels<Wcs, EnaDis> {
         static constexpr std::wstring_view c_true [[maybe_unused]] { L"enable" };
         static constexpr std::wstring_view c_false [[maybe_unused]] { L"disable" };
     };
 
     template<>
-    struct BoolLabels<std::string_view, EnaDis> {
+    struct BoolLabels<Mbs, EnaDis> {
         static constexpr std::string_view c_true [[maybe_unused]] { "enable" };
         static constexpr std::string_view c_false [[maybe_unused]] { "disable" };
     };
 
     template<>
-    struct BoolLabels<std::wstring_view, TrueFalse> {
+    struct BoolLabels<Wcs, TrueFalse> {
         static constexpr std::wstring_view c_true [[maybe_unused]] { L"true" };
         static constexpr std::wstring_view c_false [[maybe_unused]] { L"false" };
     };
 
     template<>
-    struct BoolLabels<std::string_view, TrueFalse> {
+    struct BoolLabels<Mbs, TrueFalse> {
         static constexpr std::string_view c_true [[maybe_unused]] { "true" };
         static constexpr std::string_view c_false [[maybe_unused]] { "false" };
     };
-}
-
-namespace Json {
-    namespace Wcs {
-        LIB_WSTRI(c_jsonObjectWasExpected, L"Ожидался JSON-объект");
-        LIB_WSTRI(c_successKey, L"!success");
-        LIB_WSTRI(c_messageKey, L"!message");
-    }
-
-    namespace Mbs {
-        LIB_STRI(c_successKey, "!success");
-        LIB_STRI(c_messageKey, "!message");
-    }
 }

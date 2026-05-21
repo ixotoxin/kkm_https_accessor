@@ -5,59 +5,58 @@
 #include "variables.h"
 #include "strings.h"
 #include "connparams.h"
+#include "registry.h"
 #include <lib/numeric.h>
 #include <lib/text.h>
 #include <lib/path.h>
 
-#include "registry.h"
-
 namespace Kkm {
-    void setVars(const Nln::Json & json) {
+    void setVars(const JsonVal & json) {
         Json::handleKey(
-            json, "kkm",
-            [] (const Nln::Json & json2, const std::wstring & path2) -> bool {
+            json, L"kkm"_key,
+            [] (const JsonVal & json2, const JsonPtr jptr2) -> bool {
                 Json::handleKey(
-                    json2, "dbDirectory", s_dbDirectory,
-                    Path::touchDir(Path::absolute(Path::noEmpty())), path2
+                    json2, L"dbDirectory"_key, s_dbDirectory,
+                    Path::touchDir(Path::absolute(Path::noEmpty())), jptr2
                 );
-                Json::handleKey(json2, "defaultBaudRate", s_defaultBaudRate, Wcs::c_allowedBaudRate, path2);
+                Json::handleKey(json2, L"defaultBaudRate"_key, s_defaultBaudRate, Wcs::c_allowedBaudRate, jptr2);
                 Json::handleKey(
-                    json2, "defaultLineLength", s_defaultLineLength,
-                    Numeric::between(c_defaultLineLengthMin, c_defaultLineLengthMax), path2
+                    json2, L"defaultLineLength"_key, s_defaultLineLength,
+                    Numeric::between(c_defaultLineLengthMin, c_defaultLineLengthMax), jptr2
                 );
 #if VERSION_LIMIT >= VERSION_10107
                 Json::handleKey(
-                    json2, "timeZone", s_timeZone,
-                    Mbs::c_timeZoneMap, [] (auto value) { s_timeZoneConfigured = true; return value; }, path2
+                    json2, L"timeZone"_key, s_timeZone,
+                    Wcs::c_timeZoneMap, [] (auto value) { s_timeZoneConfigured = true; return value; }, jptr2
                 );
 #endif
-                Json::handleKey(json2, "fallbackFfdVersion", s_fallbackFfdVersion, Mbs::c_ffdVersionsMap, path2);
-                Json::handleKey(json2, "ffdVersionDetect", s_ffdVersionDetect, Mbs::c_ffdVersionDetectMap, path2);
+                Json::handleKey(json2, L"fallbackFfdVersion"_key, s_fallbackFfdVersion, Wcs::c_ffdVersionsMap, jptr2);
+                Json::handleKey(json2, L"ffdVersionDetect"_key, s_ffdVersionDetect, Wcs::c_ffdVersionDetectMap, jptr2);
                 Json::handleKey(
-                    json2, "documentClosingTimeout", s_documentClosingTimeout,
-                    DateTime::between(c_documentClosingTimeoutMin, c_documentClosingTimeoutMax), path2
+                    json2, L"documentClosingTimeout"_key, s_documentClosingTimeout,
+                    DateTime::between(c_documentClosingTimeoutMin, c_documentClosingTimeoutMax), jptr2
                 );
                 Json::handleKey(
-                    json2, "cliOperator",
-                    [] (const Nln::Json & json3, const std::wstring & path3) -> bool {
-                        Json::handleKey(json3, "name", s_cliOperatorName, Text::Wcs::noEmpty(Text::Wcs::trim()), path3);
-                        Json::handleKey(json3, "inn", s_cliOperatorInn, Text::Wcs::trim(), path3);
+                    json2, L"cliOperator"_key,
+                    [] (const JsonVal & json3, const JsonPtr jptr3) -> bool {
+                        Json::handleKey(json3, L"name"_key, s_cliOperatorName, Text::Wcs::noEmpty(Text::Wcs::trim()), jptr3);
+                        Json::handleKey(json3, L"inn"_key, s_cliOperatorInn, Text::Wcs::trim(), jptr3);
                         return true;
                     },
-                    path2
+                    jptr2
                 );
-                Json::handleKey(json2, "customerAccountField", s_customerAccountField, path2);
+                Json::handleKey(json2, L"customerAccountField"_key, s_customerAccountField, jptr2);
                 Json::handleKey(
-                    json2, "maxCashInOut", s_maxCashInOut,
-                    Numeric::between(c_maxCashInOutMin, c_maxCashInOutMax), path2
-                );
-                Json::handleKey(
-                    json2, "maxPrice", s_maxPrice,
-                    Numeric::between(c_maxPriceMin, c_maxPriceMax), path2
+                    json2, L"maxCashInOut"_key, s_maxCashInOut,
+                    Numeric::between(c_maxCashInOutMin, c_maxCashInOutMax), jptr2
                 );
                 Json::handleKey(
-                    json2, "maxQuantity", s_maxQuantity,
-                    Numeric::between(c_maxQuantityMin, c_maxQuantityMax), path2
+                    json2, L"maxPrice"_key, s_maxPrice,
+                    Numeric::between(c_maxPriceMin, c_maxPriceMax), jptr2
+                );
+                Json::handleKey(
+                    json2, L"maxQuantity"_key, s_maxQuantity,
+                    Numeric::between(c_maxQuantityMin, c_maxQuantityMax), jptr2
                 );
                 return true;
             }
@@ -72,8 +71,8 @@ namespace Kkm {
 #if VERSION_LIMIT >= VERSION_10107
             L"CFG: kkm.timeZone = tz" << Meta::toUnderlying(s_timeZone) << L"\n"
 #endif
-            L"CFG: kkm.fallbackFfdVersion = \"" << wcsSafeGet(Mbs::c_ffdVersions, s_fallbackFfdVersion) << L"\"\n"
-            L"CFG: kkm.ffdVersionDetect = \"" << wcsSafeGet(Mbs::c_ffdVersionDetect, s_ffdVersionDetect) << L"\"\n"
+            L"CFG: kkm.fallbackFfdVersion = \"" << safeGet(Wcs::c_ffdVersions, s_fallbackFfdVersion) << L"\"\n"
+            L"CFG: kkm.ffdVersionDetect = \"" << safeGet(Wcs::c_ffdVersionDetect, s_ffdVersionDetect) << L"\"\n"
             L"CFG: kkm.documentClosingTimeout = " << s_documentClosingTimeout.count() << L"ms\n"
             L"CFG: kkm.cliOperator.name = \"" << s_cliOperatorName << L"\"\n"
             L"CFG: kkm.cliOperator.inn = \"" << s_cliOperatorInn << L"\"\n"
@@ -95,7 +94,7 @@ namespace Kkm {
                         continue;
                     }
                     auto serialNumber = Registry::serialNumber(filePath);
-                    auto connParams = Registry::read(filePath, serialNumber);
+                    auto connParams = Registry::read(filePath);
                     if (nonFirst) {
                         stream << L",\n";
                     } else {
