@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmake/options.h>
 #include "kkmjl_except.h"
 #include "kkmjl_json.h"
 #include <kkm/strings.h>
@@ -22,10 +23,6 @@ namespace KkmJsonLoader {
     inline int exec(wchar_t * serialNumber, const wchar_t * fileName) {
         Log::asBackgroundProcess();
         const std::filesystem::path path { fileName };
-        std::ifstream file { path };
-        if (!file.is_open() || !file.good()) {
-            throw Failure(Fmt<c_sStrSize>(Basic::Wcs::c_couldntReadFile, path.filename().wstring()));
-        }
 
         JsonAlloc allocator {};
         JsonDoc details { Json::Type::Object, &allocator };
@@ -54,8 +51,7 @@ namespace KkmJsonLoader {
 
         if (query == L"learn") {
             std::wstring connString;
-            const bool found { Json::handleKey(details, L"connParams"_key, connString) };
-            if (!found) {
+            if (!Json::handleKey(details, L"connParams"_key, connString)) {
                 throw Failure(Fmt<c_sStrSize>(Kkm::Mbs::c_requiresProperty, "connParams"));
             }
             const auto connParams = Registry::make(connString);
@@ -157,7 +153,7 @@ namespace KkmJsonLoader {
     [[nodiscard, maybe_unused]]
     inline int safeExec(wchar_t * serialNumber, const wchar_t * fileName) noexcept try {
         return exec(serialNumber, fileName);
-    } catch (const Failure & e) {
+    } catch (const Basic::Failure & e) {
         printError(e.explain()); // TODO: Подумать, есть ли необходимость в выводе источника исключения
         return EXIT_FAILURE;
     } catch (const std::exception & e) {

@@ -24,7 +24,7 @@ if (BUILD_SEPARATED)
 endif ()
 
 if (WITH_SNTZ)
-    target_sntzr_link_options(kkmha)
+    target_sntz_link_options(kkmha)
 endif()
 
 target_link_libraries(kkmha PRIVATE mtlib)

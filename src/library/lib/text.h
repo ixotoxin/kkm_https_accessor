@@ -652,8 +652,7 @@ namespace Text {
             assert(min < max);
             return
                 [min, max] (const std::wstring & value) -> std::wstring {
-                    const int64_t numValue { cast<int64_t>(value) };
-                    if (numValue < min || numValue > max) {
+                    if (const int64_t numValue { cast<int64_t>(value) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return value;
@@ -668,8 +667,7 @@ namespace Text {
                 [min, max, subFilter = std::forward<F>(subFilter0)]
                 (const std::wstring & value) -> std::wstring {
                     std::wstring filtered { subFilter(value) };
-                    const int64_t numValue { cast<int64_t>(filtered) };
-                    if (numValue < min || numValue > max) {
+                    if (const int64_t numValue { cast<int64_t>(filtered) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return filtered;
@@ -681,8 +679,7 @@ namespace Text {
             assert(min < max);
             return
                 [min, max] (const std::wstring & value) -> std::wstring {
-                    const long double numValue { cast<long double>(value) };
-                    if (numValue < min || numValue > max) {
+                    if (const long double numValue { cast<long double>(value) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return value;
@@ -697,8 +694,7 @@ namespace Text {
                 [min, max, subFilter = std::forward<F>(subFilter0)]
                 (const std::wstring & value) -> std::wstring {
                     std::wstring filtered { subFilter(value) };
-                    const long double numValue { cast<long double>(filtered) };
-                    if (numValue < min || numValue > max) {
+                    if (const long double numValue { cast<long double>(filtered) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return filtered;
@@ -891,8 +887,7 @@ namespace Text {
             assert(min < max);
             return
                 [min, max] (const std::string & value) -> std::string {
-                    const int64_t numValue { cast<int64_t>(value) };
-                    if (numValue < min || numValue > max) {
+                    if (const int64_t numValue { cast<int64_t>(value) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return value;
@@ -907,8 +902,7 @@ namespace Text {
                 [min, max, subFilter = std::forward<F>(subFilter0)]
                 (const std::string & value) -> std::string {
                     std::string filtered { subFilter(value) };
-                    const int64_t numValue { cast<int64_t>(filtered) };
-                    if (numValue < min || numValue > max) {
+                    if (const int64_t numValue { cast<int64_t>(filtered) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return filtered;
@@ -920,8 +914,7 @@ namespace Text {
             assert(min < max);
             return
                 [min, max] (const std::string & value) -> std::string {
-                    const long double numValue { cast<long double>(value) };
-                    if (numValue < min || numValue > max) {
+                    if (const long double numValue { cast<long double>(value) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return value;
@@ -936,8 +929,7 @@ namespace Text {
                 [min, max, subFilter = std::forward<F>(subFilter0)]
                 (const std::string & value) -> std::string {
                     std::string filtered { subFilter(value) };
-                    const long double numValue { cast<long double>(filtered) };
-                    if (numValue < min || numValue > max) {
+                    if (const long double numValue { cast<long double>(filtered) }; numValue < min || numValue > max) {
                         throw DataError(Basic::Wcs::c_rangeError);
                     }
                     return filtered;

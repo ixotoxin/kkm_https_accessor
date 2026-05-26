@@ -62,7 +62,7 @@ namespace Json {
             m_target.push_back(c);
         }
 
-        // NOLINTNEXTLINE(convert-member-functions-to-static,readability-make-member-function-const)
+        // NOLINTNEXTLINE(readability-convert-member-functions-to-static,readability-make-member-function-const)
         void Flush() {}
     };
 

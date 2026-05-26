@@ -62,7 +62,7 @@ namespace Server::KkmOp {
         void fail(
             const Http::Status status,
             const std::wstring_view message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
+            SrcLoc::Point location = SrcLoc::Point::current() // NOLINT(performance-unnecessary-value-param)
         ) const {
             assert(Meta::toUnderlying(status) >= 400);
             m_logger->error(location, message);
@@ -76,7 +76,7 @@ namespace Server::KkmOp {
         void fail(
             const Http::Status status,
             Basic::Wcs::Message && message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
+            SrcLoc::Point location = SrcLoc::Point::current() // NOLINT(performance-unnecessary-value-param)
         ) const {
             assert(Meta::toUnderlying(status) >= 400);
             m_logger->error(location, message.m_message);
@@ -136,8 +136,7 @@ namespace Server::KkmOp {
         }
 
         std::wstring connString;
-        const bool found { Json::handleKey(payload.m_details, L"connParams"_key, connString) };
-        if (!found) {
+        if (!Json::handleKey(payload.m_details, L"connParams"_key, connString)) {
             return payload.fail(Http::Status::BadRequest, Fmt<c_sStrSize>(Json::Wcs::c_requiresProperty, L"connParams"));
         }
 
@@ -334,19 +333,15 @@ namespace Server::KkmOp {
 
         std::string idempotencyKey {};
 
-        {
-            auto it = request.m_header.find("x-idempotency-key");
-            if (it != request.m_header.end()) {
-                idempotencyKey.assign(it->second);
-            }
+        if (auto it = request.m_header.find("x-idempotency-key"); it != request.m_header.end()) {
+            idempotencyKey.assign(it->second);
         }
 
         if (request.m_method == Http::Method::Post) {
             if (idempotencyKey.empty()) {
                 return fail(request, Http::Status::BadRequest, Server::Mbs::c_invalidXIdempotencyKey);
             }
-            auto it = request.m_header.find("content-type");
-            if (it != request.m_header.end()) {
+            if (auto it = request.m_header.find("content-type"); it != request.m_header.end()) {
                 bool typeOk { false };
                 bool charsetOk { true };
                 std::vector<std::string> chunks;

@@ -4,6 +4,7 @@ add_executable(
     regmsg
         regmsg_main.cpp
         registry.cpp
+        "${CMAKE_SOURCE_DIR}/src/library/lib/except.cpp"
         "${CMAKE_SOURCE_DIR}/src/library/lib/errexp.cpp"
         "${CMAKE_SOURCE_DIR}/src/library/debug/memprof.cpp"
         "${MSG_RES_FILE}"
@@ -17,7 +18,7 @@ if (WITH_CRTD OR WITH_SNTZ)
 endif()
 
 if (WITH_SNTZ)
-    target_sntzr_link_options(regmsg)
+    target_sntz_link_options(regmsg)
 endif()
 
 if (POLICY CMP0207)

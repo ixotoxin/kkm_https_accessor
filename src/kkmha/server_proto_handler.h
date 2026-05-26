@@ -25,7 +25,7 @@ namespace Server {
             Http::Request & request,
             const Http::Status status,
             const std::string_view message,
-            const SrcLoc::Point & location = SrcLoc::Point::current()
+            SrcLoc::Point location = SrcLoc::Point::current() // NOLINT(performance-unnecessary-value-param)
         ) {
             assert(Meta::toUnderlying(status) >= 400);
             request.m_logger->error(location, message);

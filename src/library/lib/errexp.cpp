@@ -3,12 +3,12 @@
 
 #include "errexp.h"
 #include "defer.h"
+#include "text_traits.h"
 
 namespace System {
     namespace {
         void cleanUpMessage(wchar_t * text) {
-            wchar_t * end { text + std::wcslen(text) };
-            if (end != text) {
+            if (wchar_t * end { text + std::wcslen(text) }; end != text) {
                 --end;
                 while (
                     end != text

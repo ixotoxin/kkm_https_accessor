@@ -67,7 +67,7 @@ namespace Json {
             auto it = text.begin();
 
             while (it != text.end()) {
-                switch (const uint32_t high { *it /*static_cast<uint32_t>(*it)*/ }) {
+                switch (const uint32_t high { *it }) {
                     case L'"':
                     case L'/':
                     case L'\\':
@@ -92,8 +92,7 @@ namespace Json {
                                 result += 5;
                                 break;
                             }
-                            const uint32_t low { *it /*static_cast<uint32_t>(*it)*/ };
-                            if (low >= 0xdc00 && low <= 0xdfff) {
+                            if (const uint32_t low { *it }; low >= 0xdc00 && low <= 0xdfff) {
                                 result += 8;
                                 break;
                             }

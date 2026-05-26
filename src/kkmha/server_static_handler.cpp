@@ -21,7 +21,7 @@ namespace Server::Static {
         std::string newPath {};
         newPath.reserve(c_sStrSize);
         newPath.assign(request.m_path);
-        if (newPath.find_last_of("/"sv) != newPath.size() - 1) {
+        if (newPath.find_last_of("/"sv) + 1 != newPath.size()) {
             newPath.append("/"sv);
         }
         newPath.append(s_indexFile);
@@ -116,21 +116,17 @@ namespace Server::Static {
         auto response = std::make_shared<Http::BinaryResponse<Http::Shared>>();
         response->m_size = fileSize;
 
-        {
-            auto ext = Text::lowered(/*Text::convert(*/path.extension().wstring()/*)*/);
-            if (!ext.empty() && s_mimeMap.contains(ext)) {
-                response->m_mimeType = s_mimeMap[ext];
-            } else if (s_enableUnknownType) {
-                response->m_mimeType = c_defMimeType;
-            } else {
-                return fail(request, Http::Status::NotFound, Mbs::c_unknownMimeType);
-            }
+        if (auto ext = Text::lowered(path.extension().wstring()); !ext.empty() && s_mimeMap.contains(ext)) {
+            response->m_mimeType = s_mimeMap[ext];
+        } else if (s_enableUnknownType) {
+            response->m_mimeType = c_defMimeType;
+        } else {
+            return fail(request, Http::Status::NotFound, Mbs::c_unknownMimeType);
         }
 
         if (fileSize > 0) {
             response->m_data = std::make_shared_for_overwrite<char[]>(fileSize);
-            std::ifstream file { path, std::ios::binary };
-            if (file.good()) {
+            if (std::ifstream file { path, std::ios::binary }; file.good()) {
                 file.read(response->m_data.get(), static_cast<std::streamsize>(fileSize));
             }
         }

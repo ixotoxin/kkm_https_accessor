@@ -90,7 +90,7 @@ namespace Http {
         m_request.m_body.append(buffer, stream.gcount());
     }
 
-    // NOLINTNEXTLINE(readability-make-member-function-const)
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static,readability-make-member-function-const)
     void Parser::dummyReader(std::istream & stream) {
         stream.ignore(std::numeric_limits<std::streamsize>::max());
     }

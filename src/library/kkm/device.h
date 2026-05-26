@@ -70,11 +70,11 @@ namespace Kkm {
 
         void connect(ConnParams);
 
-        [[nodiscard]] std::wstring fault(const SrcLoc::Point & = SrcLoc::Point::current());
-        void fail(Result &, std::wstring_view, const SrcLoc::Point & = SrcLoc::Point::current()) const;
-        void fail(Result &, const std::wstring &, const SrcLoc::Point & = SrcLoc::Point::current()) const;
-        void fail(Result &, std::wstring &&, const SrcLoc::Point & = SrcLoc::Point::current()) const;
-        void fail(Result &, const SrcLoc::Point & = SrcLoc::Point::current());
+        [[nodiscard]] std::wstring fault(SrcLoc::Point = SrcLoc::Point::current());
+        void fail(Result &, std::wstring_view, SrcLoc::Point = SrcLoc::Point::current()) const;
+        void fail(Result &, const std::wstring &, SrcLoc::Point = SrcLoc::Point::current()) const;
+        void fail(Result &, std::wstring &&, SrcLoc::Point = SrcLoc::Point::current()) const;
+        void fail(Result &, SrcLoc::Point = SrcLoc::Point::current());
 
         void detectFfdVersions();
 

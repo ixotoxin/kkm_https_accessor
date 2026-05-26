@@ -39,7 +39,7 @@ namespace Path {
             && path.find(L" \\"sv) == std::wstring_view::npos
             && path.find(L" /"sv) == std::wstring_view::npos
             && path.find(L".."sv) == std::wstring_view::npos
-            && path.find_last_not_of(L" ."sv) == path.size() - 1;
+            && path.find_last_not_of(L" ."sv) + 1 == path.size();
     }
 
     [[nodiscard, maybe_unused]]
@@ -59,7 +59,7 @@ namespace Path {
             && path.find(" \\"sv) == std::string_view::npos
             && path.find(" /"sv) == std::string_view::npos
             && path.find(".."sv) == std::string_view::npos
-            && path.find_last_not_of(" ."sv) == path.size() - 1;
+            && path.find_last_not_of(" ."sv) + 1 == path.size();
     }
 
     [[nodiscard, maybe_unused]]
@@ -134,8 +134,7 @@ namespace Path {
         return
             [subFilter = std::forward<F>(subFilter0)]
             (const std::filesystem::path & value) -> std::filesystem::path {
-                std::filesystem::path filtered { subFilter(value) };
-                if (isGood(filtered.wstring())) {
+                if (std::filesystem::path filtered { subFilter(value) }; isGood(filtered.wstring())) {
                     return filtered;
                 }
                 throw DataError(Basic::Wcs::c_rangeError);
@@ -160,8 +159,7 @@ namespace Path {
         return
             [subFilter = std::forward<F>(subFilter0)]
             (const T & value) -> T {
-                T filtered { subFilter(value) };
-                if (isGood(filtered)) {
+                if (T filtered { subFilter(value) }; isGood(filtered)) {
                     return filtered;
                 }
                 throw DataError(Basic::Wcs::c_rangeError);
@@ -185,8 +183,7 @@ namespace Path {
         return
             [subFilter = std::forward<F>(subFilter0)]
             (const std::filesystem::path & value) -> std::filesystem::path {
-                std::filesystem::path filtered { subFilter(value) };
-                if (isGoodFileName(filtered.wstring())) {
+                if (std::filesystem::path filtered { subFilter(value) }; isGoodFileName(filtered.wstring())) {
                     return filtered;
                 }
                 throw DataError(Basic::Wcs::c_rangeError);
@@ -211,8 +208,7 @@ namespace Path {
         return
             [subFilter = std::forward<F>(subFilter0)]
             (const T & value) -> T {
-                T filtered { subFilter(value) };
-                if (isGoodFileName(filtered)) {
+                if (T filtered { subFilter(value) }; isGoodFileName(filtered)) {
                     return filtered;
                 }
                 throw DataError(Basic::Wcs::c_rangeError);

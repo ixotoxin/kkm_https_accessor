@@ -32,8 +32,7 @@ void registerResources(const std::wstring_view application) {
 
 void writeToPipe(const std::wstring_view message) {
     std::wcerr << message << std::endl;
-    // NOLINTNEXTLINE(misc-const-correctness)
-    ::HANDLE pipe { ::CreateFileW(c_pipeName, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr) };
+    ::HANDLE pipe { ::CreateFileW(c_pipeName, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr) }; // NOLINT
     if (pipe != INVALID_HANDLE_VALUE) {
         ::DWORD bytesWrite;
         ::WriteFile(pipe, message.data(), message.size(), &bytesWrite, nullptr);
@@ -46,7 +45,6 @@ int wmain() {
     Config::initProfiler();
 
     try {
-        std::wstring wsBinaryFile;
         if (!::GetModuleFileNameW(nullptr, s_binaryFile, ARRAYSIZE(s_binaryFile))) {
             throw Failure(System::explainError(L"GetModuleFileName(...)"));
         }
@@ -112,7 +110,7 @@ int wmain() {
         writeToPipe(L"INF: Ресурсы для корректного отображения сообщений в EvenLog зарегистрированы.");
 
         return EXIT_SUCCESS;
-    } catch (const Failure & e) {
+    } catch (const Basic::Failure & e) {
         std::wstring message { L"ERR: " };
         message.append(e.what());
         writeToPipe(message);

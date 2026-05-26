@@ -4,7 +4,7 @@ add_executable(kkmjl kkmjl_main.cpp kkmjl_variables.cpp)
 add_dependencies(kkmha regmsg)
 
 if (WITH_SNTZ)
-    target_sntzr_link_options(kkmjl)
+    target_sntz_link_options(kkmjl)
 endif()
 
 target_link_libraries(kkmjl PRIVATE stlib)

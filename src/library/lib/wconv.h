@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include <cmake/options.h>
 #include "winstrapi.h"
 #include "strings.h"
-#include <cmake/options.h>
 #include <cassert>
 #include <memory>
 #include <string>
@@ -27,7 +27,7 @@ namespace Text {
             return false;
         }
 #if WITH_SBIAC
-        const st requiredCapacity = std::max(estimatedSize, c_minimalCapacity);
+        const st requiredCapacity = std::max(estimatedSize, c_minimalCapacity); // NOLINT
         if (requiredCapacity > output.capacity()) {
             output.reserve(requiredCapacity);
         }
@@ -61,7 +61,7 @@ namespace Text {
             return false;
         }
 #if WITH_SBIAC
-        const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity);
+        const st requiredCapacity = std::max(estimatedSize + 1, c_minimalCapacity); // NOLINT
         if (requiredCapacity > output.capacity()) {
             output.reserve(requiredCapacity);
         }

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmake/options.h>
 #include <string_view>
 
 #if !BUILD_SEPARATED

@@ -24,7 +24,7 @@ namespace Config {
             (setters(json), ...);
             std::filesystem::current_path(Main::s_directory);
             return;
-        } catch (Failure & e) {
+        } catch (const Basic::Failure & e) {
             log(Log::Level::Warning, e);
         } catch (const std::exception & e) {
             log(Log::Level::Warning, e.what());

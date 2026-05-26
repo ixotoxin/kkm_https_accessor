@@ -45,7 +45,7 @@ namespace Service {
                     setStatus(SERVICE_RUNNING);
                     return;
                 }
-            } catch (const Failure & e) {
+            } catch (const Basic::Failure & e) {
                 log(Log::Level::Error, e);
             } catch (const std::exception & e) {
                 log(Log::Level::Error, e.what());
@@ -65,7 +65,7 @@ namespace Service {
                     setStatus(SERVICE_STOPPED);
                     return;
                 }
-            } catch (const Failure & e) {
+            } catch (const Basic::Failure & e) {
                 log(Log::Level::Error, e);
             } catch (const std::exception & e) {
                 log(Log::Level::Error, e.what());

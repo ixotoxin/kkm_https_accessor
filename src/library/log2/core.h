@@ -87,7 +87,7 @@ namespace Log {
         }
         const bool writeToConsole = Console::allowed(level);
         const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level);
+        const bool writeToEventLog = EventLog::allowed(level); // NOLINT
         if (writeToConsole || writeToFile || writeToEventLog) {
 #ifdef SINGLE_THREAD
             Record record {};
@@ -172,7 +172,7 @@ namespace Log {
         }
         const bool writeToConsole = Console::allowed(level);
         const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level);
+        const bool writeToEventLog = EventLog::allowed(level); // NOLINT
         if (writeToConsole || writeToFile || writeToEventLog) {
 #ifdef SINGLE_THREAD
             Record record {};
@@ -259,7 +259,7 @@ namespace Log {
     ) noexcept try {
         const bool writeToConsole = Console::allowed(level);
         const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level);
+        const bool writeToEventLog = EventLog::allowed(level); // NOLINT
         if (writeToConsole || writeToFile || writeToEventLog) {
 #ifdef SINGLE_THREAD
             Record record {};

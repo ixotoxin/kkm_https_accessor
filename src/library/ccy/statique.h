@@ -53,6 +53,7 @@ namespace Ccy {
         StaticMpmcQueue & operator=(StaticMpmcQueue &&) = delete;
 
         [[nodiscard, maybe_unused]]
+        // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         SizeType capacity() const noexcept {
             return S;
         }

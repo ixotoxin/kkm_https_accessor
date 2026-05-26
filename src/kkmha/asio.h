@@ -35,8 +35,7 @@ namespace Asio {
             return true;
         }
         if (address.is_v6()) {
-            const auto v6 = address.to_v6();
-            if (v6.is_v4_mapped()) {
+            if (const auto v6 = address.to_v6(); v6.is_v4_mapped()) {
                 return asio::ip::make_address_v4(asio::ip::v4_mapped, v6).is_loopback();
             }
         }

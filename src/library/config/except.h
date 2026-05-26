@@ -14,24 +14,27 @@ namespace Config {
     class Failure final : public Basic::Failure {
     public:
         Failure() = delete;
-        Failure(const Failure &) = default;
-        Failure(Failure &&) noexcept = default;
+        [[maybe_unused]] Failure(const Failure &) = default;
+        [[maybe_unused]] Failure(Failure &&) noexcept = default;
 
-        explicit Failure(const std::wstring_view message, SrcLoc::Point && location = SrcLoc::Point::current())
-        // NOLINTNEXTLINE(*-move-const-arg)
-        : Basic::Failure(message, Log::c_catConfiguration, std::move(location)) {}
+        [[maybe_unused]]
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        explicit Failure(const std::wstring_view message, SrcLoc::Point location = SrcLoc::Point::current())
+        : Basic::Failure(message, Log::c_catConfiguration, location) {}
 
-        explicit Failure(std::wstring && message, SrcLoc::Point && location = SrcLoc::Point::current())
-        // NOLINTNEXTLINE(*-move-const-arg)
-        : Basic::Failure(std::move(message), Log::c_catConfiguration, std::move(location)) {}
+        [[maybe_unused]]
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        explicit Failure(std::wstring && message, SrcLoc::Point location = SrcLoc::Point::current())
+        : Basic::Failure(std::move(message), Log::c_catConfiguration, location) {}
 
-        explicit Failure(Basic::Wcs::Message && message, SrcLoc::Point && location = SrcLoc::Point::current())
-        // NOLINTNEXTLINE(*-move-const-arg)
-        : Basic::Failure(std::move(message), Log::c_catConfiguration, std::move(location)) {}
+        [[maybe_unused]]
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        explicit Failure(Basic::Wcs::Message && message, SrcLoc::Point location = SrcLoc::Point::current())
+        : Basic::Failure(std::move(message), Log::c_catConfiguration, location) {}
 
         ~Failure() override = default;
 
-        Failure & operator=(const Failure &) = default;
-        Failure & operator=(Failure &&) noexcept = default;
+        Failure & operator=(const Failure &) = delete;
+        Failure & operator=(Failure &&) = delete;
     };
 }

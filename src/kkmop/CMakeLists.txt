@@ -4,7 +4,7 @@ add_executable(kkmop kkmop_main.cpp kkmop_variables.cpp)
 add_dependencies(kkmha regmsg)
 
 if (WITH_SNTZ)
-    target_sntzr_link_options(kkmop)
+    target_sntz_link_options(kkmop)
 endif()
 
 target_link_libraries(kkmop PRIVATE stlib)

@@ -242,7 +242,7 @@ namespace Server {
                     request.m_response.m_status < Http::Status::BadRequest
                     && (!s_loopbackWithoutSecret || !Asio::isLoopback(request.m_remote))
                 ) {
-                    auto it = request.m_header.find("x-secret");
+                    auto it = request.m_header.find("x-secret"); // NOLINT
                     if (it == request.m_header.end() || it->second.empty() || it->second != s_secret) {
                         request.m_response.m_status = Http::Status::Forbidden;
                         request.m_response.m_data = std::make_shared<Http::TextResponse>(false, Mbs::c_forbidden);
@@ -251,7 +251,7 @@ namespace Server {
                 }
 
                 if (request.m_response.m_status == Http::Status::Ok) {
-                    ProtoHandler & handler = lookupHandler(request);
+                    ProtoHandler & handler = lookupHandler(request); // NOLINT
                     if (handler.asyncReady()) {
                         co_await performAsync(handler, request, asio::use_awaitable);
                     } else {
@@ -302,7 +302,7 @@ namespace Server {
                 stream.shutdown(error);
                 if (error) {
                     if (error.category() == asio::error::get_ssl_category()) {
-                        auto sslError = ERR_GET_REASON(error.value());
+                        auto sslError = ERR_GET_REASON(error.value()); // NOLINT
                         if (sslError == SSL_R_APPLICATION_DATA_AFTER_CLOSE_NOTIFY) {
                             error = asio::ssl::error::stream_truncated;
                         }
@@ -371,7 +371,7 @@ namespace Server {
             s_state.store(State::Running);
 
             do {
-                auto [error, socket] = co_await acceptor.async_accept();
+                auto [error, socket] = co_await acceptor.async_accept(); // NOLINT
                 if (error) {
                     log(Log::Level::Error, Mbs::c_connectionAcceptStatus, error.message());
                     log(Log::Level::Error, Wcs::c_servicingFailed);

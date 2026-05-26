@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cmake/options.h>
+
 #if WITH_SHORTCUTS
 #   define KKM_CMD_EQ(COMMAND, VALUE, SHORTCUT) (((COMMAND) == (VALUE)) || ((COMMAND) == (SHORTCUT)))
 #else

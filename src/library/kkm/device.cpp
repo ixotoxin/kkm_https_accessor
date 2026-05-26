@@ -98,14 +98,16 @@ namespace Kkm {
     }
 
     [[nodiscard]]
-    std::wstring Device::fault(const SrcLoc::Point & location) {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    std::wstring Device::fault(SrcLoc::Point location) {
         std::wstring message { m_kkm.errorDescription() };
         m_kkm.resetError();
         m_logger->warning(location, Wcs::c_fault, message);
         return message;
     }
 
-    void Device::fail(Result & result, const std::wstring_view message, const SrcLoc::Point & location) const {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void Device::fail(Result & result, const std::wstring_view message, SrcLoc::Point location) const {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
@@ -113,7 +115,8 @@ namespace Kkm {
         }
     }
 
-    void Device::fail(Result & result, const std::wstring & message, const SrcLoc::Point & location) const {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void Device::fail(Result & result, const std::wstring & message, SrcLoc::Point location) const {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
@@ -121,7 +124,8 @@ namespace Kkm {
         }
     }
 
-    void Device::fail(Result & result, std::wstring && message, const SrcLoc::Point & location) const {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void Device::fail(Result & result, std::wstring && message, SrcLoc::Point location) const {
         m_logger->warning(location, Wcs::c_fault, message);
         if (result.m_success) {
             result.m_success = false;
@@ -129,7 +133,8 @@ namespace Kkm {
         }
     }
 
-    void Device::fail(Result & result, const SrcLoc::Point & location) {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void Device::fail(Result & result, SrcLoc::Point location) {
         std::wstring message { m_kkm.errorDescription() };
         m_kkm.resetError();
         m_logger->warning(location, Wcs::c_fault, message);
@@ -398,7 +403,7 @@ namespace Kkm {
             return fail(result);
         }
         result.m_receiptNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_RECEIPT_NUMBER);
-        const auto shiftNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_NUMBER);
+        const auto shiftNumber = m_kkm.getParamInt(Atol::LIBFPTR_PARAM_SHIFT_NUMBER); // NOLINT
         // ISSUE: Проверка дублирующейся информации. Не факт, что она должна совпадать.
         if (shiftNumber != result.m_shiftNumber) {
             m_logger->warning(Wcs::c_shiftMismatch);
@@ -1061,7 +1066,7 @@ namespace Kkm {
         if (m_kkm.queryData() < 0) {
             return fail(result);
         }
-        const double cashSum { m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_SUM) };
+        const double cashSum { m_kkm.getParamDouble(Atol::LIBFPTR_PARAM_SUM) }; // NOLINT
         if (cashSum > 0) {
             subSetOperator(details);
             m_logger->debug(Wcs::c_subCashOut);

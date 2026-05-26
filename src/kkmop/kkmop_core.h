@@ -45,7 +45,7 @@ namespace KkmOperator {
                 Registry::save(connParams, kkm);
                 kkm.printHello();
                 genLogger.info(Wcs::c_connParamsSaved, serialNumber);
-            } catch (const Failure & e) {
+            } catch (const Basic::Failure & e) {
                 genLogger.warning(e);
             }
         }

@@ -216,8 +216,7 @@ namespace Registry {
 
     [[maybe_unused]]
     void Key::walk(const WalkerType & walker) const {
-        auto [status, func] = realWalk(walker);
-        if (status != ERROR_SUCCESS) {
+        if (auto [status, func] = realWalk(walker); status != ERROR_SUCCESS) {
             throw Failure(System::explainError(func, status));
         }
     }
@@ -234,16 +233,14 @@ namespace Registry {
 
     // NOLINTNEXTLINE
     RoKey::RoKey(::HKEY key, const std::wstring_view subKey) : Key() {
-        const auto status = ::RegOpenKeyExW(key, subKey.data(), 0, KEY_READ, &m_key);
-        if (status != ERROR_SUCCESS) {
+        if (const auto status = ::RegOpenKeyExW(key, subKey.data(), 0, KEY_READ, &m_key); status != ERROR_SUCCESS) {
             throw Failure(System::explainError(L"RegOpenKeyExW(...)", status));
         }
     }
 
     // NOLINTNEXTLINE
     RwKey::RwKey(::HKEY key, const std::wstring_view subKey, const REGSAM samDesired) : Key() {
-        const auto status = ::RegOpenKeyExW(key, subKey.data(), 0, samDesired, &m_key);
-        if (status != ERROR_SUCCESS) {
+        if (const auto status = ::RegOpenKeyExW(key, subKey.data(), 0, samDesired, &m_key); status != ERROR_SUCCESS) {
             createKey(key, subKey);
         }
     }

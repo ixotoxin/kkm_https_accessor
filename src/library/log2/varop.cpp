@@ -49,7 +49,7 @@ namespace Log {
                                         Json::handleKey(json4, L"foreground"_key, File::s_fgLevel, Wcs::c_levelCastMap, jptr4);
                                         Json::handleKey(json4, L"background"_key, File::s_bgLevel, Wcs::c_levelCastMap, jptr4);
                                     } else {
-                                        LevelUnderlying level { c_levelNone };
+                                        LevelUnderlying level { c_levelNone }; // NOLINT
                                         if (Json::handle(json4, level, Wcs::c_levelCastMap, jptr4)) {
                                             File::s_fgLevel = level;
                                             File::s_bgLevel = level;

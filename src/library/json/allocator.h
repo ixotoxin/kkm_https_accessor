@@ -18,7 +18,7 @@ namespace Json {
 
     class MemoryPoolAllocator : public MemoryPoolAllocatorBase {
     public:
-        MemoryPoolAllocator() noexcept : MemoryPoolAllocatorBase {} {}
+        MemoryPoolAllocator() noexcept = default;
         MemoryPoolAllocator(const MemoryPoolAllocator &) = delete;
         MemoryPoolAllocator(MemoryPoolAllocator &&) = delete;
         ~MemoryPoolAllocator() = default;
@@ -38,11 +38,11 @@ namespace Json {
         AllocatorsPool(const AllocatorsPool &) = delete;
         AllocatorsPool(AllocatorsPool &&) = delete;
 
-        AllocatorsPool(/*AllocatorsPoolBase::*/KeyTag, Ccy::ThrowingTag, const int maxBlocks)
-        : AllocatorsPoolBase(/*typename AllocatorsPoolBase::*/KeyTag {}, Ccy::ThrowingTag {}, maxBlocks) {}
+        AllocatorsPool(KeyTag, Ccy::ThrowingTag, const int maxBlocks)
+        : AllocatorsPoolBase(KeyTag {}, Ccy::ThrowingTag {}, maxBlocks) {}
 
-        AllocatorsPool(/*AllocatorsPoolBase::*/KeyTag, Ccy::NonThrowingTag, const int maxBlocks) noexcept
-        : AllocatorsPoolBase(/*typename AllocatorsPoolBase::*/KeyTag {}, Ccy::NonThrowingTag {}, maxBlocks) {}
+        AllocatorsPool(KeyTag, Ccy::NonThrowingTag, const int maxBlocks) noexcept
+        : AllocatorsPoolBase(KeyTag {}, Ccy::NonThrowingTag {}, maxBlocks) {}
 
         ~AllocatorsPool() override = default;
 
@@ -55,10 +55,10 @@ namespace Json {
         }
 
     protected:
-        bool prepare(Payload &) noexcept(/*AllocatorsPoolBase::*/c_noExceptAccess) override {
+        bool prepare(Payload &) noexcept(c_noExceptAccess) override {
             using Ccy::MemOrd;
             const auto allocatorsInUse = 1 + m_allocatorsInUse.fetch_add(1, MemOrd::acq_rel);
-            auto peakAllocatorsInUse = m_peakAllocatorsInUse.load(MemOrd::acquire);
+            auto peakAllocatorsInUse = m_peakAllocatorsInUse.load(MemOrd::acquire); // NOLINT
             if (allocatorsInUse > peakAllocatorsInUse) {
                 m_peakAllocatorsInUse.compare_exchange_weak(
                     peakAllocatorsInUse, allocatorsInUse,
@@ -68,7 +68,7 @@ namespace Json {
             return true;
         }
 
-        bool clear(Payload & payload) noexcept(/*AllocatorsPoolBase::*/c_noExceptAccess) override {
+        bool clear(Payload & payload) noexcept(c_noExceptAccess) override {
             using Ccy::MemOrd;
             payload.Clear();
             m_allocatorsInUse.fetch_sub(1, MemOrd::acq_rel);
@@ -129,8 +129,8 @@ namespace Json {
 
         static void Free(void *) RAPIDJSON_NOEXCEPT {}
 
-        static const bool kNeedFree = false;
-        static const bool kRefCounted = true;
+        static const bool kNeedFree { false }; // NOLINT
+        static const bool kRefCounted { true }; // NOLINT
     };
 
     class SharedAllocator : public AllocatorBase {
@@ -170,7 +170,7 @@ namespace Json {
 
         static void Free(void *) RAPIDJSON_NOEXCEPT {}
 
-        static const bool kNeedFree = false;
-        static const bool kRefCounted = true;
+        static const bool kNeedFree { false }; // NOLINT
+        static const bool kRefCounted { false }; // NOLINT
     };
 }

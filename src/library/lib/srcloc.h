@@ -3,11 +3,12 @@
 
 #pragma once
 
-#include "winstrapi.h"
-#include "strings.h"
+#include <cmake/options.h>
 #if WITH_RELSL && defined(_MSC_VER) && !defined(__clang__)
 #   include <cmake/variables.h>
 #endif
+#include "winstrapi.h"
+#include "strings.h"
 #include <algorithm>
 #include <array>
 
@@ -41,19 +42,26 @@ namespace SrcLoc {
         ) noexcept {
             Point result;
             result.m_line = line;
-            if (const std::string_view view0 { file }; view0.starts_with(c_prefix)) {
-                std::ranges::copy(c_invalidPath, result.m_file.begin());
-                result.m_file[c_invalidPath.size()] = 0;
-            } else {
-                const std::string_view view { view0.substr(c_prefix.length()) };
-                if (view.length() >= MAX_PATH - 1 || view.empty()) {
+            std::string fixedPrefix { c_prefix };
+            std::ranges::replace(fixedPrefix, '/', '\\');
+            if (!fixedPrefix.ends_with('\\')) {
+                fixedPrefix.append("\\");
+            }
+            std::string fixedFile { file };
+            std::ranges::replace(fixedFile, '/', '\\');
+            if (fixedFile.starts_with(fixedPrefix)) {
+                std::string_view view { fixedFile };
+                view.remove_prefix(fixedPrefix.size());
+                if (view.empty() || view.length() >= MAX_PATH - 1) {
                     std::ranges::copy(c_invalidPath, result.m_file.begin());
                     result.m_file[c_invalidPath.size()] = 0;
                 } else {
-                    result.m_file[0] = '.';
-                    std::ranges::copy(view, result.m_file.begin() + 1);
-                    result.m_file[view.size() + 1] = 0;
+                    std::ranges::copy(view, result.m_file.begin());
+                    result.m_file[view.size()] = 0;
                 }
+            } else {
+                std::ranges::copy(c_invalidPath, result.m_file.begin());
+                result.m_file[c_invalidPath.size()] = 0;
             }
             return result;
         }
@@ -65,7 +73,7 @@ namespace SrcLoc {
 
         [[nodiscard, maybe_unused]]
         constexpr const char * file_name() const noexcept {
-            return &m_file[0];
+            return m_file.data();
         }
     };
 #else

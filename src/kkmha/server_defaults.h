@@ -22,7 +22,7 @@ namespace Server {
     constexpr unsigned short c_minPort { 1 };
     constexpr unsigned short c_maxPort { 65'535 };
     constexpr unsigned short c_defPort { 5'757 };
-    constexpr size_t c_minPoolSize { 16 };
+    constexpr size_t c_minPoolSize { 2 };
     constexpr size_t c_maxPoolSize { 100 };
     constexpr size_t c_defPoolSize { 2 };
     constexpr int64_t c_minConcurrencyLimit { 2 };
