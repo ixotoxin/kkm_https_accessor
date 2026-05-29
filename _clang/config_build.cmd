@@ -9,6 +9,9 @@ SET SEPARATED=OFF
 REM Статическая сборка
 SET STATIC=OFF
 
+REM Компиляция ресурсов для корректного отображения сообщений в Event Log
+SET ELRES=OFF
+
 REM Использовать относительные пути исходных файлов в приложении
 SET RELSL=ON
 
@@ -18,5 +21,5 @@ SET SBIAC=ON
 REM Создание утечек памяти в отладочной сборке
 SET LEAKS=OFF
 
-SET COMMON_OPTS=-D WITH_SHORTCUTS=%SHORTCUTS% -D BUILD_SEPARATED=%SEPARATED% -D BUILD_STATIC=%STATIC% -D WITH_RELSL=%RELSL% -D WITH_SBIAC=%SBIAC%
+SET COMMON_OPTS=-D WITH_SHORTCUTS=%SHORTCUTS% -D BUILD_SEPARATED=%SEPARATED% -D BUILD_STATIC=%STATIC% -D BUILD_ELRES=%ELRES% -D WITH_RELSL=%RELSL% -D WITH_SBIAC=%SBIAC%
 SET INSTALL_DIR=../_build/

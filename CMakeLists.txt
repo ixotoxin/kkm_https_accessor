@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(kkm_https_accessor VERSION 1.11.2 LANGUAGES CXX RC)
+project(kkm_https_accessor VERSION 1.11.3 LANGUAGES CXX RC)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_FIND_DEBUG_MODE ON)
@@ -17,7 +17,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "$<1:${PROJECT_BINARY_DIR}/_Library_${CMAKE_B
 option(BUILD_SEPARATED "Build separated" OFF)
 option(BUILD_STATIC "Build static" OFF)
 option(BUILD_TESTS "Build tests" OFF)
-option(BUILD_ELOGMSG "Build resources (EventLog messages)" OFF)
+option(BUILD_ELRES "Build resources (EventLog messages)" OFF)
 option(WITH_SHORTCUTS "Build with command shortcuts enabled" OFF)
 option(WITH_RELSL "Enable relative paths for the source location" ON)
 option(WITH_SBIAC "Enable invasive access to the std::string buffer" ON)
@@ -106,7 +106,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     else ()
         message(FATAL_ERROR "Unsupported compiler")
     endif ()
-    set(BUILD_ELOGMSG OFF)
+    set(BUILD_ELRES OFF)
 else ()
     message(FATAL_ERROR "Unsupported compiler")
 endif ()
@@ -218,6 +218,7 @@ set(STLIB_PUBLIC_DEFS ${MTLIB_PUBLIC_DEFS} SINGLE_THREAD)
 set(MTLIB_PRIVATE_DEFS)
 set(STLIB_PRIVATE_DEFS)
 
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/resources")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/library")
 
 if (BUILD_TESTS)

@@ -38,7 +38,7 @@ are located in the `.\_msvc` and `.\_clang` directories, respectively.
 | `config_build.cmd`         | Sets build options.                                                                                                                                     |
 | `test.cmd`                 | Builds the debug version and runs unit tests.                                                                                                           |
 | `test_building.cmd`        | Builds with different sets of build parameters and runs unit tests.                                                                                     |
-| `build_elogmsg.cmd`        | Builds the resources (EventLog messages). Alternative to compiling via CMake.                                                                           |
+| `build_elres.cmd`          | Builds the resources (EventLog messages). Alternative to compiling via CMake.                                                                           |
 | `build_debug.cmd`          | Builds the debug version.                                                                                                                               |
 | `build_crtd.cmd`           | Builds the debug version with enabled CRT Debug.                                                                                                        |
 | `build_sntz.cmd`           | Builds the release version with AddressSanitizer and UndefinedBehaviorSanitizer.                                                                        |
@@ -63,7 +63,7 @@ CMake options:
 | `BUILD_SEPARATED` | Build separated .exe files.                             |
 | `BUILD_STATIC`    | Static build.                                           |
 | `BUILD_TESTS`     | Build with unit-tests.                                  |
-| `BUILD_ELOGMSG`   | Build resources (EventLog messages).                    |
+| `BUILD_ELRES`     | Build resources (EventLog messages).                    |
 | `WITH_SHORTCUTS`  | Build with command shortcuts enabled.                   |
 | `WITH_RELSL`      | Use relative paths for source files in the application. |
 | `WITH_SBIAC`      | Allow invasive access to the std::string buffer.        |

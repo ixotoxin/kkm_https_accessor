@@ -1,0 +1,6 @@
+set(ELR_GENERATED_DIR "${GENERATED_DIR}/elr")
+set(ELR_PRECOMPILED_DIR "${PROJECT_SOURCE_DIR}/src/resources/compiled")
+set(ELR_MC_FILE "${PROJECT_SOURCE_DIR}/src/resources/messages.mc")
+set(ELR_RC_FILE "${ELR_GENERATED_DIR}/messages.rc")
+set(ELR_RES_FILE "${ELR_GENERATED_DIR}/messages.res")
+set(ELR_H_FILE "${ELR_GENERATED_DIR}/messages.h")

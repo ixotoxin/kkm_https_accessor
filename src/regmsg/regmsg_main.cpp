@@ -35,7 +35,7 @@ void writeToPipe(const std::wstring_view message) {
     ::HANDLE pipe { ::CreateFileW(c_pipeName, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr) }; // NOLINT
     if (pipe != INVALID_HANDLE_VALUE) {
         ::DWORD bytesWrite;
-        ::WriteFile(pipe, message.data(), message.size(), &bytesWrite, nullptr);
+        ::WriteFile(pipe, message.data(), message.size() * sizeof(std::wstring_view::value_type), &bytesWrite, nullptr);
         ::CloseHandle(pipe);
     }
 }
@@ -87,7 +87,11 @@ int wmain() {
                     constexpr auto bufferSize { sizeof(buffer) - sizeof(wchar_t) };
                     ::DWORD bytesRead;
                     while (::ReadFile(pipe, buffer, bufferSize, &bytesRead, nullptr) && bytesRead > 0) {
-                        buffer[bytesRead] = '\0';
+                        if (bytesRead + 1 > bufferSize) {
+                            throw Failure(Basic::Wcs::c_somethingWrong);
+                        }
+                        bytesRead /= sizeof(wchar_t);
+                        buffer[bytesRead] = L'\0';
                         std::wcout << buffer;
                     }
                 }

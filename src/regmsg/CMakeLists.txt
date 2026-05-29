@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
+include(../resources/variables.cmake)
+
 add_executable(
     regmsg
         regmsg_main.cpp
@@ -7,9 +9,10 @@ add_executable(
         "${CMAKE_SOURCE_DIR}/src/library/lib/except.cpp"
         "${CMAKE_SOURCE_DIR}/src/library/lib/errexp.cpp"
         "${CMAKE_SOURCE_DIR}/src/library/debug/memprof.cpp"
-        "${MSG_RES_FILE}"
 )
 
+set_source_files_properties("${ELR_RES_FILE}" PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE LANGUAGE RC)
+target_sources(regmsg PRIVATE ${ELR_RES_FILE})
 add_dependencies(regmsg elr_files)
 
 if (WITH_CRTD OR WITH_SNTZ)

@@ -27,8 +27,7 @@
 //
 // Define the facility codes
 //
-#define FACILITY_APPLICATION             0x1
-#define FACILITY_SYSTEM                  0x0
+#define FACILITY_APPLICATION             0x0
 
 
 //
@@ -101,7 +100,7 @@
 //
 // INFO: %1
 //
-#define MSG_GENERIC_INFO                 ((DWORD)0x40010101L)
+#define MSG_GENERIC_INFO                 ((DWORD)0x40000101L)
 
 //
 // MessageId: MSG_GENERIC_INFO_WITH_SOURCE
@@ -110,7 +109,7 @@
 //
 // INFO: %1%nSOURCE: %2
 //
-#define MSG_GENERIC_INFO_WITH_SOURCE     ((DWORD)0x40010102L)
+#define MSG_GENERIC_INFO_WITH_SOURCE     ((DWORD)0x40000102L)
 
 //
 // MessageId: MSG_GENERIC_WARNING
@@ -119,7 +118,7 @@
 //
 // WARNING: %1
 //
-#define MSG_GENERIC_WARNING              ((DWORD)0x80010103L)
+#define MSG_GENERIC_WARNING              ((DWORD)0x80000103L)
 
 //
 // MessageId: MSG_GENERIC_WARNING_WITH_SOURCE
@@ -128,7 +127,7 @@
 //
 // WARNING: %1%nSOURCE: %2
 //
-#define MSG_GENERIC_WARNING_WITH_SOURCE  ((DWORD)0x80010104L)
+#define MSG_GENERIC_WARNING_WITH_SOURCE  ((DWORD)0x80000104L)
 
 //
 // MessageId: MSG_GENERIC_ERROR
@@ -137,7 +136,7 @@
 //
 // ERROR: %1
 //
-#define MSG_GENERIC_ERROR                ((DWORD)0xC0010105L)
+#define MSG_GENERIC_ERROR                ((DWORD)0xC0000105L)
 
 //
 // MessageId: MSG_GENERIC_ERROR_WITH_SOURCE
@@ -146,5 +145,5 @@
 //
 // ERROR: %1\n%nSOURCE: %2
 //
-#define MSG_GENERIC_ERROR_WITH_SOURCE    ((DWORD)0xC0010106L)
+#define MSG_GENERIC_ERROR_WITH_SOURCE    ((DWORD)0xC0000106L)
 
