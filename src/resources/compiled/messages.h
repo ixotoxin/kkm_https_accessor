@@ -143,7 +143,7 @@
 //
 // MessageText:
 //
-// ERROR: %1\n%nSOURCE: %2
+// ERROR: %1%nSOURCE: %2
 //
 #define MSG_GENERIC_ERROR_WITH_SOURCE    ((DWORD)0xC0000106L)
 
