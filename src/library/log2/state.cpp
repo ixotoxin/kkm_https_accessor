@@ -6,6 +6,7 @@
 namespace Log {
     static bool s_isForegroundProcess { true };
 
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         [[nodiscard]]
         bool allowed() noexcept {
@@ -17,6 +18,7 @@ namespace Log {
             return s_isForegroundProcess && Meta::toUnderlying(level) >= s_level;
         }
     }
+#endif
 
     namespace File {
         [[nodiscard]]
@@ -44,6 +46,10 @@ namespace Log {
 
     [[nodiscard, maybe_unused]]
     bool allowed(const Level level) noexcept {
+#ifndef DISABLE_CONSOLE_LOGGING
         return Console::allowed(level) || File::allowed(level) || EventLog::allowed(level);
+#else
+        return File::allowed(level) || EventLog::allowed(level);
+#endif
     }
 }

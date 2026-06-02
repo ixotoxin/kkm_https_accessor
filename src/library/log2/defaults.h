@@ -21,12 +21,14 @@ namespace Log {
     LOG_CONST(size_t, c_acquireAttempts, 3);
 #endif
 
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         LOG_CONST(bool, c_terseDef, true);
         LOG_CONST(Output, c_outputDef, Output::Separated);
         LOG_CONST(bool, c_flushEveryWriteDef, true);
         LOG_CONST(LevelUnderlying, c_levelDef, c_levelInfo);
     }
+#endif
 
     namespace File {
         LOG_CONST(std::wstring_view, c_directoryDef, L"logs");

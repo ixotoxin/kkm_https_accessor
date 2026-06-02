@@ -12,13 +12,9 @@ add_executable(
 )
 
 set_source_files_properties("${ELR_RES_FILE}" PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE LANGUAGE RC)
+target_compile_definitions(regmsg PUBLIC ${STNCLIB_PUBLIC_DEFS} PRIVATE ${STLIB_PRIVATE_DEFS})
 target_sources(regmsg PRIVATE ${ELR_RES_FILE})
 add_dependencies(regmsg elr_files)
-
-if (WITH_CRTD OR WITH_SNTZ)
-    target_compile_definitions(regmsg PRIVATE -DWITHOUT_LOGGING)
-    #target_sources(regmsg PRIVATE "${CMAKE_SOURCE_DIR}/src/library/debug/memprof.cpp")
-endif()
 
 if (WITH_SNTZ)
     target_sntz_link_options(regmsg)

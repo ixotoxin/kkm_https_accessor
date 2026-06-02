@@ -17,6 +17,7 @@ namespace Log {
             Json::handleKey(
                 json, L"log"_key,
                 [] (const JsonVal & json2, const JsonPtr jptr2) -> bool {
+#ifndef DISABLE_CONSOLE_LOGGING
                     Json::handleKey(
                         json2, L"console"_key,
                         [] (const JsonVal & json3, const JsonPtr jptr3) -> bool {
@@ -39,6 +40,7 @@ namespace Log {
                         },
                         jptr2
                     );
+#endif
                     Json::handleKey(
                         json2, L"file"_key,
                         [] (const JsonVal & json3, const JsonPtr jptr3) -> bool {
@@ -125,11 +127,13 @@ namespace Log {
     }
 
     std::wostream & vars(std::wostream & stream) {
-        stream
-            << L"CFG: log.console.level.foreground = " << levelLabel(Console::s_level) << L"\n"
+        stream <<
+#ifndef DISABLE_CONSOLE_LOGGING
+            L"CFG: log.console.level.foreground = " << levelLabel(Console::s_level) << L"\n"
             L"CFG: log.console.terse = " << Text::Wcs::yesNo(Console::s_terse) << L"\n"
             L"CFG: log.console.output = " << Wcs::c_outputLabels.at(Console::s_output) << L"\n"
             L"CFG: log.console.flushEveryWrite = " << Text::Wcs::yesNo(Console::s_flushEveryWrite) << L"\n"
+#endif
             L"CFG: log.file.level.foreground = " << levelLabel(File::s_fgLevel) << L"\n"
             L"CFG: log.file.level.background = " << levelLabel(File::s_bgLevel) << L"\n"
             L"CFG: log.file.directory = \"" << File::s_directory.wstring() << L"\"\n"

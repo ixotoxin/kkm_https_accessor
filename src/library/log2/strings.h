@@ -48,6 +48,7 @@ namespace Log::Wcs {
         { std::to_wstring(c_levelNone), c_levelNone }
     };
 
+#ifndef DISABLE_CONSOLE_LOGGING
     inline const std::unordered_map<Console::Output, std::wstring_view> c_outputLabels {
         { Console::Output::Separated, L"separated" },
         { Console::Output::StdOut, L"stdout" },
@@ -59,4 +60,5 @@ namespace Log::Wcs {
         { L"stdout", Console::Output::StdOut },
         { L"stderr", Console::Output::StdErr }
     };
+#endif
 }

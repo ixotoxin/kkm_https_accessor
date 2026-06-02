@@ -70,10 +70,6 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
         Log::write(Log::Category::Generic, Log::Level::Error, {}, System::explainError(*lfhError));
         return EXIT_FAILURE;
     }
-    /*if (!Json::Allocator::ready()) {
-        Log::write(Log::Category::Generic, Log::Level::Error, {}, Json::Wcs::c_allocatorsPoolInitFailed);
-        return EXIT_FAILURE;
-    }*/
     Config::initProfiler();
 
     FORCE_MEMORY_LEAK;

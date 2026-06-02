@@ -3,7 +3,7 @@
 
 #include "memprof.h"
 
-#if (WITH_CRTD || WITH_SNTZ) && !defined(WITHOUT_LOGGING)
+#if (WITH_CRTD || WITH_SNTZ) && !defined(DISABLE_CONSOLE_LOGGING)
 #   include <log2/core.h>
 #endif
 
@@ -28,11 +28,11 @@ namespace Config {
         ::_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
         ::_CrtSetReportMode(_CRT_ERROR, reportMode);
         ::_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#   ifndef WITHOUT_LOGGING
+#   ifndef DISABLE_CONSOLE_LOGGING
         Log::write(Log::Category::Generic, Log::Level::Warning, {}, L"Memory profiling enabled (CRT Debug)");
 #   endif
 #elif WITH_SNTZ
-#   ifndef WITHOUT_LOGGING
+#   ifndef DISABLE_CONSOLE_LOGGING
         Log::write(Log::Category::Generic, Log::Level::Warning, {}, L"AddressSanitizer enabled");
         Log::write(Log::Category::Generic, Log::Level::Warning, {}, L"UndefinedBehaviorSanitizer enabled");
 #   endif
@@ -45,7 +45,7 @@ namespace Debug {
     void forceMemoryLeak() {
 #if WITH_CRTD || WITH_SNTZ
         auto memoryLeak [[maybe_unused]] = new unsigned short[32] { 0xadde, 0xefbe };
-#   ifndef WITHOUT_LOGGING
+#   ifndef DISABLE_CONSOLE_LOGGING
         Log::write(
             Log::Category::Generic, Log::Level::Warning, {},
             L"I'll put {:x}{:x} {:x}{:x} here (test message indicating that a leak has taken place)",

@@ -16,12 +16,14 @@ namespace Log {
     bool s_appendLocation { false };
 #endif
 
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         LOG_MVARE(bool, s_terse, c_terseDef);
         LOG_MVARE(Output, s_output, c_outputDef);
         LOG_MVARE(bool, s_flushEveryWrite, c_flushEveryWriteDef);
         LOG_MVARE(LevelUnderlying, s_level, c_levelDef);
     }
+#endif
 
     namespace File {
         LOG_MVARE(std::filesystem::path, s_directory, );

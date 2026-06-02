@@ -25,12 +25,14 @@ namespace Log {
 #   endif
 #endif
 
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         LOG_MVARI(bool, s_terse, c_terseDef);
         LOG_MVARI(Output, s_output, c_outputDef);
         LOG_MVARI(bool, s_flushEveryWrite, c_flushEveryWriteDef);
         LOG_MVARI(LevelUnderlying, s_level, c_levelDef);
     }
+#endif
 
     namespace File {
         LOG_CVARI(std::wstring_view, c_filenameFormat, c_kkmHttpAccessorFilenameFormat);

@@ -16,10 +16,6 @@
 int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
     Config::initLogger();
-    /*if (!Json::Allocator::ready()) {
-        Log::write(Log::Category::Generic, Log::Level::Error, {}, Json::Wcs::c_allocatorsPoolInitFailed);
-        return EXIT_FAILURE;
-    }*/
     Config::initProfiler();
 
     try {
@@ -32,6 +28,7 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
             Config::readJson(Config::s_file, Log::setVars, Kkm::setVars);
             return KkmJsonLoader::exec(argv[1], argv[2]);
         }
+
         std::wcerr
             << L"{\n"
 #if WITH_CRTD || WITH_SNTZ
@@ -42,6 +39,7 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
             L"    \"!version\": \"" << BUILD_VERSION << L"\",\n"
             L"    \"!usage\": \"" << Json::escapeBasic(argv[0]) << L" {сн} {вф}\"\n"
             L"}";
+
     } catch (const Basic::Failure & e) {
         KkmJsonLoader::printError(e.explain()); // TODO: Подумать, есть ли необходимость в выводе источника исключения
     } catch (const std::exception & e) {

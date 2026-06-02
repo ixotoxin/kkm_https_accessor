@@ -42,7 +42,9 @@ namespace Log {
     constexpr LevelUnderlying c_levelError [[maybe_unused]] { Meta::toUnderlying(Level::Error) };
     constexpr LevelUnderlying c_levelNone [[maybe_unused]] { c_levelError + 1 };
 
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         enum class Output { Separated, StdOut, StdErr };
     }
+#endif
 }

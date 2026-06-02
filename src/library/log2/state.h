@@ -7,6 +7,7 @@
 #include "variables.h"
 
 namespace Log {
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         [[nodiscard, maybe_unused]] bool allowed() noexcept;
         [[nodiscard, maybe_unused]] bool allowed(Level) noexcept;
@@ -103,6 +104,7 @@ namespace Log {
             ScopedMute & operator=(ScopedMute &&) = delete;
         };
     }
+#endif
 
     namespace File {
         [[nodiscard, maybe_unused]] bool allowed(Level) noexcept;

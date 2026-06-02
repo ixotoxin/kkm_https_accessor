@@ -33,10 +33,6 @@ void usage(std::wostream & stream, const std::filesystem::path & path) {
 int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
     Config::initConsole(Config::c_u16Text);
     Config::initLogger();
-    /*if (!Json::Allocator::ready()) {
-        Log::write(Log::Category::Generic, Log::Level::Error, {}, Json::Wcs::c_allocatorsPoolInitFailed);
-        return EXIT_FAILURE;
-    }*/
     Config::initProfiler();
 
     FORCE_MEMORY_LEAK;
@@ -66,6 +62,7 @@ int wmain(const int argc, wchar_t ** argv, wchar_t ** envp) {
                 FORCE_MEMORY_LEAK;
                 return KkmOperator::learn(argc - 2, &argv[2]);
             }
+
             if (argc == 3) {
                 if (const auto result = KkmOperator::exec(command, argv[2]); result) {
                     return *result;

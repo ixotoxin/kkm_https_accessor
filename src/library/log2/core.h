@@ -85,9 +85,13 @@ namespace Log {
         if (message.empty()) {
             return;
         }
-        const bool writeToConsole = Console::allowed(level);
-        const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level); // NOLINT
+#ifndef DISABLE_CONSOLE_LOGGING
+        const bool writeToConsole { Console::allowed(level) };
+#else
+        constexpr bool writeToConsole { false };
+#endif
+        const bool writeToFile { File::allowed(level) };
+        const bool writeToEventLog { EventLog::allowed(level) }; // NOLINT
         if (writeToConsole || writeToFile || writeToEventLog) {
 #ifdef SINGLE_THREAD
             Record record {};
@@ -120,7 +124,9 @@ namespace Log {
                     record.m_location.clear();
                     record.m_category = category;
                     record.m_level = level;
+#ifndef DISABLE_CONSOLE_LOGGING
                     record.m_toConsole = writeToConsole;
+#endif
                     record.m_toFile = writeToFile;
                     record.m_toEventLog = writeToEventLog;
 #ifdef SINGLE_THREAD
@@ -170,9 +176,13 @@ namespace Log {
         if (message.empty()) {
             return;
         }
-        const bool writeToConsole = Console::allowed(level);
-        const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level); // NOLINT
+#ifndef DISABLE_CONSOLE_LOGGING
+        const bool writeToConsole { Console::allowed(level) };
+#else
+        constexpr bool writeToConsole { false };
+#endif
+        const bool writeToFile { File::allowed(level) };
+        const bool writeToEventLog { EventLog::allowed(level) }; // NOLINT
         if (writeToConsole || writeToFile || writeToEventLog) {
 #ifdef SINGLE_THREAD
             Record record {};
@@ -211,7 +221,9 @@ namespace Log {
                     }
                     record.m_category = category;
                     record.m_level = level;
+#ifndef DISABLE_CONSOLE_LOGGING
                     record.m_toConsole = writeToConsole;
+#endif
                     record.m_toFile = writeToFile;
                     record.m_toEventLog = writeToEventLog;
 #ifdef SINGLE_THREAD
@@ -257,9 +269,13 @@ namespace Log {
         const std::wstring_view prefix,
         const Basic::Failure & e
     ) noexcept try {
-        const bool writeToConsole = Console::allowed(level);
-        const bool writeToFile = File::allowed(level);
-        const bool writeToEventLog = EventLog::allowed(level); // NOLINT
+#ifndef DISABLE_CONSOLE_LOGGING
+        const bool writeToConsole { Console::allowed(level) };
+#else
+        constexpr bool writeToConsole { false };
+#endif
+        const bool writeToFile { File::allowed(level) };
+        const bool writeToEventLog { EventLog::allowed(level) }; // NOLINT
         if (writeToConsole || writeToFile || writeToEventLog) {
 #ifdef SINGLE_THREAD
             Record record {};
@@ -288,7 +304,9 @@ namespace Log {
                     }
                     record.m_category = static_cast<Category>(category);
                     record.m_level = level;
+#ifndef DISABLE_CONSOLE_LOGGING
                     record.m_toConsole = writeToConsole;
+#endif
                     record.m_toFile = writeToFile;
                     record.m_toEventLog = writeToEventLog;
 #ifdef SINGLE_THREAD

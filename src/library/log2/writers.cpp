@@ -12,6 +12,7 @@
 #include <filesystem>
 
 namespace Log {
+#ifndef DISABLE_CONSOLE_LOGGING
     namespace Console {
         [[maybe_unused]]
         void write(const Level level, const std::wstring_view message, const std::wstring_view location) noexcept try {
@@ -30,6 +31,7 @@ namespace Log {
             }
         } catch (...) {}
     }
+#endif
 
     namespace File {
         static std::wofstream s_file {};
@@ -201,7 +203,9 @@ namespace Log {
         if (!s_atExitCloseWriters) {
             s_atExitCloseWriters = true;
             std::atexit([] {
+#ifndef DISABLE_CONSOLE_LOGGING
                 Console::s_level = c_levelNone;
+#endif
                 File::s_fgLevel = c_levelNone;
                 File::s_bgLevel = c_levelNone;
                 EventLog::s_fgLevel = c_levelNone;
@@ -220,6 +224,7 @@ namespace Log {
 
     [[maybe_unused]]
     void write(const Record & event) noexcept {
+#ifndef DISABLE_CONSOLE_LOGGING
         if (event.m_toConsole && Console::allowed()) {
             if (Console::s_terse) {
                 Console::write(event.m_level, event.m_terseMsg1, event.m_location);
@@ -227,6 +232,7 @@ namespace Log {
                 Console::write(event.m_level, event.m_message, event.m_location);
             }
         }
+#endif
         if (event.m_toFile && File::open()) {
             File::write(event.m_message, event.m_location);
         }

@@ -7,7 +7,7 @@ if (WITH_SNTZ)
     target_sntz_link_options(kkmjl)
 endif()
 
-target_link_libraries(kkmjl PRIVATE stlib)
+target_link_libraries(kkmjl PRIVATE stnclib)
 target_link_libraries(kkmjl PRIVATE RapidJSON rapidjson)
 
 if (POLICY CMP0207)

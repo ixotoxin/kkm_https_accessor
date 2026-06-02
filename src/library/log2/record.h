@@ -22,7 +22,9 @@ namespace Log {
         std::wstring m_location {};
         Category m_category { Category::Generic };
         Level m_level { Level::Debug };
+#ifndef DISABLE_CONSOLE_LOGGING
         bool m_toConsole { false };
+#endif
         bool m_toFile { false };
         bool m_toEventLog { false };
 
